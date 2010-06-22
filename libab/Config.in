@@ -1,0 +1,5 @@
+config BR2_PACKAGE_LIBAB
+	prompt "libab ........................ board library for VoIP"
+	tristate
+	default y if CONFIG_DEVEL
+	depends on BR2_LINUX_2_6_SIGRAND5120

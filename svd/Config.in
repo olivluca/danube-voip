@@ -1,0 +1,5 @@
+config BR2_PACKAGE_SVD
+	tristate "svd .............. SIP VoIP client daemon"
+	default y if CONFIG_DEVEL
+	select BR2_PACKAGE_DRV_TAPI
+	depends on BR2_LINUX_2_6_SIGRAND5120

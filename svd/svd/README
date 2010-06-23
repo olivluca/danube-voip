@@ -1,0 +1,26 @@
+README for SVD
+=====================
+
+What is it?
+-----------
+
+SVD is a simple sip client which is developed for VoIP router.
+
+How I can build it and install?
+-------------------------------
+
+Run 
+
+./build.sh
+
+Where can I get additional information?
+---------------------------------------
+
+Look in the doc subdir.
+
+License
+-------
+
+LGPL. Note license of GNU readline (GPL), if support for it
+is enabled. See file COPYING for full details.
+

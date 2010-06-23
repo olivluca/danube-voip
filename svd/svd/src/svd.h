@@ -120,6 +120,7 @@ struct svd_chan_s
 		vf_tmr_reinvite,
 	} vf_tmr_request;
 	su_timer_t * vf_tmr; /**< VF-chan reinvite timer. */
+	size_t vf_echo_count; // 0: echo replied, >0 - echo still not replied
 
 	/* HOTLINE */
 	unsigned char is_hotlined; /**< Is this channel hotline initiator.*/

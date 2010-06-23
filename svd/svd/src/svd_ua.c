@@ -849,6 +849,31 @@ vf_timer_set(ab_chan_t *chan, enum vf_tmr_request req)
     return err;
 }
 
+enum VF_ECHO { VF_ECHO_REQUEST, VF_ECHO_REPLY };
+
+static void
+vf_send_echo(ab_chan_t * const chan, enum VF_ECHO echo_type)
+{
+    char pd[128];
+    snprintf(pd, sizeof(pd)-1, "VF[%02d] echo %s\n", chan->abs_idx,
+	     (echo_type == VF_ECHO_REQUEST) ? "request" : "reply");
+
+    // send INFO
+    svd_chan_t *svd_chan = chan->ctx;
+    nua_info(svd_chan->op_handle, SIPTAG_PAYLOAD_STR(pd), TAG_NULL());
+
+    svd_chan->vf_echo_count++;
+    SU_DEBUG_3(( "%s(): echo req count: %zu, %s", __FUNCTION__, svd_chan->vf_echo_count, pd ));
+}
+
+static void
+vf_clean_echo(ab_chan_t * const chan)
+{
+    svd_chan_t *svd_chan = chan->ctx;
+    svd_chan->vf_echo_count = 0;
+    SU_DEBUG_3(("%s(): [%02d]", __FUNCTION__, chan->abs_idx));
+}
+
 /**
  * Place the call for the VF-channel to it`s pair.
  *
@@ -868,6 +893,22 @@ vf_timer_cb(su_root_magic_t *magic, su_timer_t *t, su_timer_arg_t *arg)
 
     switch (svd_chan->vf_tmr_request)
     {
+	case vf_tmr_nothing:
+	    vf_timer_set(chan, vf_tmr_nothing);
+
+	    vf_send_echo(chan, VF_ECHO_REQUEST);
+	    if (svd_chan->vf_echo_count > 3) // FIXME: parameter or constant
+	    {
+		SU_DEBUG_2(( "%s() : [%02d], counterpart do not respond "
+			    "to echo requests over 3 times, re-invite",
+			    __FUNCTION__, chan->abs_idx ));
+
+                // fall througw to reinvite
+	    }
+	    else
+	    {
+		break;
+	    }
 	case vf_tmr_reinvite:
 	    err = svd_place_vf_for(g_svd, chan);
 	    if(err){
@@ -876,9 +917,6 @@ vf_timer_cb(su_root_magic_t *magic, su_timer_t *t, su_timer_arg_t *arg)
 	    }
 	    else
 		vf_timer_set(chan, vf_tmr_nothing);
-	    break;
-	case vf_tmr_nothing:
-	    vf_timer_set(chan, vf_tmr_nothing);
 	    break;
 	default:
 	    SU_DEBUG_2 (("Unknown vf_tmr_request: %d\n", svd_chan->vf_tmr_request));
@@ -1631,34 +1669,70 @@ svd_i_info(int status, char const * phrase, svd_t * const svd,
 		nua_handle_t * nh, ab_chan_t * chan, sip_t const * sip)
 {/*{{{*/
 DFS
-	int tone;
-	char digit;
 
-	if(chan->parent->type != ab_dev_type_FXO){
-		goto __exit;
-	}
-	if(sip && sip->sip_payload && sip->sip_payload->pl_data){
-		/* should be sended if can`t recognize info payload
-		 * (but auto-acc always send 200)
-		nua_respond(nh, SIP_415_UNSUPPORTED_MEDIA, TAG_END());
-		*/
-		sscanf(sip->sip_payload->pl_data, INFO_STR, &tone, &digit);
-		SU_DEBUG_3 (("%d:'%c'... ",tone, digit));
-	} else {
-		goto __exit;
-	}
-	if((!tone) || (g_conf.fxo_PSTN_type[chan->abs_idx] == pstn_type_PULSE_ONLY)){
+    if(chan->parent->type == ab_dev_type_FXO)
+    {
+	if(sip && sip->sip_payload && sip->sip_payload->pl_data)
+	{
+	    /* should be sended if can`t recognize info payload
+	     * (but auto-acc always send 200)
+	     nua_respond(nh, SIP_415_UNSUPPORTED_MEDIA, TAG_END());
+	     */
+
+	    int tone = -1;
+	    char digit = -1;
+
+	    sscanf(sip->sip_payload->pl_data, INFO_STR, &tone, &digit);
+	    SU_DEBUG_3 (("%d:'%c'... ",tone, digit));
+
+	    if((!tone) || (g_conf.fxo_PSTN_type[chan->abs_idx] == pstn_type_PULSE_ONLY))
+	    {
 		/* dialed in pulse - should redial in pulse */
 		/* or pulse PSTN only - also should redial in pulse */
 		SU_DEBUG_3 (("Dial in pulse:'%c'\n", digit));
 		/* put digit in queue on dial */
 		svd_put_digit(svd, chan, digit, 1);
-	} else {
+	    } else {
 		/* PSTN recognizes tones and we dialed in tone
 		 * - should not dial anything - pass-through */
 		SU_DEBUG_3 (("DON`T Dial anything\n"));
+	    }
 	}
-__exit:
+    }
+    else if(chan->parent->type == ab_dev_type_VF)
+    {
+	if(sip && sip->sip_payload && sip->sip_payload->pl_data)
+	{
+            ssize_t chan_idx = -1;
+
+            char echo_type[ strlen(sip->sip_payload->pl_data) + 1 ];
+	    int rc = sscanf(sip->sip_payload->pl_data, "VF\[%zd\] echo %s",
+			    &chan_idx, &echo_type);
+
+	    if (rc == 2)
+	    {
+		if (strcmp(echo_type, "request") == 0)
+		{
+                    vf_clean_echo(chan);
+		    vf_send_echo(chan, VF_ECHO_REPLY);
+		}
+		else if (strcmp(echo_type, "reply") == 0)
+		{
+                    vf_clean_echo(chan);
+		}
+		else
+		{
+		    SU_DEBUG_2 (("%s(): [%d]: Unrecognized echo message: %s\n",
+				 __FUNCTION__, chan->abs_idx, echo_type));
+		}
+	    }
+	    else
+	    {
+		SU_DEBUG_2 (("%s(): [%d]: Unrecognized INFO message: %s\n",
+			     __FUNCTION__, chan->abs_idx, sip->sip_payload->pl_data));
+	    }
+	}
+    }
 DFE
 }/*}}}*/
 

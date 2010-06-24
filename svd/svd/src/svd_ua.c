@@ -834,7 +834,7 @@ vf_timer_set(ab_chan_t *chan, enum vf_tmr_request req)
     svd_chan_t *svd_chan = (svd_chan_t*)chan->ctx;
 
     if (svd_chan->vf_tmr_request != req)
-	SU_DEBUG_3(( "%s(): [%02d], req: %s", __FUNCTION__,
+	SU_DEBUG_4(( "%s(): [%02d], req: %s", __FUNCTION__,
 		    chan->abs_idx, vf_tmr_req_string(req) ));
 
     svd_chan->vf_tmr_request = req;
@@ -863,7 +863,7 @@ vf_send_echo(ab_chan_t * const chan, enum VF_ECHO echo_type)
     nua_info(svd_chan->op_handle, SIPTAG_PAYLOAD_STR(pd), TAG_NULL());
 
     svd_chan->vf_echo_count++;
-    SU_DEBUG_3(( "%s(): echo req count: %zu, %s", __FUNCTION__, svd_chan->vf_echo_count, pd ));
+    SU_DEBUG_4(( "%s(): echo req count: %zu, %s", __FUNCTION__, svd_chan->vf_echo_count, pd ));
 }
 
 static void
@@ -871,7 +871,7 @@ vf_clean_echo(ab_chan_t * const chan)
 {
     svd_chan_t *svd_chan = chan->ctx;
     svd_chan->vf_echo_count = 0;
-    SU_DEBUG_3(("%s(): [%02d]", __FUNCTION__, chan->abs_idx));
+    SU_DEBUG_4(("%s(): [%02d]", __FUNCTION__, chan->abs_idx));
 }
 
 /**
@@ -888,7 +888,7 @@ vf_timer_cb(su_root_magic_t *magic, su_timer_t *t, su_timer_arg_t *arg)
     int err;
 
     if (svd_chan->vf_tmr_request != vf_tmr_nothing)
-	SU_DEBUG_3(( "%s() : [%02d], req: %s", __FUNCTION__,
+	SU_DEBUG_4(( "%s() : [%02d], req: %s", __FUNCTION__,
 		    chan->abs_idx, vf_tmr_req_string(svd_chan->vf_tmr_request) ));
 
     switch (svd_chan->vf_tmr_request)

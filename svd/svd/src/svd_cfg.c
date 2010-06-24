@@ -809,7 +809,7 @@ main_init( ab_t const * const ab )
 	g_conf.sip_set.sip_chan = config_lookup_int (&cfg, "sip_chan");
 	if((!ab->pchans[g_conf.sip_set.sip_chan]) ||
 		(ab->pchans[g_conf.sip_set.sip_chan]->parent->type != ab_dev_type_FXS)){
-		SU_DEBUG_2(("ATTENTION!! [%d] is not FXS, as in %s.. "
+		SU_DEBUG_2(("ATTENTION!! [%02d] is not FXS, as in %s.. "
 				"EXIT\n", g_conf.sip_set.sip_chan, MAIN_CONF_NAME));
 		goto __exit_fail;
 	}
@@ -880,7 +880,7 @@ fxo_init( ab_t const * const ab )
 
 		if((!ab->pchans[abs_idx]) ||
 			(ab->pchans[abs_idx]->parent->type != ab_dev_type_FXO)){
-			SU_DEBUG_2(("ATTENTION!! [%d] is not FXO, as in %s.. "
+			SU_DEBUG_2(("ATTENTION!! [%02d] is not FXO, as in %s.. "
 					"continue\n", abs_idx, FXO_CONF_NAME));
 		}
 
@@ -1071,7 +1071,7 @@ voicef_init( ab_t const * const ab )
 
 		if((!ab->pchans[chan_id]) ||
 			(ab->pchans[chan_id]->parent->type != ab_dev_type_VF)){
-			SU_DEBUG_2(("ATTENTION!! [%d] is not VF, as in %s.. "
+			SU_DEBUG_2(("ATTENTION!! [%02d] is not VF, as in %s.. "
 					"ignore config value\n",chan_id, VOICEF_CONF_NAME));
 			continue;
 		}
@@ -1129,7 +1129,7 @@ voicef_init( ab_t const * const ab )
 		if(curr_rec->pair_route == NULL){
 			if((!ab->pchans[pair_chan]) ||
 				(ab->pchans[pair_chan]->parent->type != ab_dev_type_VF)){
-				SU_DEBUG_2(("ATTENTION!! [%d] is not VF, as in %s.. "
+				SU_DEBUG_2(("ATTENTION!! [%02d] is not VF, as in %s.. "
 						"ignore config value\n",pair_chan, VOICEF_CONF_NAME));
 				/* remove current channel VF-record
 				 * because we can`t connect to not VF-channel */
@@ -1191,7 +1191,7 @@ voicef_init( ab_t const * const ab )
 
 		if((!ab->pchans[chan_id]) ||
 			(ab->pchans[chan_id]->parent->type != ab_dev_type_VF)){
-			SU_DEBUG_2(("ATTENTION!! [%d] is not VF, as in %s.. "
+			SU_DEBUG_2(("ATTENTION!! [%02d] is not VF, as in %s.. "
 					"ignore config value\n", chan_id, VF_CONF_NAME));
 			continue;
 		}
@@ -1297,7 +1297,7 @@ hotline_init( ab_t const * const ab )
 			((ab->pchans[chan_idx]->parent->type != ab_dev_type_FXS) &&
 			 (ab->pchans[chan_idx]->parent->type != ab_dev_type_FXO))
 			){
-			SU_DEBUG_2(("ATTENTION!! [%d] is not FXS or FXO, as in %s.. "
+			SU_DEBUG_2(("ATTENTION!! [%02d] is not FXS or FXO, as in %s.. "
 					"ignore config value\n", chan_idx, HOTLINE_CONF_NAME));
 			continue;
 		}

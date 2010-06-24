@@ -834,7 +834,7 @@ vf_timer_set(ab_chan_t *chan, enum vf_tmr_request req)
     svd_chan_t *svd_chan = (svd_chan_t*)chan->ctx;
 
     if (svd_chan->vf_tmr_request != req)
-	SU_DEBUG_3(( "%s(): [_%02d_], req: %s", __FUNCTION__,
+	SU_DEBUG_3(( "%s(): [%02d], req: %s", __FUNCTION__,
 		    chan->abs_idx, vf_tmr_req_string(req) ));
 
     svd_chan->vf_tmr_request = req;
@@ -844,7 +844,7 @@ vf_timer_set(ab_chan_t *chan, enum vf_tmr_request req)
     err = su_timer_set_interval(svd_chan->vf_tmr, vf_timer_cb, chan,
 				VF_REINVITE_SEC*1000);
     if (err)
-	SU_DEBUG_2 (("%s(): [_%d_]: Can`t RE-set VF-timer: %d\n", __FUNCTION__,
+	SU_DEBUG_2 (("%s(): [%02d]: Can`t RE-set VF-timer: %d\n", __FUNCTION__,
 		     chan->abs_idx, err));
     return err;
 }
@@ -888,7 +888,7 @@ vf_timer_cb(su_root_magic_t *magic, su_timer_t *t, su_timer_arg_t *arg)
     int err;
 
     if (svd_chan->vf_tmr_request != vf_tmr_nothing)
-	SU_DEBUG_3(( "%s() : [_%02d_], req: %s", __FUNCTION__,
+	SU_DEBUG_3(( "%s() : [%02d], req: %s", __FUNCTION__,
 		    chan->abs_idx, vf_tmr_req_string(svd_chan->vf_tmr_request) ));
 
     switch (svd_chan->vf_tmr_request)
@@ -1007,12 +1007,12 @@ DFS
 	if       (chan->parent->type == ab_dev_type_FXS){
 		/* start ringing */
 		if (0 != ab_FXS_line_ring (chan, ab_chan_ring_RINGING)){
-			SU_DEBUG_1(("can`t ring to on [_%d_]\n", chan->abs_idx));
+			SU_DEBUG_1(("can`t ring to on [%02d]\n", chan->abs_idx));
 		}
 	} else if(chan->parent->type == ab_dev_type_FXO){
 		/* do offhook */
 		if ( 0!= ab_FXO_line_hook (chan, ab_chan_hook_OFFHOOK)){
-			SU_DEBUG_1(("can`t offhook on [_%d_]\n", chan->abs_idx));
+			SU_DEBUG_1(("can`t offhook on [%02d]\n", chan->abs_idx));
 		}
 	}
 __exit:
@@ -1177,7 +1177,7 @@ DFS
 
 	/* start ringing */
 	if (0!= ab_FXS_line_ring (chan, ab_chan_ring_RINGING)){
-		SU_DEBUG_1(("can`t ring to on [_%d_]\n", chan->abs_idx));
+		SU_DEBUG_1(("can`t ring to on [%02d]\n", chan->abs_idx));
 	}
 __exit:
 DFE
@@ -1271,7 +1271,7 @@ DFS
 		int err;
 		err = ab_FXS_line_ring (chan, ab_chan_ring_MUTE);
 		if(err){
-			SU_DEBUG_3 (("Can`t mutes ring on [_%d_]: %s\n",
+			SU_DEBUG_3 (("Can`t mutes ring on [%02d]: %s\n",
 					chan->abs_idx, ab_g_err_str));
 		}
 	}
@@ -1341,12 +1341,12 @@ DFS
 				err = su_timer_set_interval(ctx->ring_tmr, ring_timer_cb,
 						chan, RING_WAIT_DROP*1000);
 				if (err){
-					SU_DEBUG_2 (("su_timer_set_interval ERROR on [_%d_] : %d\n",
+					SU_DEBUG_2 (("su_timer_set_interval ERROR on [%02d] : %d\n",
 								chan->abs_idx, err));
 					ctx->ring_state = ring_state_NO_TIMER_INVITE_SENT;
 				} else {
 					ctx->ring_state = ring_state_TIMER_UP_INVITE_SENT;
-					SU_DEBUG_4(("%s():%d RING_STATE [%d] IS %d\n",
+					SU_DEBUG_4(("%s():%d RING_STATE [%02d] IS %d\n",
 							__func__, __LINE__, chan->abs_idx, ctx->ring_state));
 				}
 			}
@@ -1358,11 +1358,11 @@ DFS
 				/* play ringback */
 				err = ab_FXS_line_tone (chan, ab_chan_tone_RINGBACK);
 				if(err){
-					SU_DEBUG_2(("can`t play ringback on [_%d_]\n",
+					SU_DEBUG_2(("can`t play ringback on [%02d]\n",
 							chan->abs_idx));
 				}
 				/* play ringback */
-				SU_DEBUG_3(("play ringback on [_%d_]\n",chan->abs_idx));
+				SU_DEBUG_3(("play ringback on [%02d]\n",chan->abs_idx));
 			}
 			break;
 
@@ -1397,29 +1397,29 @@ DFS
 			if( chan->parent->type == ab_dev_type_FXS){
 				/* stop playing any tone on the chan */
 				if(ab_FXS_line_tone (chan, ab_chan_tone_MUTE)){
-					SU_DEBUG_2(("can`t stop playing tone on [_%d_]\n",
+					SU_DEBUG_2(("can`t stop playing tone on [%02d]\n",
 							chan->abs_idx));
 				}
 				/* stop playing tone */
-				SU_DEBUG_3(("stop playing tone on [_%d_]\n", chan->abs_idx));
+				SU_DEBUG_3(("stop playing tone on [%02d]\n", chan->abs_idx));
 			} else if(chan->parent->type == ab_dev_type_FXO){
 				/* kill ring_thread if it is up */
 				if(ctx->ring_state == ring_state_TIMER_UP_INVITE_SENT){
 					err = su_timer_reset(ctx->ring_tmr);
 					if (err){
-						SU_DEBUG_2 (("su_timer_reset ERROR on [_%d_] : %d\n",
+						SU_DEBUG_2 (("su_timer_reset ERROR on [%02d] : %d\n",
 									chan->abs_idx, err));
 					}
 					ctx->ring_state = ring_state_NO_TIMER_INVITE_SENT;
-					SU_DEBUG_4(("%s():%d RING_STATE [%d] IS %d\n",
+					SU_DEBUG_4(("%s():%d RING_STATE [%02d] IS %d\n",
 							__func__, __LINE__, chan->abs_idx, ctx->ring_state));
 				}
 				/* offhook */
 				err = ab_FXO_line_hook( chan, ab_chan_hook_OFFHOOK );
 				if ( !err){
-					SU_DEBUG_3(("do offhook on [_%d_]\n", chan->abs_idx));
+					SU_DEBUG_3(("do offhook on [%02d]\n", chan->abs_idx));
 				} else {
-					SU_DEBUG_3(("can`t offhook on [_%d_]: %s\n",
+					SU_DEBUG_3(("can`t offhook on [%02d]: %s\n",
 							chan->abs_idx, ab_g_err_str));
 				}
 			}/* vf no need in special preparations */
@@ -1436,7 +1436,7 @@ DFS
 
 	/* BYE complete */
 		case nua_callstate_terminated:{/*{{{*/
-			SU_DEBUG_4 (("call on [%d] terminated\n", chan->abs_idx));
+			SU_DEBUG_4 (("call on [%02d] terminated\n", chan->abs_idx));
 			svd_chan_t * ctx = chan->ctx;
 
 			/* deactivate media */
@@ -1447,26 +1447,26 @@ DFS
 				svd_clear_call (svd, chan);
 
 				if(ctx->ring_state == ring_state_TIMER_UP_INVITE_SENT){
-					SU_DEBUG_4(("%s():%d RING_STATE [%d] IS %d\n",
+					SU_DEBUG_4(("%s():%d RING_STATE [%02d] IS %d\n",
 							__func__, __LINE__, chan->abs_idx, ctx->ring_state));
 					/* kill ring_timer if it is up
 					 * if we have no ready state for some reasons
 					 */
 					err = su_timer_reset(ctx->ring_tmr);
 					if (err){
-						SU_DEBUG_2 (("su_timer_reset ERROR on [_%d_] : %d\n",
+						SU_DEBUG_2 (("su_timer_reset ERROR on [%02d] : %d\n",
 									chan->abs_idx, err));
 					}
 				}
 				ctx->ring_state = ring_state_NO_RING_BEFORE;
-				SU_DEBUG_4(("%s():%d RING_STATE [%d] IS %d\n",
+				SU_DEBUG_4(("%s():%d RING_STATE [%02d] IS %d\n",
 						__func__, __LINE__, chan->abs_idx, ctx->ring_state));
  				/* do it any case, even if it onhooked already */
 				err = ab_FXO_line_hook (chan, ab_chan_hook_ONHOOK);
 				if(err){
-					SU_DEBUG_2(("Can`t onhook on [_%d_]\n",chan->abs_idx));
+					SU_DEBUG_2(("Can`t onhook on [%02d]\n",chan->abs_idx));
 				}
-				SU_DEBUG_3(("onhook on [_%d_]\n",chan->abs_idx));
+				SU_DEBUG_3(("onhook on [%02d]\n",chan->abs_idx));
 			} else if(chan->parent->type == ab_dev_type_FXS){
 				/* clear call params */
 				svd_clear_call (svd, chan);
@@ -1475,16 +1475,16 @@ DFS
 				int err;
 				err = ab_FXS_line_ring (chan, ab_chan_ring_MUTE);
 				if (err){
-					SU_DEBUG_2 (("Can`t stop ringing on [_%d_]\n",
+					SU_DEBUG_2 (("Can`t stop ringing on [%02d]\n",
 							chan->abs_idx));
 				}
 				/* playing busy tone on the chan */
 				if(ab_FXS_line_tone (chan, ab_chan_tone_BUSY)){
-					SU_DEBUG_2(("can`t playing busy tone on [_%d_]\n",
+					SU_DEBUG_2(("can`t playing busy tone on [%02d]\n",
 							chan->abs_idx));
 				}
 				/* playing busy tone */
-				SU_DEBUG_3(("playing busy tone on [_%d_]\n", chan->abs_idx));
+				SU_DEBUG_3(("playing busy tone on [%02d]\n", chan->abs_idx));
 			} else if(chan->parent->type == ab_dev_type_VF){
 				/* Re-invite the pair */
 				if(ctx->op_handle){
@@ -1497,7 +1497,7 @@ DFS
 					g_svd = svd;
 					int err = vf_timer_set(chan, vf_tmr_reinvite);
                                         if (!err)
-					    SU_DEBUG_3 (("[%d]: set timer on %d sec before reinvite "
+					    SU_DEBUG_3 (("[%02d]: set timer on %d sec before reinvite "
 							 "VF-junior\n", chan->abs_idx, VF_REINVITE_SEC));
 
 				}
@@ -1722,13 +1722,13 @@ DFS
 		}
 		else
 		{
-		    SU_DEBUG_2 (("%s(): [%d]: Unrecognized echo message: %s\n",
+		    SU_DEBUG_2 (("%s(): [%02d]: Unrecognized echo message: %s\n",
 				 __FUNCTION__, chan->abs_idx, echo_type));
 		}
 	    }
 	    else
 	    {
-		SU_DEBUG_2 (("%s(): [%d]: Unrecognized INFO message: %s\n",
+		SU_DEBUG_2 (("%s(): [%02d]: Unrecognized INFO message: %s\n",
 			     __FUNCTION__, chan->abs_idx, sip->sip_payload->pl_data));
 	    }
 	}
@@ -1922,11 +1922,11 @@ DFS
 				/* busy - play busy tone */
 				/* playing busy tone on the chan */
 				if(ab_FXS_line_tone (chan, ab_chan_tone_BUSY)){
-					SU_DEBUG_2(("can`t playing busy tone on [_%d_]\n",
+					SU_DEBUG_2(("can`t playing busy tone on [%02d]\n",
 							chan->abs_idx));
 				}
 				/* playing busy tone */
-				SU_DEBUG_3(("playing busy tone on [_%d_]\n", chan->abs_idx));
+				SU_DEBUG_3(("playing busy tone on [%02d]\n", chan->abs_idx));
 			}
 		}
 	}
@@ -1935,7 +1935,7 @@ DFS
 				chan->ctx && ((svd_chan_t*)(chan->ctx))->vf_tmr){
 			/*connection restored*/
                         vf_timer_set(chan, vf_tmr_nothing);
-			SU_DEBUG_3(("Connection on chan [_%d_] restored\n", chan->abs_idx));
+			SU_DEBUG_3(("Connection on chan [%02d] restored\n", chan->abs_idx));
 		}
 	}
 DFE

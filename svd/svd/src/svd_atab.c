@@ -262,7 +262,7 @@ svd_media_register (svd_t * const svd, ab_chan_t * const chan)
 	int ret;
 DFS
 	if( (!chan) || (!chan->ctx)){
-		SU_DEBUG_1(("ERROR: [%d] CAN`T REGISTER MEDIA on unallocated channel\n",
+		SU_DEBUG_1(("ERROR: [%02d] CAN`T REGISTER MEDIA on unallocated channel\n",
 				(chan)? chan->abs_idx: -1));
 		goto __exit_fail;
 	}
@@ -809,7 +809,7 @@ DFS
 	/* stop ringing */
 	err = ab_FXS_line_ring( ab_chan, ab_chan_ring_MUTE );
 	if (err){
-		SU_DEBUG_0(("can`t stop ring on [_%d_]\n", ab_chan->abs_idx));
+		SU_DEBUG_0(("can`t stop ring on [%02d]\n", ab_chan->abs_idx));
 		svd_answer(svd, ab_chan, SIP_500_INTERNAL_SERVER_ERROR);
 		goto __exit_fail;
 	}
@@ -817,7 +817,7 @@ DFS
 	/* change linefeed mode to ACTIVE */
 	err = ab_FXS_line_feed (ab_chan, ab_chan_linefeed_ACTIVE);
 	if (err){
-		SU_DEBUG_0(("can`t set linefeed to active on [_%d_]\n",
+		SU_DEBUG_0(("can`t set linefeed to active on [%02d]\n",
 				ab_chan->abs_idx));
 		svd_answer(svd, ab_chan, SIP_500_INTERNAL_SERVER_ERROR);
 		goto __exit_fail;
@@ -843,9 +843,9 @@ DFS
 		/* no hotline - play dialtone */
 		err = ab_FXS_line_tone (ab_chan, ab_chan_tone_DIAL);
 		if(err){
-			SU_DEBUG_2(("can`t play dialtone on [_%d_]\n",ab_chan->abs_idx));
+			SU_DEBUG_2(("can`t play dialtone on [%02d]\n",ab_chan->abs_idx));
 		}
-		SU_DEBUG_8(("play dialtone on [_%d_]\n",ab_chan->abs_idx));
+		SU_DEBUG_8(("play dialtone on [%02d]\n",ab_chan->abs_idx));
 	}
 __exit_success:
 DFE
@@ -874,17 +874,17 @@ DFS
 	/* stop playing any tone on the chan */
 	err = ab_FXS_line_tone (ab_chan, ab_chan_tone_MUTE);
 	if(err){
-		SU_DEBUG_2(("can`t stop playing tone on [_%d_]\n",
+		SU_DEBUG_2(("can`t stop playing tone on [%02d]\n",
 				ab_chan->abs_idx));
 	}
 	/* stop playing tone */
-	SU_DEBUG_8(("stop playing tone on [_%d_]\n",
+	SU_DEBUG_8(("stop playing tone on [%02d]\n",
 				ab_chan->abs_idx));
 
 	/* change linefeed mode to STANDBY */
 	err = ab_FXS_line_feed (ab_chan, ab_chan_linefeed_STANDBY);
 	if (err){
-		SU_DEBUG_0(("can`t set linefeed to standby on [_%d_]\n",
+		SU_DEBUG_0(("can`t set linefeed to standby on [%02d]\n",
 				ab_chan->abs_idx));
 		goto __exit_fail;
 	}
@@ -913,7 +913,7 @@ svd_handle_event_FXS_DIGIT_X ( svd_t * const svd, int const chan_idx,
 	int err;
 
 DFS
-	SU_DEBUG_8 (("[_%d_] DIGIT \'%c\'(l:%d,n:%d)HN:%p\n",
+	SU_DEBUG_8 (("[%02d] DIGIT \'%c\'(l:%d,n:%d)HN:%p\n",
 			ab_chan->abs_idx, digit, (data >> 9),(data >> 8) & 1,
 			chan_ctx->op_handle));
 
@@ -942,10 +942,10 @@ DFS
 		/* stop playing any tone while dialing a number */
 		err = ab_FXS_line_tone (ab_chan, ab_chan_tone_MUTE);
 		if(err){
-			SU_DEBUG_2(("can`t stop playing tone on [_%d_]\n",ab_chan->abs_idx));
+			SU_DEBUG_2(("can`t stop playing tone on [%02d]\n",ab_chan->abs_idx));
 		}
 		/* stop playing tone */
-		SU_DEBUG_8(("stop playing tone on [_%d_]\n",ab_chan->abs_idx));
+		SU_DEBUG_8(("stop playing tone on [%02d]\n",ab_chan->abs_idx));
 	}
 DFE
 	return 0;
@@ -975,17 +975,17 @@ ring_timer_cb (su_root_magic_t *magic, su_timer_t *t, su_timer_arg_t *arg)
 	if( ctx->call_state == nua_callstate_ready ||
 		ctx->call_state == nua_callstate_completing ){
 		ctx->ring_state = ring_state_NO_TIMER_INVITE_SENT;
-		SU_DEBUG_4(("%s():%d RING_STATE [%d] IS %d\n",
+		SU_DEBUG_4(("%s():%d RING_STATE [%02d] IS %d\n",
 				__func__, __LINE__, chan->abs_idx, ctx->ring_state));
 		return;
 	}
 
 	/* nobody answers, and no ring coming in RING_WAIT_DROP seconds */
-	SU_DEBUG_3 (("no RING on [_%d_], in %d sec\n -> send SIP CANCEL\n",
+	SU_DEBUG_3 (("no RING on [%02d], in %d sec\n -> send SIP CANCEL\n",
 			chan->abs_idx, RING_WAIT_DROP));
 	nua_cancel (ctx->op_handle, TAG_NULL());
 	ctx->ring_state = ring_state_CANCEL_IN_QUEUE;
-	SU_DEBUG_4(("%s():%d RING_STATE [%d] IS %d\n",
+	SU_DEBUG_4(("%s():%d RING_STATE [%02d] IS %d\n",
 			__func__, __LINE__, chan->abs_idx, ctx->ring_state));
 }/*}}}*/
 
@@ -1004,7 +1004,7 @@ svd_handle_event_FXO_RINGING ( svd_t * const svd, int const chan_idx )
 DFS
 	/* not hotlined FXO - error case */
 	if( !chan_ctx->is_hotlined){
-		SU_DEBUG_3 (("Got ringing event on channel [_%d_], it is not "
+		SU_DEBUG_3 (("Got ringing event on channel [%02d], it is not "
 				"hotlined, but should be\n", ab_chan->abs_idx));
 		goto __exit_fail;
 	}
@@ -1016,7 +1016,7 @@ DFS
 		chan_ctx->call_state == nua_callstate_completed  ||
 		chan_ctx->call_state == nua_callstate_completing ||
 		chan_ctx->call_state == nua_callstate_ready ){
-		SU_DEBUG_8 (("Connection already initiated on [_%d_]: ignoring ring\n",
+		SU_DEBUG_8 (("Connection already initiated on [%02d]: ignoring ring\n",
 				ab_chan->abs_idx));
 		goto __exit_success;
 	}
@@ -1028,50 +1028,50 @@ DFS
 			goto __exit_fail;
 		}
 		chan_ctx->ring_state = ring_state_INVITE_IN_QUEUE;
-		SU_DEBUG_4(("%s():%d RING_STATE [%d] IS %d\n",
+		SU_DEBUG_4(("%s():%d RING_STATE [%02d] IS %d\n",
 				__func__, __LINE__, ab_chan->abs_idx, chan_ctx->ring_state));
 	}
 	else if( chan_ctx->ring_state == ring_state_INVITE_IN_QUEUE) {
 		/* don`t do nothing before invite */
-		SU_DEBUG_4(("%s():%d RING_STATE [%d] IS %d\n",
+		SU_DEBUG_4(("%s():%d RING_STATE [%02d] IS %d\n",
 				__func__, __LINE__, ab_chan->abs_idx, chan_ctx->ring_state));
 	} else if( chan_ctx->ring_state == ring_state_NO_TIMER_INVITE_SENT) {
 		/* timer up error occured - try to start it again */
 		err = su_timer_set_interval(chan_ctx->ring_tmr, ring_timer_cb, ab_chan,
 				RING_WAIT_DROP*1000);
 		if (err){
-			SU_DEBUG_2 (("su_timer_set_interval ERROR on [_%d_] : %d\n",
+			SU_DEBUG_2 (("su_timer_set_interval ERROR on [%02d] : %d\n",
 						ab_chan->abs_idx, err));
 			chan_ctx->ring_state = ring_state_NO_TIMER_INVITE_SENT;
-			SU_DEBUG_4(("%s():%d RING_STATE [%d] IS %d\n",
+			SU_DEBUG_4(("%s():%d RING_STATE [%02d] IS %d\n",
 					__func__, __LINE__, ab_chan->abs_idx, chan_ctx->ring_state));
 			goto __exit_fail;
 		}
 		chan_ctx->ring_state = ring_state_TIMER_UP_INVITE_SENT;
-		SU_DEBUG_4(("%s():%d RING_STATE [%d] IS %d\n",
+		SU_DEBUG_4(("%s():%d RING_STATE [%02d] IS %d\n",
 				__func__, __LINE__, ab_chan->abs_idx, chan_ctx->ring_state));
 	} else if( chan_ctx->ring_state == ring_state_TIMER_UP_INVITE_SENT) {
 		/* ring already in process - should restart timer */
-		SU_DEBUG_3 (("Got ringing event on channel [_%d_], it is already "
+		SU_DEBUG_3 (("Got ringing event on channel [%02d], it is already "
 				"in process\n", ab_chan->abs_idx));
 		err = su_timer_reset(chan_ctx->ring_tmr);
 		if (err){
-			SU_DEBUG_2 (("su_timer_reset ERROR on [_%d_] : %d\n",
+			SU_DEBUG_2 (("su_timer_reset ERROR on [%02d] : %d\n",
 						ab_chan->abs_idx, err));
 			goto __exit_fail;
 		}
 		err = su_timer_set_interval(chan_ctx->ring_tmr, ring_timer_cb, ab_chan,
 				RING_WAIT_DROP*1000);
 		if (err){
-			SU_DEBUG_2 (("su_timer_set_interval ERROR on [_%d_] : %d\n",
+			SU_DEBUG_2 (("su_timer_set_interval ERROR on [%02d] : %d\n",
 						ab_chan->abs_idx, err));
 			chan_ctx->ring_state = ring_state_NO_TIMER_INVITE_SENT;
-			SU_DEBUG_4(("%s():%d RING_STATE [%d] IS %d\n",
+			SU_DEBUG_4(("%s():%d RING_STATE [%02d] IS %d\n",
 					__func__, __LINE__, ab_chan->abs_idx, chan_ctx->ring_state));
 			goto __exit_fail;
 		}
 	} else if( chan_ctx->ring_state == ring_state_CANCEL_IN_QUEUE) {
-		SU_DEBUG_4(("%s():%d RING_STATE [%d] IS %d\n",
+		SU_DEBUG_4(("%s():%d RING_STATE [%02d] IS %d\n",
 				__func__, __LINE__, ab_chan->abs_idx, chan_ctx->ring_state));
 		/* don`t do nothing - after cancel if we still have incoming
 		 * ring connection will up again */
@@ -1101,11 +1101,11 @@ DFS
 	if( !data){ /* CEDEND */
 		err = ab_chan_fax_pass_through_start (ab_chan);
 		if( err){
-			SU_DEBUG_3(("can`t start fax_pass_through on [_%d_]: %s\n",
+			SU_DEBUG_3(("can`t start fax_pass_through on [%02d]: %s\n",
 					ab_chan->abs_idx, ab_g_err_str));
 			goto __exit_fail;
 		} else {
-			SU_DEBUG_3(("fax_pass_through started on [_%d_]\n",
+			SU_DEBUG_3(("fax_pass_through started on [%02d]\n",
 					ab_chan->abs_idx));
 		}
 	} else { /* CED */

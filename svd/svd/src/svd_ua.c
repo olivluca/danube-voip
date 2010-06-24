@@ -910,6 +910,7 @@ vf_timer_cb(su_root_magic_t *magic, su_timer_t *t, su_timer_arg_t *arg)
 		break;
 	    }
 	case vf_tmr_reinvite:
+            vf_clean_echo(chan);
 	    err = svd_place_vf_for(g_svd, chan);
 	    if(err){
 		SU_DEBUG_2 (("Can`t RE-invite on VF-pair\n"));

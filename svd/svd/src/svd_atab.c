@@ -1819,6 +1819,7 @@ DFS
 			(!chan_ctx->caller_router_is_self)){
 		/* use <self> set interface */
 		/* get device name by self_ip */
+#ifndef DONT_BIND_TO_DEVICE
 		int stmp;
 		int device_finded = 0;
 
@@ -1855,6 +1856,7 @@ DFS
 					g_conf.self_ip));
 			goto __sock_opened;
 		}
+#endif
 	} else {
 		SU_DEBUG_0((LOG_FNC_A("SHOULDN`T BE THERE!!")));
 	}
@@ -1918,6 +1920,7 @@ DFS
 			(!ctx->caller_router_is_self)){
 		/* use <self> set interface */
 		/* get device name by self_ip */
+#ifndef DONT_BIND_TO_DEVICE
 		int stmp;
 		int device_finded = 0;
 
@@ -1955,6 +1958,7 @@ DFS
 					g_conf.self_ip));
 			goto __exit_fail;
 		}
+#endif
 	} else {
 		SU_DEBUG_0((LOG_FNC_A("SHOULDN`T BE THERE!!")));
 		goto __exit_fail;

@@ -8,6 +8,7 @@
 
 typedef struct svd_s svd_t;
 typedef struct svd_chan_s svd_chan_t;
+extern svd_t * g_svd;
 
 /* define type of context pointers for callbacks */
 /*{{{*/

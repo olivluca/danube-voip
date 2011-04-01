@@ -129,8 +129,6 @@ svd_place_vf_for(svd_t * const svd, ab_chan_t * const chan);
 void svd_child_handler(int signum, siginfo_t * sinf, void * sctx);
 /** context for signal handler of SIGCHLD */
 static ab_t * g_ab = NULL;
-/** context for vf_timer_cb */
-static svd_t * g_svd = NULL;
 
 /****************************************************************************/
 
@@ -1503,7 +1501,6 @@ DFS
 				}
 				if(svd_vf_is_elder(chan)){
 					/* reinvite just if it is the elder side */
-					g_svd = svd;
 					int err = vf_timer_set(chan, vf_tmr_reinvite);
                                         if (!err)
 					    SU_DEBUG_3 (("[%02d]: set timer on %d sec before reinvite "

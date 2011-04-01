@@ -29,6 +29,7 @@
 
 unsigned int g_f_cnt= 0;
 unsigned int g_f_offset = 0;
+svd_t * g_svd = NULL;
 
 /** Switch to daemon mode.*/
 static int 	svd_daemonize(void);
@@ -109,6 +110,7 @@ main (int argc, char ** argv)
 	if (svd == NULL) {
 		goto __conf;
 	}
+	g_svd = svd;
 
 	/* place vf-calls */
 	err = svd_place_vf (svd);

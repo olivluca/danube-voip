@@ -162,7 +162,6 @@ struct voice_freq_s {
 	char pair_route_s [ROUTE_ID_LEN_DF]; /**< Channel pair router massive.*/
 	char pair_chan [CHAN_ID_LEN]; /**< Channel pair channel identifier.*/
 	codec_t vf_codec; /**< codec parameters.*/
-	int ping;
 };
 /** Route table.*/
 struct route_table_s {

@@ -893,28 +893,7 @@ vf_timer_cb(su_root_magic_t *magic, su_timer_t *t, su_timer_arg_t *arg)
     {
 	case vf_tmr_nothing:
 	    vf_timer_set(chan, vf_tmr_nothing);
-
-	    struct voice_freq_s * curr_rec = &g_conf.voice_freq[chan->abs_idx];
-	    if (curr_rec->ping)
-	    {
-		vf_send_echo(chan, VF_ECHO_REQUEST);
-		if (svd_chan->vf_echo_count > 3) // FIXME: parameter or constant
-		{
-		    SU_DEBUG_2(( "%s() : [%02d], counterpart do not respond "
-				"to echo requests over 3 times, re-invite",
-				__FUNCTION__, chan->abs_idx ));
-
-		    // fall througw to reinvite
-		}
-		else
-		{
-		    break;
-		}
-	    }
-	    else
-	    {
-		break;
-	    }
+	    break;
 	case vf_tmr_reinvite:
             vf_clean_echo(chan);
 	    err = svd_place_vf_for(g_svd, chan);
@@ -1708,40 +1687,6 @@ DFS
     else if(chan->parent->type == ab_dev_type_VF)
     {
 	struct voice_freq_s * curr_rec = &g_conf.voice_freq[chan->abs_idx];
-	if (curr_rec->ping)
-	{
-	    if(sip && sip->sip_payload && sip->sip_payload->pl_data)
-	    {
-		ssize_t chan_idx = -1;
-
-		char echo_type[ strlen(sip->sip_payload->pl_data) + 1 ];
-		int rc = sscanf(sip->sip_payload->pl_data, "VF\[%zd\] echo %s",
-				&chan_idx, &echo_type);
-
-		if (rc == 2)
-		{
-		    if (strcmp(echo_type, "request") == 0)
-		    {
-			vf_clean_echo(chan);
-			vf_send_echo(chan, VF_ECHO_REPLY);
-		    }
-		    else if (strcmp(echo_type, "reply") == 0)
-		    {
-			vf_clean_echo(chan);
-		    }
-		    else
-		    {
-			SU_DEBUG_2 (("%s(): [%02d]: Unrecognized echo message: %s\n",
-				     __FUNCTION__, chan->abs_idx, echo_type));
-		    }
-		}
-		else
-		{
-		    SU_DEBUG_2 (("%s(): [%02d]: Unrecognized INFO message: %s\n",
-				 __FUNCTION__, chan->abs_idx, sip->sip_payload->pl_data));
-		}
-	    }
-	}
     }
 DFE
 }/*}}}*/

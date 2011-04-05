@@ -1125,9 +1125,6 @@ voicef_init( ab_t const * const ab )
 		/* get codec params */
 		init_codec_el(rec_set, 3, &curr_rec->vf_codec);
 
-		/* get channel ping */
-		curr_rec->ping = config_setting_get_int_elem (rec_set, 13);
-
 		/* Create automatic mirror record if dest router is self */
 		if(curr_rec->pair_route == NULL){
 			if((!ab->pchans[pair_chan]) ||

@@ -267,7 +267,7 @@ DFS
 	memset(contact_url, 0, sizeof(contact_url));
 	strcpy(contact_url, "sip:");
 	strcat(contact_url, g_conf.self_ip);
-	//FIXME: strcat(contact_url, ";maddr=0.0.0.0"); // Bind SIP socket to INADDR_ANY
+	strcat(contact_url, ";maddr=0.0.0.0"); // Bind SIP socket to INADDR_ANY
 	from = sip_from_make(svd->home, contact_url);
 
 	/* launch the SIP stack */

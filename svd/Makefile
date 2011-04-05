@@ -14,7 +14,7 @@ PKG_INSTALL_DIR = $(PKG_BUILD_DIR)/ipkg-install
 include $(TOPDIR)/package/target-configure-staging-flags.mk
 TARGET_CFLAGS += -I$(BUILD_DIR)/tapi/include
 TARGET_CFLAGS += -I$(BUILD_DIR)/libab
-###FIXME: TARGET_CFLAGS += -DDONT_BIND_TO_DEVICE=1
+TARGET_CFLAGS += -DDONT_BIND_TO_DEVICE=1
 
 include $(TOPDIR)/package/rules.mk
 

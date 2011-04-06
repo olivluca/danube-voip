@@ -830,7 +830,6 @@ vf_timer_cb(su_root_magic_t *magic, su_timer_t *t, su_timer_arg_t *arg)
     ab_chan_t * chan = arg;
 
     svd_place_vf_for(g_svd, chan);
-    SU_DEBUG_0(("~~~~~send invite\n"));
 }/*}}}*/
 
 /**
@@ -998,18 +997,14 @@ DFS
 		goto __exit;
 	}
 
-	// TyTa: обработчик входящего invite
-	SU_DEBUG_0(("~~~ recv invite\n"));
 	if (chan_ctx->send_invite) {
 		/* if we recieve invite then we sending invites */
 		if (svd_vf_is_elder(chan)) {
 			/* if we are elder, ignore this invite */
-			SU_DEBUG_0(("~~~ we are elder, ignore invite\n"));
 			nua_handle_destroy(nh);
 			goto __exit;
 		} else {
 			/* if we are junior, stop sending invites */
-			SU_DEBUG_0(("~~~ we are junior, stop sending invites\n"));
 			chan_ctx->send_invite = 0;
 		}
 	}
@@ -1030,7 +1025,6 @@ DFS
 	} else {
 		chan_ctx->caller_router_is_self = 0;
 	}
-	SU_DEBUG_0(("~~~ send OK\n"));
 	svd_answer(svd, chan, SIP_200_OK);
 __exit:
 DFE
@@ -1198,15 +1192,11 @@ static void
 svd_i_ack( int status, char const * phrase, svd_t * const svd,
 		nua_handle_t * nh, ab_chan_t * chan, sip_t const *sip, tagi_t tags[])
 {
-	// TyTa: обработчик входящего ack
-	SU_DEBUG_0(("~~~ recv ack\n"));
 	if (chan->parent->type == ab_dev_type_VF) {
-		SU_DEBUG_0(("~~~ stop sending invites\n"));
 		if ((svd_chan_t*)(chan->ctx)) {
 			((svd_chan_t*)(chan->ctx))->send_invite = 0;
 		}
 	}
-	SU_DEBUG_0(("~~~ OK\n"));
 }
 
 /**
@@ -1241,7 +1231,6 @@ DFS
 		chan = nua_handle_magic(nh);
 	}
 
-	SU_DEBUG_0(("CALLSTATE NAME : %s\n", nua_callstate_name(ss_state)));
 	SU_DEBUG_4(("CALLSTATE NAME : %s\n", nua_callstate_name(ss_state)));
 
 	if (r_sdp) {
@@ -1808,8 +1797,6 @@ svd_r_invite( int status, char const *phrase, nua_t * nua, svd_t * svd,
 DFS
 	SU_DEBUG_3(("got answer on INVITE: %03d %s\n", status, phrase));
 
-	// TyTa: обработчик ответа на invite
-	SU_DEBUG_0(("~~~ recv respond on invite (%s, %i)\n", status == 200 ? "OK" : "error", status));
 	if (status >= 300) {
 		if (status == 401 || status == 407) {
 			svd_authenticate (svd, nh, sip, tags);
@@ -1827,16 +1814,9 @@ DFS
 		}
 	}
 
-//	if (status == 503 && chan->parent->type == ab_dev_type_VF) {
-//		/* VF pair don't response on invite */
-//		if (((svd_chan_t*)(chan->ctx))->send_invite)
-//			su_timer_set_interval(((svd_chan_t*)(chan->ctx))->vf_tmr, vf_timer_cb, chan, 2000/* 2 sec */); // FIXME: set time to define
-//
-//	}
 
 	if(status == 200){
 		if (chan->parent->type == ab_dev_type_VF && chan->ctx && ((svd_chan_t*)(chan->ctx))->send_invite) {
-			SU_DEBUG_0(("~~~ recv OK, stop sending invites\n"));
 			((svd_chan_t*)(chan->ctx))->send_invite = 0;
 			if (((svd_chan_t*)(chan->ctx))->vf_tmr)
 				su_timer_destroy(((svd_chan_t*)(chan->ctx))->vf_tmr);

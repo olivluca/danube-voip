@@ -116,12 +116,8 @@ struct svd_chan_s
 	su_timer_t * ring_tmr; /**< Ring processing timer. */
 
 	/* VOICE FREQUENCY */
-	enum vf_tmr_request {
-		vf_tmr_nothing=0,
-		vf_tmr_reinvite,
-	} vf_tmr_request;
+	int send_invite;
 	su_timer_t * vf_tmr; /**< VF-chan reinvite timer. */
-	size_t vf_echo_count; // 0: echo replied, >0 - echo still not replied
 
 	/* HOTLINE */
 	unsigned char is_hotlined; /**< Is this channel hotline initiator.*/

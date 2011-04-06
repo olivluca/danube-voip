@@ -50,6 +50,11 @@ svd_i_invite( int status, char const * phrase, svd_t * const svd,
 /** Incoming INVITE has been cancelled.*/
 static void
 svd_i_cancel (nua_handle_t const * const nh, ab_chan_t * const chan);
+static void
+svd_i_ack( int status, char const * phrase, svd_t * const svd,
+		nua_handle_t * nh, ab_chan_t * chan,
+		sip_t const *sip, tagi_t tags[]);
+
 /** Call state has changed.*/
 static void
 svd_i_state (int status, char const *phrase, nua_t * nua,
@@ -174,6 +179,8 @@ DFS
 			svd_i_cancel (nh, chan);
 			break;
 		case nua_i_ack: /*< 3 Final response to INVITE has been ACKed */
+			svd_i_ack (status, phrase, svd, nh, chan, sip, tags);
+			break;
 		case nua_i_fork:	/*< 4 Outgoing call has been forked */
 			break;
 		/* DEPRECATED *****/
@@ -613,7 +620,7 @@ svd_place_vf_for(svd_t * const svd, ab_chan_t * const chan)
 	int i;
 	int err;
 
-	if(curr_rec->is_set && curr_rec->am_i_caller){
+	if(curr_rec->is_set){
 		/* get pair_chan */
 		strcpy (ctx->dial_status.chan_id, curr_rec->pair_chan);
 		/* get pair_route */
@@ -639,7 +646,6 @@ svd_place_vf_for(svd_t * const svd, ab_chan_t * const chan)
 				ctx->dial_status.dest_is_self = self_YES;
 			}
 		}
-
 		/* place a call */
 		if(err || svd_invite(svd, 0, chan)){
 			SU_DEBUG_0 (("ERROR: Can`t place VF-call\n"));
@@ -670,6 +676,7 @@ DFS
 	chans_num = svd->ab->chans_num;
 	for(i=0; i<chans_num; i++){
 		ab_chan_t * curr_chan = &svd->ab->chans[i];
+		((svd_chan_t *)(curr_chan->ctx))->send_invite = 1;
 		err = svd_place_vf_for(svd, curr_chan);
 		if(err){
 			goto __exit_fail;
@@ -811,67 +818,6 @@ DFE
 	return -1;
 }/*}}}*/
 
-static const char *vf_tmr_req_string(enum vf_tmr_request req)
-{
-    switch (req)
-    {
-	case vf_tmr_reinvite:
-            return "reinvite";
-	case vf_tmr_nothing:
-            return "nothing";
-	default:
-            break;
-    }
-    return "unknown";
-}
-
-static int
-vf_timer_set(ab_chan_t *chan, enum vf_tmr_request req)
-{
-    int err;
-    svd_chan_t *svd_chan = (svd_chan_t*)chan->ctx;
-
-    if (svd_chan->vf_tmr_request != req)
-	SU_DEBUG_4(( "%s(): [%02d], req: %s", __FUNCTION__,
-		    chan->abs_idx, vf_tmr_req_string(req) ));
-
-    svd_chan->vf_tmr_request = req;
-
-    // re-set timer anyway
-    // FIXME: use different intervals for different vf_tmr_request
-    err = su_timer_set_interval(svd_chan->vf_tmr, vf_timer_cb, chan,
-				VF_REINVITE_SEC*1000);
-    if (err)
-	SU_DEBUG_2 (("%s(): [%02d]: Can`t RE-set VF-timer: %d\n", __FUNCTION__,
-		     chan->abs_idx, err));
-    return err;
-}
-
-enum VF_ECHO { VF_ECHO_REQUEST, VF_ECHO_REPLY };
-
-static void
-vf_send_echo(ab_chan_t * const chan, enum VF_ECHO echo_type)
-{
-    char pd[128];
-    snprintf(pd, sizeof(pd)-1, "VF[%02d] echo %s\n", chan->abs_idx,
-	     (echo_type == VF_ECHO_REQUEST) ? "request" : "reply");
-
-    // send INFO
-    svd_chan_t *svd_chan = chan->ctx;
-    nua_info(svd_chan->op_handle, SIPTAG_PAYLOAD_STR(pd), TAG_NULL());
-
-    svd_chan->vf_echo_count++;
-    SU_DEBUG_4(( "%s(): echo req count: %zu, %s", __FUNCTION__, svd_chan->vf_echo_count, pd ));
-}
-
-static void
-vf_clean_echo(ab_chan_t * const chan)
-{
-    svd_chan_t *svd_chan = chan->ctx;
-    svd_chan->vf_echo_count = 0;
-    SU_DEBUG_4(("%s(): [%02d]", __FUNCTION__, chan->abs_idx));
-}
-
 /**
  * Place the call for the VF-channel to it`s pair.
  *
@@ -882,32 +828,9 @@ static void
 vf_timer_cb(su_root_magic_t *magic, su_timer_t *t, su_timer_arg_t *arg)
 {/*{{{*/
     ab_chan_t * chan = arg;
-    svd_chan_t *svd_chan = (svd_chan_t*)chan->ctx;
-    int err;
 
-    if (svd_chan->vf_tmr_request != vf_tmr_nothing)
-	SU_DEBUG_4(( "%s() : [%02d], req: %s", __FUNCTION__,
-		    chan->abs_idx, vf_tmr_req_string(svd_chan->vf_tmr_request) ));
-
-    switch (svd_chan->vf_tmr_request)
-    {
-	case vf_tmr_nothing:
-	    vf_timer_set(chan, vf_tmr_nothing);
-	    break;
-	case vf_tmr_reinvite:
-            vf_clean_echo(chan);
-	    err = svd_place_vf_for(g_svd, chan);
-	    if(err){
-		SU_DEBUG_2 (("Can`t RE-invite on VF-pair\n"));
-		vf_timer_set(chan, vf_tmr_reinvite);
-	    }
-	    else
-		vf_timer_set(chan, vf_tmr_nothing);
-	    break;
-	default:
-	    SU_DEBUG_2 (("Unknown vf_tmr_request: %d\n", svd_chan->vf_tmr_request));
-	    vf_timer_set(chan, vf_tmr_nothing);
-    }
+    svd_place_vf_for(g_svd, chan);
+    SU_DEBUG_0(("~~~~~send invite\n"));
 }/*}}}*/
 
 /**
@@ -1075,20 +998,27 @@ DFS
 		goto __exit;
 	}
 
-	/* Reconnect or just drop new handler */
-	if(chan_ctx->call_state == nua_callstate_ready){
-		/* reconnect in any case */
-		/* drop previous connection */
-		ab_chan_media_deactivate (chan);
-		svd_clear_call (svd,chan);
-	} else {
-		/* first call */
-		/* kill if first invite from junior */
-		if(svd_vf_is_elder(chan)){
+	// TyTa: обработчик входящего invite
+	SU_DEBUG_0(("~~~ recv invite\n"));
+	if (chan_ctx->send_invite) {
+		/* if we recieve invite then we sending invites */
+		if (svd_vf_is_elder(chan)) {
+			/* if we are elder, ignore this invite */
+			SU_DEBUG_0(("~~~ we are elder, ignore invite\n"));
 			nua_handle_destroy(nh);
 			goto __exit;
+		} else {
+			/* if we are junior, stop sending invites */
+			SU_DEBUG_0(("~~~ we are junior, stop sending invites\n"));
+			chan_ctx->send_invite = 0;
 		}
 	}
+	if(chan_ctx->call_state == nua_callstate_ready){
+		ab_chan_media_deactivate (chan);
+		svd_clear_call (svd,chan);
+	}
+	if (chan_ctx->op_handle)
+		nua_handle_destroy(chan_ctx->op_handle);
 
 	chan_ctx->op_handle = nh;
 	nua_handle_bind (nh, chan);
@@ -1100,7 +1030,7 @@ DFS
 	} else {
 		chan_ctx->caller_router_is_self = 0;
 	}
-	/* answer */
+	SU_DEBUG_0(("~~~ send OK\n"));
 	svd_answer(svd, chan, SIP_200_OK);
 __exit:
 DFE
@@ -1264,6 +1194,21 @@ DFS
 DFE
 }/*}}}*/
 
+static void
+svd_i_ack( int status, char const * phrase, svd_t * const svd,
+		nua_handle_t * nh, ab_chan_t * chan, sip_t const *sip, tagi_t tags[])
+{
+	// TyTa: обработчик входящего ack
+	SU_DEBUG_0(("~~~ recv ack\n"));
+	if (chan->parent->type == ab_dev_type_VF) {
+		SU_DEBUG_0(("~~~ stop sending invites\n"));
+		if ((svd_chan_t*)(chan->ctx)) {
+			((svd_chan_t*)(chan->ctx))->send_invite = 0;
+		}
+	}
+	SU_DEBUG_0(("~~~ OK\n"));
+}
+
 /**
  * Callback issued for any change in operation state.
  *
@@ -1296,6 +1241,7 @@ DFS
 		chan = nua_handle_magic(nh);
 	}
 
+	SU_DEBUG_0(("CALLSTATE NAME : %s\n", nua_callstate_name(ss_state)));
 	SU_DEBUG_4(("CALLSTATE NAME : %s\n", nua_callstate_name(ss_state)));
 
 	if (r_sdp) {
@@ -1478,14 +1424,7 @@ DFS
 					nua_handle_destroy (ctx->op_handle);
 					ctx->op_handle = NULL;
 				}
-				if(svd_vf_is_elder(chan)){
-					/* reinvite just if it is the elder side */
-					int err = vf_timer_set(chan, vf_tmr_reinvite);
-                                        if (!err)
-					    SU_DEBUG_3 (("[%02d]: set timer on %d sec before reinvite "
-							 "VF-junior\n", chan->abs_idx, VF_REINVITE_SEC));
-
-				}
+				if (ctx->send_invite) su_timer_set_interval(ctx->vf_tmr, vf_timer_cb, chan, 2000/* 2 sec */); // FIXME: set time to define
 			}
 			break;
 		}/*}}}*/
@@ -1869,6 +1808,8 @@ svd_r_invite( int status, char const *phrase, nua_t * nua, svd_t * svd,
 DFS
 	SU_DEBUG_3(("got answer on INVITE: %03d %s\n", status, phrase));
 
+	// TyTa: обработчик ответа на invite
+	SU_DEBUG_0(("~~~ recv respond on invite (%s, %i)\n", status == 200 ? "OK" : "error", status));
 	if (status >= 300) {
 		if (status == 401 || status == 407) {
 			svd_authenticate (svd, nh, sip, tags);
@@ -1885,12 +1826,20 @@ DFS
 			}
 		}
 	}
+
+//	if (status == 503 && chan->parent->type == ab_dev_type_VF) {
+//		/* VF pair don't response on invite */
+//		if (((svd_chan_t*)(chan->ctx))->send_invite)
+//			su_timer_set_interval(((svd_chan_t*)(chan->ctx))->vf_tmr, vf_timer_cb, chan, 2000/* 2 sec */); // FIXME: set time to define
+//
+//	}
+
 	if(status == 200){
-		if(chan->parent->type == ab_dev_type_VF &&
-				chan->ctx && ((svd_chan_t*)(chan->ctx))->vf_tmr){
-			/*connection restored*/
-                        vf_timer_set(chan, vf_tmr_nothing);
-			SU_DEBUG_3(("Connection on chan [%02d] restored\n", chan->abs_idx));
+		if (chan->parent->type == ab_dev_type_VF && chan->ctx && ((svd_chan_t*)(chan->ctx))->send_invite) {
+			SU_DEBUG_0(("~~~ recv OK, stop sending invites\n"));
+			((svd_chan_t*)(chan->ctx))->send_invite = 0;
+			if (((svd_chan_t*)(chan->ctx))->vf_tmr)
+				su_timer_destroy(((svd_chan_t*)(chan->ctx))->vf_tmr);
 		}
 	}
 DFE
@@ -1969,7 +1918,6 @@ DFS
 		svd_chan_t * chan_ctx = chan->ctx;
 		chan_ctx->remote_port = sdp_sess->sdp_media->m_port;
 		chan_ctx->remote_host = su_strdup(svd->home,sdp_connection->c_address);
-
 		chan_ctx->sdp_payload = sdp_sess->sdp_media->m_rtpmaps->rm_pt;
 		memset(chan_ctx->sdp_cod_name, 0, sizeof(chan_ctx->sdp_cod_name));
 		if(strlen(sdp_sess->sdp_media->m_rtpmaps->rm_encoding) <

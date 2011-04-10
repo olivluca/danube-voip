@@ -29,9 +29,9 @@ ab_chan_fax_pass_through_start( ab_chan_t * const chan )
 	memset(&lecConf, 0, sizeof(lecConf));
 
 	/* Configure coder for fax/modem communications */
-	err = ioctl(cfd, IFX_TAPI_ENC_TYPE_SET, IFX_TAPI_COD_TYPE_ALAW);
+//FIXME	err = ioctl(cfd, IFX_TAPI_ENC_TYPE_SET, IFX_TAPI_COD_TYPE_ALAW);
 	if(err != IFX_SUCCESS){
-		ioctl (cfd, FIO_VINETIC_LASTERR, &ab_g_err_extra_value);
+//FIXME		ioctl (cfd, FIO_VINETIC_LASTERR, &ab_g_err_extra_value);
 		ab_err_set(AB_ERR_UNKNOWN, "IFX_TAPI_ENC_TYPE_SET");
 		err_sum++;
 	}
@@ -41,7 +41,7 @@ ab_chan_fax_pass_through_start( ab_chan_t * const chan )
 	jbCfgData.nInitialSize = 120*8; /* 120 ms - optimum buffer size */
 	err = ioctl(cfd, IFX_TAPI_JB_CFG_SET, &jbCfgData);
 	if(err != IFX_SUCCESS){
-		ioctl (cfd, FIO_VINETIC_LASTERR, &ab_g_err_extra_value);
+//FIXME		ioctl (cfd, FIO_VINETIC_LASTERR, &ab_g_err_extra_value);
 		ab_err_set(AB_ERR_UNKNOWN, "IFX_TAPI_JB_CFG_SET");
 		err_sum++;
 	}
@@ -50,7 +50,7 @@ ab_chan_fax_pass_through_start( ab_chan_t * const chan )
 	lecConf.bNlp = IFX_TAPI_LEC_NLP_OFF;
 	err =ioctl(cfd,IFX_TAPI_WLEC_PHONE_CFG_SET,&lecConf);
 	if(err != IFX_SUCCESS){
-		ioctl (cfd, FIO_VINETIC_LASTERR, &ab_g_err_extra_value);
+//FIXME		ioctl (cfd, FIO_VINETIC_LASTERR, &ab_g_err_extra_value);
 		ab_err_set(AB_ERR_UNKNOWN, "IFX_TAPI_WLEC_PHONE_CFG_SET");
 		err_sum++;
 	}
@@ -357,8 +357,8 @@ ab_chan_media_jb_tune( ab_chan_t * const chan, jb_prms_t const * const jbp)
 		jbCfg.nLocalAdpt = IFX_TAPI_JB_LOCAL_ADAPT_OFF;
 	} else if(jbp->jb_loc_adpt == jb_loc_adpt_ON){
 		jbCfg.nLocalAdpt = IFX_TAPI_JB_LOCAL_ADAPT_ON;
-	} else if(jbp->jb_loc_adpt == jb_loc_adpt_SI){
-		jbCfg.nLocalAdpt = IFX_TAPI_JB_LOCAL_ADAPT_SI_ON;
+//	} else if(jbp->jb_loc_adpt == jb_loc_adpt_SI){
+//		jbCfg.nLocalAdpt = IFX_TAPI_JB_LOCAL_ADAPT_SI_ON;
 	}
 	jbCfg.nScaling = jbp->jb_scaling;
 	jbCfg.nInitialSize = jbp->jb_init_sz;

@@ -5,7 +5,7 @@
 #include "ab_err.h"
 
 #include "drv_tapi_io.h"	/* from TAPI_HL_driver */
-#include "vinetic_io.h" 	/* from Vinetic_LL_driver */
+#include "vmmc_io.h" 		/* from Vinetic_LL_driver */
 #include "ab_ioctl.h"		/* from ATA_Board_driver */
 
 #include <sys/ioctl.h>

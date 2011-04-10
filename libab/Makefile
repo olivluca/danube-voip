@@ -1,45 +1,56 @@
+
+
 include $(TOPDIR)/rules.mk
 
-PKG_NAME        = libab
-PKG_VERSION     = 1
-PKG_RELEASE     = 1
+PKG_NAME:=libab
+PKG_VERSION:=1
+PKG_RELEASE:=1
 
-        PKG_DIR = libab
-   PKG_CONF_DIR = $(TOPDIR)/package/$(PKG_NAME)
-    PKG_SRC_DIR = $(PKG_CONF_DIR)/$(PKG_DIR)
-  PKG_BUILD_DIR =    $(BUILD_DIR)/$(PKG_DIR)
+PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
 
-include $(TOPDIR)/package/target-configure-staging-flags.mk
-TARGET_CFLAGS += -I$(BUILD_DIR)/tapi/include
-TARGET_CFLAGS += -I$(BUILD_DIR)/vinetic/include
-TARGET_CFLAGS += -I$(BUILD_DIR)/sgatab
+include $(INCLUDE_DIR)/package.mk
 
-include $(TOPDIR)/package/rules.mk
+define Package/libab
+  SECTION:=libs
+  CATEGORY:=Libraries
+  TITLE:=libab
+  DEPENDS:=+kmod-ltq-tapi +kmod-ltq-vmmc @TARGET_lantiq
+endef  
 
+TARGET_CFLAGS += -I$(STAGING_DIR)/usr/include/drv_tapi -I$(STAGING_DIR)/usr/include/drv_vmmc
 
-$(eval $(call PKG_template,LIBAB,libab,$(PKG_VERSION)-$(PKG_RELEASE),$(ARCH)))
+define Build/Prepare
+	mkdir -p $(PKG_BUILD_DIR)
+	$(CP) ./libab/* $(PKG_BUILD_DIR)/
+endef
 
-$(PKG_BUILD_DIR)/.prepared:
-	rm -rf               $(PKG_BUILD_DIR)
-	cp -a $(PKG_SRC_DIR) $(PKG_BUILD_DIR)
-	touch $@
+define Build/Configure
+endef
 
-$(PKG_BUILD_DIR)/.configured:
-	touch $@
-
-$(PKG_BUILD_DIR)/.built:
+define Build/Compile
 	@echo
 	@echo "BUILD LIBAB..."
 	cd $(PKG_BUILD_DIR) && rm -f *.o *.a
 	cd $(PKG_BUILD_DIR) && $(TARGET_CONFIGURE_OPTS) \
 		$(TARGET_CC) $(TARGET_CFLAGS) \
 		-Wall \
-		ab_hwinit.c \
 		ab_basic.c \
 		ab_line.c \
 		ab_events.c \
 		ab_media.c \
 		-c
 	cd $(PKG_BUILD_DIR) && $(AR) cr libab.a *.o
-	touch $@
+endef
 
+define Build/InstallDev
+	$(INSTALL_DIR) $(1)/usr/include/libab/
+	$(INSTALL_DIR) $(1)/usr/lib/
+	cp $(PKG_BUILD_DIR)/libab.a $(1)/usr/lib/
+	cp $(PKG_BUILD_DIR)/*.h $(1)/usr/include/libab/
+endef
+	
+define Package/libab/install
+	echo "INSTALL"
+endef
+
+$(eval $(call BuildPackage,libab))

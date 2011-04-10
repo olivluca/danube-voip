@@ -292,7 +292,7 @@ ab_FXO_line_digit (ab_chan_t * const chan, char const data_length,
 		dialCfg.nDigitPlayTime = nDigitPlayTime;
 	}
 
-	dialCfg.pulseMode = pulseMode;
+//FIXME	dialCfg.pulseMode = pulseMode;  No tenemos FXO
 
 	err = err_set_ioctl( chan, IFX_TAPI_FXO_DIAL_CFG_SET, (int)&dialCfg, 
 			"Try to configure dial params (ioctl)");

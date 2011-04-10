@@ -24,7 +24,7 @@ enum jb_type_e {/*{{{*/
 enum jb_loc_adpt_e {/*{{{*/
 	jb_loc_adpt_OFF, 
 	jb_loc_adpt_ON, 
-	jb_loc_adpt_SI /**< local adaptation on with sample interpollation */
+//	jb_loc_adpt_SI /**< local adaptation on with sample interpollation */
 };/*}}}*/
 struct jb_prms_s {/*{{{*/
 	enum jb_type_e     jb_type;		/**< JB type */
@@ -288,15 +288,15 @@ extern int ab_g_err_extra_value;
 #define AB_FW_CRAM_VFT4_NAME "/lib/firmware/cramfw_vft4.bin"
 
 /** Basic drivers loading and hardware initialization */
-int ab_hardware_init (enum vf_type_e * const types, int const flags);
+// int ab_hardware_init (enum vf_type_e * const types, int const flags);
 /** Create the ab_t object */
 ab_t* ab_create (void);
 /** Destroy the ab_t object */
 void ab_destroy (ab_t ** ab);
 /** Init channel with given CRAM file */
-int ab_chan_cram_init (ab_chan_t const * const chan, char const * const path);
+//int ab_chan_cram_init (ab_chan_t const * const chan, char const * const path);
 /** Init device gpio with given channel types */
-int ab_devs_vf_gpio_reset (ab_t const * const ab);
+//int ab_devs_vf_gpio_reset (ab_t const * const ab);
 /** @} */
 /*}}}*/
 

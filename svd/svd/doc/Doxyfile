@@ -38,7 +38,7 @@ PROJECT_NUMBER         =
 # If a relative path is entered, it will be relative to the location 
 # where doxygen was started. If left blank the current directory will be used.
 
-OUTPUT_DIRECTORY       = /home/vlad/openwrt/trunk/openwrt-midge/package/oem-voip/files/src/svd/doc
+#OUTPUT_DIRECTORY       = /home/vlad/openwrt/trunk/openwrt-midge/package/oem-voip/files/src/svd/doc
 
 # If the CREATE_SUBDIRS tag is set to YES, then doxygen will create 
 # 4096 sub-directories (in 2 levels) under the output directory of each output 
@@ -124,7 +124,7 @@ FULL_PATH_NAMES        = YES
 # If left blank the directory from which doxygen is run is used as the 
 # path to strip.
 
-STRIP_FROM_PATH        = /home/vlad/openwrt/trunk/openwrt-midge/package/oem-voip/files/src/svd/doc/
+#STRIP_FROM_PATH        = /home/vlad/openwrt/trunk/openwrt-midge/package/oem-voip/files/src/svd/doc/
 
 # The STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of 
 # the path mentioned in the documentation of a class, which tells 
@@ -574,7 +574,7 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = /home/vlad/openwrt/trunk/openwrt-midge/package/oem-voip/files/src/svd/src
+INPUT                  = ../src
 
 # This tag can be used to specify the character encoding of the source files 
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is 

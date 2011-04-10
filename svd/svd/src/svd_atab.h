@@ -18,8 +18,6 @@ int svd_atab_create (svd_t * const svd);
 void svd_atab_delete (svd_t * svd);
 /** Clears call params that has been set during dial process.*/
 void svd_clear_call(svd_t * const svd, ab_chan_t * const chan);
-/** Found first free fxo channel.*/
-int get_FF_FXO_idx ( ab_t const * const ab, char const self_chan_idx );
 /** Found first free fxs channel.*/
 int get_FF_FXS_idx ( ab_t const * const ab, char const self_chan_idx );
 /** @}*/
@@ -33,7 +31,7 @@ int svd_media_register (svd_t * const svd, ab_chan_t * const chan);
 /** Close RTP-socket and destroy the callback timers in root.*/
 void svd_media_unregister (svd_t * const svd, ab_chan_t * const chan);
 /** Re-SO_BINDTODEVICE on rtp-socket of the channel.*/
-int svd_media_vinetic_rtp_sock_rebinddev (svd_chan_t * const ctx);
+int svd_media_tapi_rtp_sock_rebinddev (svd_chan_t * const ctx);
 /** Start encoding / decoding on given channel.*/
 int ab_chan_media_activate ( ab_chan_t * const chan );
 /** Stop encoding / decoding on given channel.*/

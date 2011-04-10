@@ -17,8 +17,6 @@
  *  @ingroup UA_MAIN
  *  User Agent Client actions.
  *  @{*/
-/** Make INVITE SIP request.*/
-int  svd_invite (svd_t * const svd, int const use_ff_FXO, ab_chan_t * const chan);
 /** Make INVITE SIP request with given destination address.*/
 int  svd_invite_to (svd_t * const svd, int const chan_idx,
 		char const * const to_str);
@@ -31,8 +29,6 @@ void svd_bye (svd_t * const svd, ab_chan_t * const chan);
 void svd_refresh_registration (svd_t * const svd);
 /** Shutdown SIP stack.*/
 void svd_shutdown (svd_t * const svd);
-/** Place VF-calls.*/
-int svd_place_vf (svd_t * const svd);
 /** @}*/
 
 
@@ -42,7 +38,7 @@ int svd_place_vf (svd_t * const svd);
  *  @{*/
 /** Callback for react on SIP events.*/
 void svd_nua_callback (nua_event_t  event,int status,char const * phrase,
-		nua_t * nua, svd_t * svd, nua_handle_t * nh, ab_chan_t * chan,
+		nua_t * nua, svd_t * svd, nua_handle_t * nh, sip_account_t * account,
 		sip_t const * sip, tagi_t tags[]);
 /** @}*/
 

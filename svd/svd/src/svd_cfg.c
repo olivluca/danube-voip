@@ -60,7 +60,7 @@ static unsigned char g_err_no;
 #define CONF_JB_TYPE_ADAPTIVE "adaptive"
 #define CONF_JB_LOC_OFF "off"
 #define CONF_JB_LOC_ON "on"
-#define CONF_JB_LOC_SI "SI"
+//#define CONF_JB_LOC_SI "SI"
 #define CONF_VAD_ON "on"
 #define CONF_VAD_NOVAD "off"
 #define CONF_VAD_G711 "g711"
@@ -71,12 +71,9 @@ static unsigned char g_err_no;
 #define CONF_WLEC_TYPE_NFE "NFE"
 #define CONF_WLEC_NLP_ON   "on"
 #define CONF_WLEC_NLP_OFF  "off"
-#define CONF_FXO_PULSE   "pulse"
-#define CONF_FXO_TONE    "tone"
-#define CONF_VF_TRANSIT "transit"
-#define CONF_VF_NORMAL  "normal"
-#define CONF_VF_2_WIRED "2w"
-#define CONF_VF_4_WIRED "4w"
+/*First "real" codec (index 0 in various arrays)*/
+#define CODEC_BASE cod_type_ALAW
+
 /** @}*/
 
 /** @defgroup CFG_IF Config internal functions.
@@ -87,24 +84,20 @@ static unsigned char g_err_no;
 static int self_values_init (void);
 /** Init codec_t from rec_set. */
 static void init_codec_el(struct config_setting_t const * const rec_set,
-		int const prms_offset, codec_t * const cod);
+		int const line);
 /** Init main configuration.*/
 static int main_init (ab_t const * const ab);
-/** Init fxo channels parameters.*/
-static int fxo_init (ab_t const * const ab);
-/** Init route table configuration.*/
-static int routet_init (void);
+/** Read sip accounts.*/
+static int sip_init (ab_t const * const ab);
 /** Init AUDIO parameters configuration.*/
 static int audio_init (void);
 /** Init WLEC parameters configuration.*/
 static int wlec_init (ab_t const * const ab);
-/** Init voice frequency channels configuration.*/
-static int voicef_init (ab_t const * const ab);
-/** Init hot line configuration.*/
-static int hotline_init (ab_t const * const ab);
-/** Init addres book configuration.*/
-static int addressb_init (void);
-/** Init internal, external and fax codecs configuration.*/
+/** Init dialplan configuration.*/
+static int dialplan_init (void);
+/** Initilize codecs parameters structure */
+static int svd_init_cod_params( cod_prms_t * const cp );
+/** Init codecs definitions.*/
 static int codecs_init (void);
 /** Print error message if something occures.*/
 static void error_message (void);
@@ -218,16 +211,14 @@ svd_conf_init( ab_t const * const ab )
 {/*{{{*/
 	/* default presets */
 	memset (&g_conf, 0, sizeof(g_conf));
-	strcpy (g_conf.lo_ip, "127.0.0.1");
+	strcpy (g_conf.lo_ip, "192.168.10.168");  //FIXME
+	g_conf.self_ip=g_conf.lo_ip;
 	if(		main_init (ab) 	||
-			fxo_init (ab)	||
-			routet_init()	||
+			codecs_init()	||
+			sip_init (ab)	||
 			audio_init()	||
 			wlec_init (ab)	||
-			voicef_init(ab) ||
-			hotline_init(ab) ||
-			addressb_init()	||
-			codecs_init()
+			dialplan_init()
 			){
 		goto __exit_fail;
 	}
@@ -249,15 +240,13 @@ __exit_fail:
 void
 conf_show( void )
 {/*{{{*/
-	struct adbk_record_s * curr_ab_rec;
-	struct hot_line_s    * curr_hl_rec;
-	struct rttb_record_s * curr_rt_rec;
-	struct voice_freq_s  * curr_vf_rec;
+	struct dplan_record_s * curr_dp_rec;
+	struct sip_account_s  * curr_sip_rec;
 	int i;
 	int j;
 
 	SU_DEBUG_3(("=========================\n"));
-	SU_DEBUG_3(("%s[%s] : ", g_conf.self_number, g_conf.self_ip));
+	SU_DEBUG_3(("%s[%s] channels %d : ", g_conf.self_number, g_conf.self_ip, g_conf.channels));
 	SU_DEBUG_3(("log["));
 
 	if( g_conf.log_level == -1 ){
@@ -269,47 +258,56 @@ conf_show( void )
 			g_conf.rtp_port_first,
 			g_conf.rtp_port_last));
 
-	for (i=0; g_conf.int_codecs[i].type != cod_type_NONE; i++){
-		SU_DEBUG_3(("t:%d/sz%d/pt:0x%X__[%d:%d]::[%d:%d:%d:%d]\n",
-				g_conf.int_codecs[i].type,
-				g_conf.int_codecs[i].pkt_size,
-				g_conf.int_codecs[i].user_payload,
-				g_conf.int_codecs[i].jb.jb_type,
-				g_conf.int_codecs[i].jb.jb_loc_adpt,
-				g_conf.int_codecs[i].jb.jb_scaling,
-				g_conf.int_codecs[i].jb.jb_init_sz,
-				g_conf.int_codecs[i].jb.jb_min_sz,
-				g_conf.int_codecs[i].jb.jb_max_sz
+	for (i=0; g_conf.codecs[i].type != cod_type_NONE; i++){
+		SU_DEBUG_3(("t:%s/sz%d/pt:0x%X__[%d:%d]::[%d:%d:%d:%d]\n",
+				g_conf.cp[g_conf.codecs[i].type-CODEC_BASE].sdp_name,
+				g_conf.codecs[i].pkt_size,
+				g_conf.codecs[i].user_payload,
+				g_conf.codecs[i].jb.jb_type,
+				g_conf.codecs[i].jb.jb_loc_adpt,
+				g_conf.codecs[i].jb.jb_scaling,
+				g_conf.codecs[i].jb.jb_init_sz,
+				g_conf.codecs[i].jb.jb_min_sz,
+				g_conf.codecs[i].jb.jb_max_sz
 				));
 	}
 
-	SU_DEBUG_3(("SIP net : %d\n",g_conf.sip_set.all_set));
-	if(g_conf.sip_set.all_set){
-		SU_DEBUG_3((	"\tCodecs:\n"));
-		for (i=0; g_conf.sip_set.ext_codecs[i].type != cod_type_NONE; i++){
-			SU_DEBUG_3(("t:%d/sz%d/pt:0x%X__[%d:%d]::[%d:%d:%d:%d]\n",
-					g_conf.sip_set.ext_codecs[i].type,
-					g_conf.sip_set.ext_codecs[i].pkt_size,
-					g_conf.sip_set.ext_codecs[i].user_payload,
-					g_conf.sip_set.ext_codecs[i].jb.jb_type,
-					g_conf.sip_set.ext_codecs[i].jb.jb_loc_adpt,
-					g_conf.sip_set.ext_codecs[i].jb.jb_scaling,
-					g_conf.sip_set.ext_codecs[i].jb.jb_init_sz,
-					g_conf.sip_set.ext_codecs[i].jb.jb_min_sz,
-					g_conf.sip_set.ext_codecs[i].jb.jb_max_sz
+	for (i=0; i<g_conf.sip_accounts; i++) {
+		curr_sip_rec = &g_conf.sip_account[i];  
+		SU_DEBUG_3(("SIP net %d : %d\n", i, curr_sip_rec->all_set));
+		if(curr_sip_rec->all_set){
+			SU_DEBUG_3((	"\tCodecs:\t"));
+			for (j=0; curr_sip_rec->codecs[j] != cod_type_NONE; j++){
+			      SU_DEBUG_3(("%s ",
+					g_conf.cp[curr_sip_rec->codecs[j]-CODEC_BASE].sdp_name
 					));
-		}
+			}
+			SU_DEBUG_3(("\n"));
 
-		SU_DEBUG_3((	"\tRegistRar   : '%s'\n"
-				"\tUser/Pass   : '%s/%s'\n"
-				"\tUser_URI    : '%s'\n"
-				"\tSIP_channel : '%d'\n",
-				g_conf.sip_set.registrar,
-				g_conf.sip_set.user_name,
-				g_conf.sip_set.user_pass,
-				g_conf.sip_set.user_URI,
-				g_conf.sip_set.sip_chan));
-	}
+			SU_DEBUG_3((	"\tRegistrar   : '%s'\n"
+					"\tUser/Pass   : '%s/%s'\n"
+					"\tUser_URI    : '%s'\n",
+					curr_sip_rec->registrar,
+					curr_sip_rec->user_name,
+					curr_sip_rec->user_pass,
+					curr_sip_rec->user_URI));
+					
+			SU_DEBUG_3((	"\tRing incoming:\n"));
+			for (j=0; j<g_conf.channels; j++){
+			      SU_DEBUG_3(("\t\tchannel %d:%d\n",
+					j,  
+					curr_sip_rec->ring_incoming[j]
+					));
+			}
+			SU_DEBUG_3((	"\tOutgoing priority:\n"));
+			for (j=0; j<g_conf.channels; j++){
+			      SU_DEBUG_3(("\t\tchannel %d:%d\n",
+					j,  
+					curr_sip_rec->outgoing_priority[j]
+					));
+			}
+		}
+	}	
 
 	/* RTP parameters *//*
 	for (i=0; i<CHANS_MAX; i++){
@@ -325,56 +323,17 @@ conf_show( void )
 	}
 	*/
 
-	if(g_conf.address_book.records_num){
-		SU_DEBUG_3(("AddressBook :\n"));
-	}
-	j = g_conf.address_book.records_num;
-	for(i = 0; i < j; i++){
-		curr_ab_rec = &g_conf.address_book.records[ i ];
-		SU_DEBUG_3(("\t%d/\"%s\" : %s\n",
-				i+1, curr_ab_rec->id, curr_ab_rec->value));
-	}
-
-	SU_DEBUG_3(("HotLine :\n"));
-	for(i=0; i<CHANS_MAX; i++){
-		curr_hl_rec = &g_conf.hot_line[ i ];
-		if(curr_hl_rec->is_set){
-			SU_DEBUG_3(("\t%d : %s\n", i, curr_hl_rec->value ));
+	if(g_conf.dial_plan.records_num){
+		SU_DEBUG_3(("Dial plan :\n"));
+	
+		j = g_conf.dial_plan.records_num;
+		for(i = 0; i < j; i++){
+			curr_dp_rec = &g_conf.dial_plan.records[ i ];
+			SU_DEBUG_3(("\tPrefix \"%s\", Replace \"%s\", Account %d\n",
+					curr_dp_rec->prefix, curr_dp_rec->replace, curr_dp_rec->account));
 		}
 	}
 
-	SU_DEBUG_3(("VoiceF :\n"));
-	for(i=0; i<CHANS_MAX; i++){
-		curr_vf_rec = &g_conf.voice_freq[ i ];
-		if( !curr_vf_rec->is_set){
-			continue;
-		}
-		SU_DEBUG_3(("t%d/s%d/up%d__[%d:%d]::[%d:%d:%d:%d]__",
-				curr_vf_rec->vf_codec.type,
-				curr_vf_rec->vf_codec.pkt_size,
-				curr_vf_rec->vf_codec.user_payload,
-				curr_vf_rec->vf_codec.jb.jb_type,
-				curr_vf_rec->vf_codec.jb.jb_loc_adpt,
-				curr_vf_rec->vf_codec.jb.jb_scaling,
-				curr_vf_rec->vf_codec.jb.jb_init_sz,
-				curr_vf_rec->vf_codec.jb.jb_min_sz,
-				curr_vf_rec->vf_codec.jb.jb_max_sz
-				));
-
-		SU_DEBUG_3(("i%d/id\"%s\":%s:%s/aic_%d\n",
-				i, curr_vf_rec->id,
-				curr_vf_rec->pair_route, curr_vf_rec->pair_chan,
-				curr_vf_rec->am_i_caller));
-	}
-	if(g_conf.route_table.records_num){
-		SU_DEBUG_3(("RouteTable :\n"));
-	}
-	j = g_conf.route_table.records_num;
-	for(i = 0; i < j; i++){
-		curr_rt_rec = &g_conf.route_table.records[ i ];
-		SU_DEBUG_3(("\t%d/\"%s\" : %s\n",
-				i+1, curr_rt_rec->id, curr_rt_rec->value));
-	}
 	SU_DEBUG_3(("=========================\n"));
 }/*}}}*/
 
@@ -386,43 +345,39 @@ svd_conf_destroy (void)
 {/*{{{*/
 	int i;
 	int j;
-	struct hot_line_s * curr_rec;
+	struct dplan_record_s * dplan_rec;
+	struct sip_account_s  * account;
 
-	j = g_conf.address_book.records_num;
+	j = g_conf.dial_plan.records_num;
 	if (j){
-		struct adbk_record_s * curr_rec;
 		for(i = 0; i < j; i++){
-			curr_rec = &g_conf.address_book.records[ i ];
-			if (curr_rec->id && curr_rec->id != curr_rec->id_s){
-				free (curr_rec->id);
-			}
-			if (curr_rec->value &&
-					curr_rec->value != curr_rec->value_s){
-				free (curr_rec->value);
-			}
+			dplan_rec = &g_conf.dial_plan.records[ i ];
+			if (dplan_rec->prefix)
+				free (dplan_rec->prefix);
+			if (dplan_rec->replace)
+				free (dplan_rec->replace);
 		}
-		free (g_conf.address_book.records);
+		free (g_conf.dial_plan.records);
 	}
-
-	for(i=0; i<CHANS_MAX; i++){
-		curr_rec = &g_conf.hot_line[ i ];
-		if (curr_rec->value && (curr_rec->value != curr_rec->value_s)){
-			free (curr_rec->value);
-		}
-	}
-
-	j = g_conf.route_table.records_num;
+	
+	j = g_conf.sip_accounts;
 	if (j){
-		struct rttb_record_s * curr_rec;
 		for(i = 0; i < j; i++){
-			curr_rec = &g_conf.route_table.records[ i ];
-			if (curr_rec->id && curr_rec->id != curr_rec->id_s){
-				free (curr_rec->id);
-			}
+			account = &g_conf.sip_account[ i ];
+			if (account->registrar)
+				free (account->registrar);
+			if (account->user_name)
+				free (account->user_name);
+			if (account->user_pass)
+				free (account->user_pass);
+			if (account->user_URI)
+				free (account->user_URI);
+			if (account->sip_domain)
+				free (account->sip_domain);
 		}
-		free (g_conf.route_table.records);
+		free (g_conf.sip_account);
 	}
-
+	
 	memset(&g_conf, 0, sizeof(g_conf));
 }/*}}}*/
 
@@ -434,7 +389,7 @@ svd_conf_destroy (void)
  * 	\c cp should be a pointer on the allocated memory for \c COD_MAS_SIZE
  * 	elements.
  */
-int
+static int
 svd_init_cod_params( cod_prms_t * const cp )
 {/*{{{*/
 	int i;
@@ -444,45 +399,45 @@ svd_init_cod_params( cod_prms_t * const cp )
 		cp[i].type = cod_type_NONE;
 	}
 
-	i=0;
 
 	/* G711 ALAW parameters. */
+	i=cod_type_ALAW-CODEC_BASE;
 	cp[i].type = cod_type_ALAW;
 	if(strlen("PCMA") >= COD_NAME_LEN){
 		goto __exit_fail;
 	}
 	strcpy(cp[i].sdp_name, "PCMA");
 	cp[i].rate = 8000;
-	i++;
 
 	/* G729 parameters. */
+	i=cod_type_G729-CODEC_BASE;
 	cp[i].type = cod_type_G729;
 	if(strlen("G729") >= COD_NAME_LEN){
 		goto __exit_fail;
 	}
 	strcpy(cp[i].sdp_name, "G729");
 	cp[i].rate = 8000;
-	i++;
 
 	/* G729E parameters. */
+	i=cod_type_G729E-CODEC_BASE;
 	cp[i].type = cod_type_G729E;
 	if(strlen("G729E") >= COD_NAME_LEN){
 		goto __exit_fail;
 	}
 	strcpy(cp[i].sdp_name, "G729E");
 	cp[i].rate = 8000;
-	i++;
 
 	/* G723 parameters. */
+	i=cod_type_G723-CODEC_BASE;
 	cp[i].type = cod_type_G723;
 	if(strlen("G723") >= COD_NAME_LEN){
 		goto __exit_fail;
 	}
 	strcpy(cp[i].sdp_name, "G723");
 	cp[i].rate = 8000;
-	i++;
 
 	/* iLBC_133 parameters. */
+	i=cod_type_ILBC_133-CODEC_BASE;
 	cp[i].type = cod_type_ILBC_133;
 	if(     strlen("iLBC") >= COD_NAME_LEN ||
 			strlen("mode=30") >= FMTP_STR_LEN){
@@ -491,7 +446,6 @@ svd_init_cod_params( cod_prms_t * const cp )
 	strcpy(cp[i].sdp_name, "iLBC");
 	strcpy(cp[i].fmtp_str, "mode=30");
 	cp[i].rate = 8000;
-	i++;
 
 	/* iLBC_152 parameters.
 	cp[i].type = cod_type_ILBC_152;
@@ -506,33 +460,34 @@ svd_init_cod_params( cod_prms_t * const cp )
 	*/
 
 	/* G726_16 parameters. */
+	i=cod_type_G726_16-CODEC_BASE;
 	cp[i].type = cod_type_G726_16;
 	if(strlen("G726-16") >= COD_NAME_LEN){
 		goto __exit_fail;
 	}
 	strcpy(cp[i].sdp_name, "G726-16");
 	cp[i].rate = 8000;
-	i++;
 
 	/* G726_ parameters. */
+	i=cod_type_G726_24-CODEC_BASE;
 	cp[i].type = cod_type_G726_24;
 	if(strlen("G726-24") >= COD_NAME_LEN){
 		goto __exit_fail;
 	}
 	strcpy(cp[i].sdp_name, "G726-24");
 	cp[i].rate = 8000;
-	i++;
 
 	/* G726_ parameters. */
+	i=cod_type_G726_32-CODEC_BASE;
 	cp[i].type = cod_type_G726_32;
 	if(strlen("G726-32") >= COD_NAME_LEN){
 		goto __exit_fail;
 	}
 	strcpy(cp[i].sdp_name, "G726-32");
 	cp[i].rate = 8000;
-	i++;
 
 	/* G726_ parameters. */
+	i=cod_type_G726_40-CODEC_BASE;
 	cp[i].type = cod_type_G726_40;
 	if(strlen("G726-40") >= COD_NAME_LEN){
 		goto __exit_fail;
@@ -557,6 +512,8 @@ __exit_fail:
 static int
 self_values_init( void )
 {/*{{{*/
+#warning FIX self_values_init
+#if 0
 	char ** addrmas = NULL;
 	int addrs_count;
 	int route_records_num;
@@ -623,13 +580,31 @@ self_values_init( void )
 				"No interfaces found with ip from route table")));
 		goto __exit_fail;
 	}
+#endif
 	return 0;
 __exit_fail:
 	return -1;
+	
 }/*}}}*/
 
 /**
- * Initilize one codec element from appropriate config setting.
+ * Converts a string representation of a codec name to a codec type.
+ *
+ * \param[in] name name of the codec.
+ * \retval  codec type (cod_type_NONE if name doesn't match any codec)
+ */
+static int get_codec_type(const char *name)
+{
+	int i;
+	
+	for (i=0; g_conf.cp[i].type != cod_type_NONE; i++)
+		if (!strcasecmp(name, g_conf.cp[i].sdp_name))
+			return (g_conf.cp[i].type);
+	return(cod_type_NONE);
+ }
+
+/**
+ * Overrides one codec element from appropriate config setting.
  *
  * \param[in] rec_set config setting.
  * \param[in] prms_offset from there starts the codec params in offset.
@@ -637,39 +612,26 @@ __exit_fail:
  */
 static void
 init_codec_el(struct config_setting_t const *const rec_set,
-		int const prms_offset, codec_t *const cod)
+		int const line)
 {/*{{{*/
 	char const * codel = NULL;
 	float scal;
+	int codec_type;
+	codec_t * cod;
 
 	/* codec type */
-	codel = config_setting_get_string_elem (rec_set, prms_offset);
-	if       ( !strcmp(codel, CONF_CODEC_G729)){
-		cod->type = cod_type_G729;
-	} else if( !strcmp(codel, CONF_CODEC_ALAW)){
-		cod->type = cod_type_ALAW;
-	} else if( !strcmp(codel, CONF_CODEC_G723)){
-		cod->type = cod_type_G723;
-	} else if( !strcmp(codel, CONF_CODEC_ILBC133)){
-		cod->type = cod_type_ILBC_133;
-		/*
-	} else if( !strcmp(codel, CONF_CODEC_ILBC152)){
-		cod->type = cod_type_ILBC_152;
-		*/
-	} else if( !strcmp(codel, CONF_CODEC_G729E)){
-		cod->type = cod_type_G729E;
-	} else if( !strcmp(codel, CONF_CODEC_G72616)){
-		cod->type = cod_type_G726_16;
-	} else if( !strcmp(codel, CONF_CODEC_G72624)){
-		cod->type = cod_type_G726_24;
-	} else if( !strcmp(codel, CONF_CODEC_G72632)){
-		cod->type = cod_type_G726_32;
-	} else if( !strcmp(codel, CONF_CODEC_G72640)){
-		cod->type = cod_type_G726_40;
-	}
+	codel = config_setting_get_string_elem (rec_set, 0);
+	codec_type = get_codec_type(codel);
+	if (codec_type == cod_type_NONE) {
+		SU_DEBUG_0(("Wrong codec name \"%s\" in definition %d\n",
+				codel, line-1));
+		return;		
+	}  
+	
+	cod=&g_conf.codecs[codec_type];
 
 	/* codec packet size */
-	codel = config_setting_get_string_elem (rec_set, prms_offset+1);
+	codel = config_setting_get_string_elem (rec_set, 1);
 	if       ( !strcmp(codel, "2.5")){
 		cod->pkt_size = cod_pkt_size_2_5;
 	} else if( !strcmp(codel, "5")){
@@ -693,10 +655,10 @@ init_codec_el(struct config_setting_t const *const rec_set,
 	}
 
 	/* codec payload type */
-	cod->user_payload = config_setting_get_int_elem (rec_set, prms_offset+2);
+	cod->user_payload = config_setting_get_int_elem (rec_set, 2);
 
 	/* codec bitpack */
-	codel = config_setting_get_string_elem (rec_set, prms_offset+3);
+	codel = config_setting_get_string_elem (rec_set, 3);
 	if       ( !strcmp(codel, CONF_CODEC_BITPACK_RTP)){
 		cod->bpack = bitpack_RTP;
 	} else if( !strcmp(codel, CONF_CODEC_BITPACK_AAL2)){
@@ -704,7 +666,7 @@ init_codec_el(struct config_setting_t const *const rec_set,
 	}
 
 	/* jb type */
-	codel = config_setting_get_string_elem (rec_set, prms_offset+4);
+	codel = config_setting_get_string_elem (rec_set, 4);
 	if       ( !strcmp(codel, CONF_JB_TYPE_FIXED)){
 		cod->jb.jb_type = jb_type_FIXED;
 	} else if( !strcmp(codel, CONF_JB_TYPE_ADAPTIVE)){
@@ -712,19 +674,19 @@ init_codec_el(struct config_setting_t const *const rec_set,
 	}
 
 	/* local adaptation type */
-	codel = config_setting_get_string_elem (rec_set, prms_offset+5);
+	codel = config_setting_get_string_elem (rec_set, 5);
 	if       ( !strcmp(codel, CONF_JB_LOC_OFF)){
 		cod->jb.jb_loc_adpt = jb_loc_adpt_OFF;
 	} else if( !strcmp(codel, CONF_JB_LOC_ON)){
 		cod->jb.jb_loc_adpt = jb_loc_adpt_ON;
-	} else if( !strcmp(codel, CONF_JB_LOC_SI)){
-		cod->jb.jb_loc_adpt = jb_loc_adpt_SI;
+//	} else if( !strcmp(codel, CONF_JB_LOC_SI)){
+//		cod->jb.jb_loc_adpt = jb_loc_adpt_SI;
 	}
 
 	/* scaling factor */
-	scal = config_setting_get_float_elem(rec_set, prms_offset+6);
+	scal = config_setting_get_float_elem(rec_set, 6);
 	if((int)scal == 0){
-		cod->jb.jb_scaling = config_setting_get_int_elem(rec_set,prms_offset+6)*16;
+		cod->jb.jb_scaling = config_setting_get_int_elem(rec_set,6)*16;
 	} else {
 		cod->jb.jb_scaling = scal * 16;
 	}
@@ -733,9 +695,9 @@ init_codec_el(struct config_setting_t const *const rec_set,
 	}
 
 	/* buffer limitations */
-	cod->jb.jb_init_sz= config_setting_get_int_elem(rec_set, prms_offset+7)*8;
-	cod->jb.jb_min_sz = config_setting_get_int_elem(rec_set, prms_offset+8)*8;
-	cod->jb.jb_max_sz = config_setting_get_int_elem(rec_set, prms_offset+9)*8;
+	cod->jb.jb_init_sz= config_setting_get_int_elem(rec_set, 7)*8;
+	cod->jb.jb_min_sz = config_setting_get_int_elem(rec_set, 8)*8;
+	cod->jb.jb_max_sz = config_setting_get_int_elem(rec_set, 9)*8;
 }/*}}}*/
 
 /**
@@ -746,13 +708,21 @@ init_codec_el(struct config_setting_t const *const rec_set,
  * \retval 0 success.
  * \retval -1 fail.
  */
+static int my_config_lookup_int(const config_t *config, const char *path)
+{
+
+  int r;
+  if (config_lookup_int(config, path, &r)==CONFIG_TRUE) return r;
+  else return 0;
+}
+ 
 static int
 main_init( ab_t const * const ab )
 {/*{{{*/
 	struct config_t cfg;
-	char const * str_elem = NULL;
 	int err;
 
+	g_conf.channels = 2; //FIXME
 	config_init (&cfg);
 
 	/* Load the file */
@@ -764,59 +734,16 @@ main_init( ab_t const * const ab )
 	}
 
 	/* log */
-	g_conf.log_level = config_lookup_int (&cfg, "log");
+	g_conf.log_level = my_config_lookup_int (&cfg, "log");
 
 	/* rtp_port_first/last */
-	g_conf.rtp_port_first = config_lookup_int (&cfg, "rtp_port_first");
-	g_conf.rtp_port_last = config_lookup_int (&cfg, "rtp_port_last");
+	g_conf.rtp_port_first = my_config_lookup_int (&cfg, "rtp_port_first");
+	g_conf.rtp_port_last = my_config_lookup_int (&cfg, "rtp_port_last");
 
 	/* tos */
-	g_conf.sip_tos = config_lookup_int (&cfg, "sip_tos");
-	g_conf.rtp_tos = config_lookup_int (&cfg, "rtp_tos");
+	g_conf.sip_tos = my_config_lookup_int (&cfg, "sip_tos");
+	g_conf.rtp_tos = my_config_lookup_int (&cfg, "rtp_tos");
 
-	/* SIP settings */
-	g_conf.sip_set.all_set = 0;
-
-	/* app.sip_registrar */
-	str_elem = config_lookup_string (&cfg, "sip_registrar");
-	if( !str_elem ){
-		goto __exit_success;
-	}
-	strncpy (g_conf.sip_set.registrar, str_elem, REGISTRAR_LEN);
-
-	/* app.sip_username */
-	str_elem = config_lookup_string (&cfg, "sip_username");
-	if( !str_elem ){
-		goto __exit_success;
-	}
-	strncpy (g_conf.sip_set.user_name, str_elem, USER_NAME_LEN);
-
-	/* app.sip_password */
-	str_elem = config_lookup_string (&cfg, "sip_password");
-	if( !str_elem ){
-		goto __exit_success;
-	}
-	strncpy (g_conf.sip_set.user_pass, str_elem, USER_PASS_LEN);
-
-	/* app.sip_uri */
-	str_elem = config_lookup_string (&cfg, "sip_uri");
-	if( !str_elem ){
-		goto __exit_success;
-	}
-	strncpy (g_conf.sip_set.user_URI, str_elem, USER_URI_LEN);
-
-	/* app.sip_chan */
-	g_conf.sip_set.sip_chan = config_lookup_int (&cfg, "sip_chan");
-	if((!ab->pchans[g_conf.sip_set.sip_chan]) ||
-		(ab->pchans[g_conf.sip_set.sip_chan]->parent->type != ab_dev_type_FXS)){
-		SU_DEBUG_2(("ATTENTION!! [%02d] is not FXS, as in %s.. "
-				"EXIT\n", g_conf.sip_set.sip_chan, MAIN_CONF_NAME));
-		goto __exit_fail;
-	}
-
-	g_conf.sip_set.all_set = 1;
-
-__exit_success:
 	config_destroy (&cfg);
 	return 0;
 __exit_fail:
@@ -825,625 +752,225 @@ __exit_fail:
 }/*}}}*/
 
 /**
- * Init`s fxo settings in main routine configuration \ref g_conf structure.
+ * Read sip accounts.
+ *
+ * \param[in] ab ata-board hardware structure.
  *
  * \retval 0 success.
  * \retval -1 fail.
  */
-static int
-fxo_init( ab_t const * const ab )
+ static int
+sip_init( ab_t const * const ab )
 {/*{{{*/
 	struct config_t cfg;
 	struct config_setting_t * set;
 	struct config_setting_t * rec_set;
-	enum pstn_type_e * curr_rec;
-	char const * elem;
-	int rec_num;
-	int i;
+	struct config_setting_t * rec_subset;
+	int codec_type;
+	struct sip_account_s * curr_rec;
+	char const * str_elem = NULL;
 	int err;
+	int rec_num, codecs_num;
+	int i,j,k;
 
 	config_init (&cfg);
 
 	/* Load the file */
-	if (!config_read_file (&cfg, FXO_CONF_NAME)){
+	if (!config_read_file (&cfg, SIP_CONF_NAME)){
 		err = config_error_line (&cfg);
 		SU_DEBUG_0(("%s(): Config file syntax error in line %d\n",
 				__func__, err));
 		goto __exit_fail;
 	}
-
-	/* Standart params for all chans already set
-	 * when it memset(&g_conf,0) before this function call */
-
-	/* Get values */
-	set = config_lookup (&cfg, "fxo_prms" );
+	
+	set = config_lookup (&cfg, "accounts" );
 	if( !set ){
-		/* We will use standart params for all channels */
-		goto __exit_success;
-	}
-
-	rec_num = config_setting_length (set);
-
-	if(rec_num > CHANS_MAX){
-		SU_DEBUG_0(("%s(): Too many channels (%d) in config - max is %d\n",
-				__func__, rec_num, CHANS_MAX));
+		g_conf.sip_accounts = 0;
 		goto __exit_fail;
 	}
 
-	for(i=0; i<rec_num; i++){
-		int abs_idx;
-		rec_set = config_setting_get_elem (set, i);
-
-		/* get chan id */
-		elem = config_setting_get_string_elem (rec_set, 0);
-		abs_idx = strtol(elem, NULL, 10);
-
-		if((!ab->pchans[abs_idx]) ||
-			(ab->pchans[abs_idx]->parent->type != ab_dev_type_FXO)){
-			SU_DEBUG_2(("ATTENTION!! [%02d] is not FXO, as in %s.. "
-					"continue\n", abs_idx, FXO_CONF_NAME));
-		}
-
-		curr_rec = &g_conf.fxo_PSTN_type[ abs_idx ];
-
-		/* get fxo line type */
-		elem = config_setting_get_string_elem (rec_set, 1);
-		if       ( !strcmp(elem, CONF_FXO_PULSE)){
-			*curr_rec = pstn_type_PULSE_ONLY;
-		} else if( !strcmp(elem, CONF_FXO_TONE)){
-			*curr_rec = pstn_type_TONE_AND_PULSE;
-		}
-	}
-__exit_success:
-	config_destroy (&cfg);
-	return 0;
-__exit_fail:
-	config_destroy (&cfg);
-	return -1;
-}/*}}}*/
-
-/**
- * Init`s route table in main routine configuration \ref g_conf structure.
- *
- * \retval 0 success.
- * \retval -1 fail.
- */
-static int
-routet_init( void )
-{/*{{{*/
-	struct config_t cfg;
-	struct config_setting_t * set;
-	struct config_setting_t * rec_set;
-	struct rttb_record_s * curr_rec;
-	char const * elem;
-	int rec_num;
-	char use_id_local_buf = 1;
-	int id_len;
-	int i;
-	int err;
-
-	config_init (&cfg);
-
-	/* Load the file */
-	if (!config_read_file (&cfg, ROUTET_CONF_NAME)){
-		err = config_error_line (&cfg);
-		SU_DEBUG_0(("%s(): Config file syntax error in line %d\n",
-				__func__, err));
-		goto __exit_fail;
-	}
-
-	/* Get values */
-	set = config_lookup (&cfg, "route_table" );
-	if( !set ){
-		/* one router in the system */
-		g_conf.self_ip = g_conf.lo_ip;
-		goto __exit_success;
-	}
-
 	rec_num = config_setting_length (set);
-
-	g_conf.route_table.records_num = rec_num;
-	g_conf.route_table.records = malloc (
-			rec_num * sizeof(*(g_conf.route_table.records)));
-	if( !g_conf.route_table.records ){
+	g_conf.sip_accounts = rec_num;
+	
+	g_conf.sip_account = malloc (rec_num *
+			sizeof(*(g_conf.sip_account)));
+	if( !g_conf.sip_account ){
 		SU_DEBUG_0((LOG_FNC_A(LOG_NOMEM)));
 		goto __exit_fail;
 	}
-	memset(g_conf.route_table.records, 0,
-			rec_num * sizeof(*(g_conf.route_table.records)));
-
-	rec_set = config_setting_get_elem (set, 0);
-	elem = config_setting_get_string_elem (rec_set, 0);
-	id_len = strlen(elem);
-
-	g_conf.route_table.id_len = id_len;
-
-	if (id_len + 1 > ROUTE_ID_LEN_DF){
-		use_id_local_buf = 0;
-	}
-
+	g_conf.sip_accounts = rec_num;
+	memset(g_conf.sip_account, 0, rec_num *
+			sizeof(*(g_conf.sip_account)));
+	
 	for(i = 0; i < rec_num; i++){
-		curr_rec = &g_conf.route_table.records[ i ];
+		curr_rec = &g_conf.sip_account[ i ];
 		rec_set = config_setting_get_elem (set, i);
+                
+		curr_rec->all_set = 0;
+		if (config_setting_lookup_string(rec_set, "sip_registrar", &str_elem) == CONFIG_FALSE)
+		  continue;
+		curr_rec->registrar = strdup(str_elem);
+		
+		if (config_setting_lookup_string(rec_set, "sip_username", &str_elem) == CONFIG_FALSE)
+		  continue;
+		curr_rec->user_name = strdup(str_elem);
 
-		/* get id */
-		elem = config_setting_get_string_elem (rec_set, 0);
+		if (config_setting_lookup_string(rec_set, "sip_password", &str_elem) == CONFIG_FALSE)
+		  continue;
+		curr_rec->user_pass = strdup(str_elem);
 
-		if (use_id_local_buf){
-			curr_rec->id = curr_rec->id_s;
-		} else {
-			curr_rec->id = malloc((id_len + 1)* sizeof(*(curr_rec->id)));
-			if( !curr_rec->id ){
-				SU_DEBUG_0 ((LOG_FNC_A(LOG_NOMEM)));
-				goto __exit_fail;
-			}
+		if (config_setting_lookup_string(rec_set, "sip_uri", &str_elem) == CONFIG_FALSE)
+		  continue;
+		curr_rec->user_URI = strdup(str_elem);
+		
+		if (config_setting_lookup_string(rec_set, "sip_domain", &str_elem) == CONFIG_FALSE)
+		  continue;
+		curr_rec->sip_domain = strdup(str_elem);
+		
+		if (config_setting_lookup_string(rec_set, "rtp_interface", &str_elem) == CONFIG_FALSE)
+		  continue;
+		curr_rec->rtp_interface = strdup(str_elem);
+		
+		/* CODECS */
+		for (j=0; j<COD_MAS_SIZE; j++)
+		      curr_rec->codecs[j]=cod_type_NONE;
+		rec_subset = config_lookup_from(rec_set, "codecs");
+		if( !rec_subset ){
+			SU_DEBUG_0(("No codecs entries in config file %s for account %d\n", SIP_CONF_NAME, i ));
+			continue;
 		}
-		strcpy(curr_rec->id, elem);
+		codecs_num = config_setting_length (rec_subset);
+		/* set one by one */
+		k=0;
+		for (j=0; j<codecs_num; j++){
+		        codec_type = get_codec_type(config_setting_get_string_elem(rec_subset, j));
+			if (codec_type != cod_type_NONE) 
+			    curr_rec->codecs[k++]=codec_type;
+		}
+		
+		/* Ring incoming */
+		rec_subset = config_lookup_from(rec_set, "ring_incoming");
+		if( !rec_subset ){
+			SU_DEBUG_0(("No ring_incoming entries in config file\n"));
+			continue;
+		}
+		k = config_setting_length (rec_subset);
+		for (j=0; j<k && j<CHANS_MAX; j++){
+		        curr_rec->ring_incoming[j]=config_setting_get_bool_elem(rec_subset, j);
+		}
+		
+		/* Outgoing priority */
+		rec_subset = config_lookup_from(rec_set, "outgoing_priority");
+		if( !rec_subset ){
+			SU_DEBUG_0(("No outgoing_priority entries in config file\n"));
+			continue;
+		}
+		k = config_setting_length (rec_subset);
+		for (j=0; j<k && j<CHANS_MAX; j++){
+		        curr_rec->outgoing_priority[j]=config_setting_get_int_elem(rec_subset, j);
+		}
+		
+		curr_rec->all_set = 1;
+	}	
 
-		/* get value */
-		elem = config_setting_get_string_elem (rec_set, 1);
-		strcpy (curr_rec->value, elem);
-	}
-
-	err = self_values_init();
-	if(err){
-		goto __exit_fail;
-	}
-
-__exit_success:
 	config_destroy (&cfg);
 	return 0;
 __exit_fail:
-	if(g_conf.route_table.records) {
-		if( !use_id_local_buf){
-			for(i=0; i<rec_num; i++){
-				curr_rec = &g_conf.route_table.records[ i ];
-				if( curr_rec->id && curr_rec->id != curr_rec->id_s ){
-					free (curr_rec->id);
-					curr_rec->id = NULL;
-				}
-			}
-		}
-		free(g_conf.address_book.records);
-		g_conf.address_book.records = NULL;
-	}
 	config_destroy (&cfg);
-	return -1;
-}/*}}}*/
-
-/*
- * Init`s voice freq records in main routine configuration \ref g_conf structure.
- *
- * \param[in] ab ata-board hardware structure.
- *
- * \retval 0 success.
- * \retval -1 fail.
- */
-static int
-voicef_init( ab_t const * const ab )
-{/*{{{*/
-	/* ("chan_id", "pair_route_id", "pair_chan_id",
-	 * 		"codec_name", "pkt_sz", payload_type, "bitpack") */
-	struct config_t cfg;
-	struct config_setting_t * set;
-	struct config_setting_t * rec_set;
-	struct voice_freq_s * curr_rec;
-	char const * elem;
-	int elem_len;
-	int rec_num;
-	int i;
-	int err;
-
-	config_init (&cfg);
-
-	/* Load the file */
-	if (!config_read_file (&cfg, VOICEF_CONF_NAME)){
-		err = config_error_line (&cfg);
-		SU_DEBUG_0(("%s(): Config file syntax error in line %d\n",
-				__func__, err));
-		goto __exit_fail;
-	}
-
-	set = config_lookup (&cfg, "voice_freq" );
-	if( !set){
-		/* no vf-channels */
-		goto __exit_success;
-	}
-
-	rec_num = config_setting_length (set);
-
-	if(rec_num > CHANS_MAX){
-		SU_DEBUG_0(("%s(): Too many channels (%d) in config - max is %d\n",
-				__func__, rec_num, CHANS_MAX));
-		goto __exit_fail;
-	}
-
-	for(i=0; i<rec_num; i++){
-		int chan_id;
-		int pair_chan;
-		int router_is_self;
-
-		rec_set = config_setting_get_elem (set, i);
-
-		/* get chan_id */
-		elem = config_setting_get_string_elem (rec_set, 0);
-		chan_id = strtol (elem, NULL, 10);
-
-		if((!ab->pchans[chan_id]) ||
-			(ab->pchans[chan_id]->parent->type != ab_dev_type_VF)){
-			SU_DEBUG_2(("ATTENTION!! [%02d] is not VF, as in %s.. "
-					"ignore config value\n",chan_id, VOICEF_CONF_NAME));
-			continue;
-		}
-
-		curr_rec = &g_conf.voice_freq[ chan_id ];
-		if( curr_rec->is_set){
-			SU_DEBUG_2(("You shouldn`t set params for both pairs!\n"));
-			continue;
-		}
-		curr_rec->is_set = 1;
-		curr_rec->am_i_caller = 1;
-
-		/* set chan_id to rec */
-		snprintf(curr_rec->id, CHAN_ID_LEN, "%02d", chan_id);
-
-		/* get pair_route_id */
-		elem = config_setting_get_string_elem (rec_set, 1);
-		elem_len = strlen(elem);
-		if (elem_len+1 < ROUTE_ID_LEN_DF){
-			curr_rec->pair_route = curr_rec->pair_route_s;
-		} else {
-			curr_rec->pair_route = malloc(
-					(elem_len+1)*sizeof(*(curr_rec->pair_route)));
-			if( !curr_rec->pair_route){
-				SU_DEBUG_0((LOG_FNC_A(LOG_NOMEM)));
-				goto __exit_fail;
-			}
-		}
-		strcpy (curr_rec->pair_route, elem);
-
-		router_is_self =
-			(curr_rec->pair_route[0] == SELF_MARKER)
-			||
-			(g_conf.self_number &&
-				!strcmp(curr_rec->pair_route, g_conf.self_number));
-		if( router_is_self){
-			if(curr_rec->pair_route &&
-					curr_rec->pair_route != curr_rec->pair_route_s){
-				free (curr_rec->pair_route);
-			}
-			curr_rec->pair_route = NULL;
-		}
-
-		/* get pair_chan_id */
-		elem = config_setting_get_string_elem (rec_set, 2);
-		pair_chan = strtol (elem, NULL, 10);
-
-		/* set pair_chan to rec */
-		snprintf(curr_rec->pair_chan, CHAN_ID_LEN, "%02d", pair_chan);
-
-		/* get codec params */
-		init_codec_el(rec_set, 3, &curr_rec->vf_codec);
-
-		/* Create automatic mirror record if dest router is self */
-		if(curr_rec->pair_route == NULL){
-			if((!ab->pchans[pair_chan]) ||
-				(ab->pchans[pair_chan]->parent->type != ab_dev_type_VF)){
-				SU_DEBUG_2(("ATTENTION!! [%02d] is not VF, as in %s.. "
-						"ignore config value\n",pair_chan, VOICEF_CONF_NAME));
-				/* remove current channel VF-record
-				 * because we can`t connect to not VF-channel */
-				curr_rec->is_set = 0;
-				continue;
-			}
-			struct voice_freq_s * mirr_rec = &g_conf.voice_freq[ pair_chan ];
-			/* copy params */
-			memcpy(&g_conf.voice_freq[ pair_chan ], &g_conf.voice_freq[ chan_id ],
-					sizeof(g_conf.voice_freq[chan_id]));
-			/* revert pair, self channels, vol and caller flag on mirror record */
-			snprintf (mirr_rec->id, CHAN_ID_LEN, "%02d", pair_chan);
-			snprintf (mirr_rec->pair_chan, CHAN_ID_LEN, "%02d", chan_id);
-
-			/* set am_i_caller to the elder chan */
-			if(strtol(mirr_rec->id,NULL,10) < chan_id){
-				mirr_rec->am_i_caller = 0;
-			} else {
-				g_conf.voice_freq[ chan_id ].am_i_caller = 0;
-			}
-		}
-	}
-
-	/* read hw.conf to get channel type */
-	/* vf_types:
-	 * (
-	 *	("chan_id", "wire_type", "normal/transit")
-	 * );*/
-	config_destroy (&cfg);
-	config_init (&cfg);
-
-	/* Load the file */
-	if (!config_read_file (&cfg, VF_CONF_NAME)){
-		err = config_error_line (&cfg);
-		goto __exit_success;
-	}
-
-	set = config_lookup (&cfg, "vf_types" );
-	if( !set){
-		/* no vf-channels */
-		goto __exit_success;
-	}
-
-	rec_num = config_setting_length (set);
-
-	if(rec_num > CHANS_MAX){
-		SU_DEBUG_1(("%s() Too many channels (%d) in config - max is %d\n",
-				__func__, rec_num, CHANS_MAX));
-		goto __exit_fail;
-	}
-
-	for(i=0; i<rec_num; i++){
-		int chan_id;
-		rec_set = config_setting_get_elem (set, i);
-
-		/* get id */
-		elem = config_setting_get_string_elem (rec_set, 0);
-		chan_id = strtol (elem, NULL, 10);
-
-		if((!ab->pchans[chan_id]) ||
-			(ab->pchans[chan_id]->parent->type != ab_dev_type_VF)){
-			SU_DEBUG_2(("ATTENTION!! [%02d] is not VF, as in %s.. "
-					"ignore config value\n", chan_id, VF_CONF_NAME));
-			continue;
-		}
-
-		curr_rec = &g_conf.voice_freq[ chan_id ];
-
-		/* get wire_type */
-		elem = config_setting_get_string_elem (rec_set, 1);
-		if       (!strcmp(elem, CONF_VF_4_WIRED)){
-			/* get normal/transit type */
-			elem = config_setting_get_string_elem (rec_set, 2);
-			if       (!strcmp(elem, CONF_VF_NORMAL)){
-				ab->pchans[chan_id]->type_if_vf =
-					curr_rec->type = vf_type_N4;
-			} else if(!strcmp(elem, CONF_VF_TRANSIT)){
-				ab->pchans[chan_id]->type_if_vf =
-					curr_rec->type = vf_type_T4;
-			}
-		} else if(!strcmp(elem, CONF_VF_2_WIRED)){
-			/* get normal/transit type */
-			elem = config_setting_get_string_elem (rec_set, 2);
-			if       (!strcmp(elem, CONF_VF_NORMAL)){
-				ab->pchans[chan_id]->type_if_vf =
-					curr_rec->type = vf_type_N2;
-			} else if(!strcmp(elem, CONF_VF_TRANSIT)){
-				ab->pchans[chan_id]->type_if_vf =
-					curr_rec->type = vf_type_T2;
-			}
-		}
-	}
-
-__exit_success:
-	config_destroy (&cfg);
-	return 0;
-__exit_fail:
-	for(i=0; i<CHANS_MAX; i++){
-		curr_rec = &g_conf.voice_freq[ i ];
-		if( curr_rec->is_set && curr_rec->pair_route &&
-				curr_rec->pair_route != curr_rec->pair_route_s ){
-			free (curr_rec->pair_route);
-			curr_rec->pair_route = NULL;
-			curr_rec->is_set = 0;
-		}
-	}
-	config_destroy (&cfg);
-	return -1;
+	if (g_conf.sip_account)
+	  free(g_conf.sip_account);
+	return err;
 }/*}}}*/
 
 /**
- * Init`s hot line records in main routine configuration \ref g_conf structure.
- *
- * \param[in] ab ata-board hardware structure.
- *
- * \retval 0 success.
- * \retval -1 fail.
- */
-static int
-hotline_init( ab_t const * const ab )
-{/*{{{*/
-	struct config_t cfg;
-	struct config_setting_t * set;
-	struct config_setting_t * rec_set;
-	struct hot_line_s * curr_rec;
-	char const * elem;
-	int rec_num;
-	int elem_len;
-	int i;
-	int err;
-
-	config_init (&cfg);
-
-	/* Load the file */
-	if (!config_read_file (&cfg, HOTLINE_CONF_NAME)){
-		err = config_error_line (&cfg);
-		SU_DEBUG_0(("%s(): Config file syntax error in line %d\n",
-				__func__, err));
-		goto __exit_fail;
-	}
-
-	set = config_lookup (&cfg, "hot_line" );
-	if( !set ){
-		/* no hotline records */
-		goto __exit_success;
-	}
-
-	rec_num = config_setting_length (set);
-
-	if(rec_num > CHANS_MAX){
-		SU_DEBUG_0(("%s(): Too many channels (%d) in config - max is %d\n",
-				__func__, rec_num, CHANS_MAX));
-		goto __exit_fail;
-	}
-
-	for(i=0; i<rec_num; i++){
-		int chan_idx;
-		rec_set = config_setting_get_elem (set, i);
-		/* get id */
-		elem = config_setting_get_string_elem (rec_set, 0);
-		chan_idx = strtol(elem, NULL, 10);
-		curr_rec = &g_conf.hot_line[ chan_idx ];
-
-		if((!ab->pchans[chan_idx]) ||
-			((ab->pchans[chan_idx]->parent->type != ab_dev_type_FXS) &&
-			 (ab->pchans[chan_idx]->parent->type != ab_dev_type_FXO))
-			){
-			SU_DEBUG_2(("ATTENTION!! [%02d] is not FXS or FXO, as in %s.. "
-					"ignore config value\n", chan_idx, HOTLINE_CONF_NAME));
-			continue;
-		}
-		curr_rec->is_set = 1;
-
-		/* get value */
-		elem = config_setting_get_string_elem (rec_set, 1);
-		elem_len = strlen(elem);
-		if (elem_len+1 < VALUE_LEN_DF ){
-			curr_rec->value = curr_rec->value_s;
-		} else {
-			curr_rec->value = malloc((elem_len+1)* sizeof(*(curr_rec->value)));
-			if( !curr_rec->value ){
-				SU_DEBUG_0((LOG_FNC_A(LOG_NOMEM)));
-				goto __exit_fail;
-			}
-		}
-		strcpy (curr_rec->value, elem);
-	}
-
-__exit_success:
-	config_destroy (&cfg);
-	return 0;
-__exit_fail:
-	for(i=0; i<CHANS_MAX; i++){
-		curr_rec = &g_conf.hot_line[ i ];
-		if( curr_rec->value && (curr_rec->value != curr_rec->value_s) ){
-			free (curr_rec->value);
-			curr_rec->value = NULL;
-		}
-	}
-	config_destroy (&cfg);
-	return -1;
-}/*}}}*/
-
-/**
- * Init`s address book records in main routine configuration
+ * Inits dial plan records in main routine configuration
  * 		\ref g_conf structure.
  *
  * \retval 0 success.
  * \retval -1 fail.
  */
 static int
-addressb_init( void )
+dialplan_init( void )
 {/*{{{*/
 	struct config_t cfg;
 	struct config_setting_t * set;
 	struct config_setting_t * rec_set;
-	struct adbk_record_s * curr_rec;
+	struct dplan_record_s * dplan_rec;
 	char const * elem;
-	int elem_len;
 	int rec_num;
-	char use_id_local_buf = 1;
-	int id_len;
 	int i;
 	int err;
 
 	config_init (&cfg);
 
 	/* Load the file */
-	if (!config_read_file (&cfg, ADDRESSB_CONF_NAME)){
+	if (!config_read_file (&cfg, DIALPLAN_CONF_NAME)){
 		err = config_error_line (&cfg);
 		SU_DEBUG_0(("%s(): Config file syntax error in line %d\n",
 				__func__, err));
 		goto __exit_fail;
 	}
 
-	set = config_lookup (&cfg, "address_book" );
+	set = config_lookup (&cfg, "dial_plan" );
 	if( !set ){
-		g_conf.address_book.records_num = 0;
+		g_conf.dial_plan.records_num = 0;
 		goto __exit_success;
 	}
 
 	rec_num = config_setting_length (set);
 
-	g_conf.address_book.records_num = rec_num;
-	g_conf.address_book.records = malloc (rec_num *
-			sizeof(*(g_conf.address_book.records)));
-	if( !g_conf.address_book.records ){
+	g_conf.dial_plan.records_num = rec_num;
+	SU_DEBUG_9(("Dialplan records %d\n", rec_num));
+	g_conf.dial_plan.records = malloc (rec_num *
+			sizeof(*(g_conf.dial_plan.records)));
+	if( !g_conf.dial_plan.records ){
 		SU_DEBUG_0((LOG_FNC_A(LOG_NOMEM)));
 		goto __exit_fail;
 	}
-	memset(g_conf.address_book.records, 0, rec_num *
-			sizeof(*(g_conf.address_book.records)));
+	memset(g_conf.dial_plan.records, 0, rec_num *
+			sizeof(*(g_conf.dial_plan.records)));
 
-	rec_set = config_setting_get_elem (set, 0);
-	elem = config_setting_get_string_elem (rec_set, 0);
-	id_len = strlen(elem);
-
-	g_conf.address_book.id_len = id_len;
-
-	if (id_len + 1 > ADBK_ID_LEN_DF){
-		use_id_local_buf = 0;
-	}
 
 	for(i = 0; i < rec_num; i++){
-		curr_rec = &g_conf.address_book.records[ i ];
+		dplan_rec = &g_conf.dial_plan.records[ i ];
 		rec_set = config_setting_get_elem (set, i);
 
-		/* get id */
+		/* get prefix */
 		elem = config_setting_get_string_elem (rec_set, 0);
+		if (elem) {
+			dplan_rec->prefix = strdup(elem);
+			dplan_rec->prefixlen = strlen(elem);
+		} else
+			dplan_rec->prefixlen = 0;
 
-		if (use_id_local_buf){
-			curr_rec->id = curr_rec->id_s;
-		} else {
-			curr_rec->id = malloc( (id_len + 1) * sizeof(*(curr_rec->id)));
-			if( !curr_rec->id ){
-				SU_DEBUG_0((LOG_FNC_A(LOG_NOMEM)));
-				goto __exit_fail;
-			}
-		}
-		strcpy(curr_rec->id, elem);
-
-		/* get value */
+		/* get replace */
 		elem = config_setting_get_string_elem (rec_set, 1);
-		elem_len = strlen(elem);
-		if (elem_len+1 < VALUE_LEN_DF ){
-			curr_rec->value = curr_rec->value_s;
-		} else {
-			curr_rec->value = malloc((elem_len+1) * sizeof(*(curr_rec->value)));
-			if( !curr_rec->value){
-				SU_DEBUG_0((LOG_FNC_A(LOG_NOMEM)));
-				goto __exit_fail;
-			}
-		}
-		strcpy (curr_rec->value, elem);
+		if (elem) {
+			dplan_rec->replace = strdup(elem);
+			dplan_rec->replacelen = strlen(elem);
+		} else
+			dplan_rec->replacelen = 0;
+		
+		/* get account */
+		dplan_rec->account = config_setting_get_int_elem(rec_set, 2)-1;
+		if (dplan_rec->account>=g_conf.sip_accounts)
+			dplan_rec->account=-1;
 	}
 
 __exit_success:
 	config_destroy (&cfg);
 	return 0;
 __exit_fail:
-	if(g_conf.address_book.records) {
+	if(g_conf.dial_plan.records) {
 		for(i=0; i<rec_num; i++){
-			curr_rec = &g_conf.address_book.records[ i ];
-			if( curr_rec->id && curr_rec->id != curr_rec->id_s ){
-				free (curr_rec->id);
-				curr_rec->id = NULL;
-			}
-			if( curr_rec->value && curr_rec->value != curr_rec->value_s ){
-				free (curr_rec->value);
-				curr_rec->value = NULL;
-			}
+			dplan_rec = &g_conf.dial_plan.records[ i ];
+			if (dplan_rec->prefix)
+				free (dplan_rec->prefix);
+			if (dplan_rec->replace)
+				free (dplan_rec->replace);
 		}
-		free(g_conf.address_book.records);
-		g_conf.address_book.records = NULL;
+		free(g_conf.dial_plan.records);
+		g_conf.dial_plan.records = NULL;
 	}
 	config_destroy (&cfg);
 	return -1;
@@ -1457,7 +984,7 @@ __exit_fail:
  *
  * \remark
  *	It must calls after main init becouse it can modify
- *	g_conf.sip_set.all_set setting.
+ *	g_conf.sip_account.all_set setting.
  */
 static int
 codecs_init( void )
@@ -1470,6 +997,12 @@ codecs_init( void )
 	int err;
 
 	config_init (&cfg);
+	
+	/* Init codecs names */
+	if (svd_init_cod_params(g_conf.cp)) {
+		SU_DEBUG_0(("Error in svd_init_cod_params\n"));
+		goto __exit_fail;
+	}
 
 	/* Load the file */
 	if (!config_read_file (&cfg, CODECS_CONF_NAME)){
@@ -1480,63 +1013,130 @@ codecs_init( void )
 	}
 
 	/* set all to NONE */
-	memset(g_conf.int_codecs, 0, sizeof(g_conf.int_codecs));
-	memset(g_conf.sip_set.ext_codecs, 0, sizeof(g_conf.sip_set.ext_codecs));
+	memset(g_conf.codecs, 0, sizeof(g_conf.codecs));
 	for (i=0; i<COD_MAS_SIZE; i++){
-		g_conf.int_codecs[i].type = cod_type_NONE;
-		g_conf.sip_set.ext_codecs[i].type = cod_type_NONE;
+		g_conf.codecs[i].type = cod_type_NONE; /* FIXME*/
 	}
 
-	/* CODECS FOR INTERNAL USAGE */
-	set = config_lookup (&cfg, "int_codecs" );
+	/* Default values for the codecs */
+	g_conf.codecs[cod_type_ALAW].type=cod_type_ALAW;
+	g_conf.codecs[cod_type_ALAW].pkt_size=cod_pkt_size_60;
+	g_conf.codecs[cod_type_ALAW].bpack=bitpack_RTP;
+	g_conf.codecs[cod_type_ALAW].user_payload=8;
+	g_conf.codecs[cod_type_ALAW].jb.jb_type=jb_type_FIXED;
+	g_conf.codecs[cod_type_ALAW].jb.jb_loc_adpt=jb_loc_adpt_OFF;
+	g_conf.codecs[cod_type_ALAW].jb.jb_scaling=1.4*16;
+	g_conf.codecs[cod_type_ALAW].jb.jb_init_sz=120*8;
+	g_conf.codecs[cod_type_ALAW].jb.jb_min_sz=10*8;
+	g_conf.codecs[cod_type_ALAW].jb.jb_max_sz=200*8;
+	
+	g_conf.codecs[cod_type_G729].type=cod_type_G729;
+	g_conf.codecs[cod_type_G729].pkt_size=cod_pkt_size_60;
+	g_conf.codecs[cod_type_G729].bpack=bitpack_RTP;
+	g_conf.codecs[cod_type_G729].user_payload=18;
+	g_conf.codecs[cod_type_G729].jb.jb_type=jb_type_FIXED;
+	g_conf.codecs[cod_type_G729].jb.jb_loc_adpt=jb_loc_adpt_OFF;
+	g_conf.codecs[cod_type_G729].jb.jb_scaling=1.4*16;
+	g_conf.codecs[cod_type_G729].jb.jb_init_sz=120*8;
+	g_conf.codecs[cod_type_G729].jb.jb_min_sz=10*8;
+	g_conf.codecs[cod_type_G729].jb.jb_max_sz=200*8;
+	
+	g_conf.codecs[cod_type_G729E].type=cod_type_G729E;
+	g_conf.codecs[cod_type_G729E].pkt_size=cod_pkt_size_60;
+	g_conf.codecs[cod_type_G729E].bpack=bitpack_RTP;
+	g_conf.codecs[cod_type_G729E].user_payload=101;
+	g_conf.codecs[cod_type_G729E].jb.jb_type=jb_type_FIXED;
+	g_conf.codecs[cod_type_G729E].jb.jb_loc_adpt=jb_loc_adpt_OFF;
+	g_conf.codecs[cod_type_G729E].jb.jb_scaling=1.4*16;
+	g_conf.codecs[cod_type_G729E].jb.jb_init_sz=120*8;
+	g_conf.codecs[cod_type_G729E].jb.jb_min_sz=10*8;
+	g_conf.codecs[cod_type_G729E].jb.jb_max_sz=200*8;
+	
+	g_conf.codecs[cod_type_ILBC_133].type=cod_type_ILBC_133;
+	g_conf.codecs[cod_type_ILBC_133].pkt_size=cod_pkt_size_30;
+	g_conf.codecs[cod_type_ILBC_133].bpack=bitpack_RTP;
+	g_conf.codecs[cod_type_ILBC_133].user_payload=100;
+	g_conf.codecs[cod_type_ILBC_133].jb.jb_type=jb_type_FIXED;
+	g_conf.codecs[cod_type_ILBC_133].jb.jb_loc_adpt=jb_loc_adpt_OFF;
+	g_conf.codecs[cod_type_ILBC_133].jb.jb_scaling=1.4*16;
+	g_conf.codecs[cod_type_ILBC_133].jb.jb_init_sz=120*8;
+	g_conf.codecs[cod_type_ILBC_133].jb.jb_min_sz=10*8;
+	g_conf.codecs[cod_type_ILBC_133].jb.jb_max_sz=200*8;
+	
+	g_conf.codecs[cod_type_G723].type=cod_type_G723;
+	g_conf.codecs[cod_type_G723].pkt_size=cod_pkt_size_60;
+	g_conf.codecs[cod_type_G723].bpack=bitpack_RTP;
+	g_conf.codecs[cod_type_G723].user_payload=4;
+	g_conf.codecs[cod_type_G723].jb.jb_type=jb_type_FIXED;
+	g_conf.codecs[cod_type_G723].jb.jb_loc_adpt=jb_loc_adpt_OFF;
+	g_conf.codecs[cod_type_G723].jb.jb_scaling=1.4*16;
+	g_conf.codecs[cod_type_G723].jb.jb_init_sz=120*8;
+	g_conf.codecs[cod_type_G723].jb.jb_min_sz=10*8;
+	g_conf.codecs[cod_type_G723].jb.jb_max_sz=200*8;
+	
+	g_conf.codecs[cod_type_G726_16].type=cod_type_G726_16;
+	g_conf.codecs[cod_type_G726_16].pkt_size=cod_pkt_size_60;
+	g_conf.codecs[cod_type_G726_16].bpack=bitpack_AAL2;
+	g_conf.codecs[cod_type_G726_16].user_payload=102;
+	g_conf.codecs[cod_type_G726_16].jb.jb_type=jb_type_FIXED;
+	g_conf.codecs[cod_type_G726_16].jb.jb_loc_adpt=jb_loc_adpt_OFF;
+	g_conf.codecs[cod_type_G726_16].jb.jb_scaling=1.4*16;
+	g_conf.codecs[cod_type_G726_16].jb.jb_init_sz=120*8;
+	g_conf.codecs[cod_type_G726_16].jb.jb_min_sz=10*8;
+	g_conf.codecs[cod_type_G726_16].jb.jb_max_sz=200*8;
+
+	g_conf.codecs[cod_type_G726_24].type=cod_type_G726_24;
+	g_conf.codecs[cod_type_G726_24].pkt_size=cod_pkt_size_60;
+	g_conf.codecs[cod_type_G726_24].bpack=bitpack_AAL2;
+	g_conf.codecs[cod_type_G726_24].user_payload=103;
+	g_conf.codecs[cod_type_G726_24].jb.jb_type=jb_type_FIXED;
+	g_conf.codecs[cod_type_G726_24].jb.jb_loc_adpt=jb_loc_adpt_OFF;
+	g_conf.codecs[cod_type_G726_24].jb.jb_scaling=1.4*16;
+	g_conf.codecs[cod_type_G726_24].jb.jb_init_sz=120*8;
+	g_conf.codecs[cod_type_G726_24].jb.jb_min_sz=10*8;
+	g_conf.codecs[cod_type_G726_24].jb.jb_max_sz=200*8;
+
+	g_conf.codecs[cod_type_G726_32].type=cod_type_G726_32;
+	g_conf.codecs[cod_type_G726_32].pkt_size=cod_pkt_size_60;
+	g_conf.codecs[cod_type_G726_32].bpack=bitpack_AAL2;
+	g_conf.codecs[cod_type_G726_32].user_payload=104;
+	g_conf.codecs[cod_type_G726_32].jb.jb_type=jb_type_FIXED;
+	g_conf.codecs[cod_type_G726_32].jb.jb_loc_adpt=jb_loc_adpt_OFF;
+	g_conf.codecs[cod_type_G726_32].jb.jb_scaling=1.4*16;
+	g_conf.codecs[cod_type_G726_32].jb.jb_init_sz=120*8;
+	g_conf.codecs[cod_type_G726_32].jb.jb_min_sz=10*8;
+	g_conf.codecs[cod_type_G726_32].jb.jb_max_sz=200*8;
+
+	g_conf.codecs[cod_type_G726_40].type=cod_type_G726_40;
+	g_conf.codecs[cod_type_G726_40].pkt_size=cod_pkt_size_60;
+	g_conf.codecs[cod_type_G726_40].bpack=bitpack_AAL2;
+	g_conf.codecs[cod_type_G726_40].user_payload=105;
+	g_conf.codecs[cod_type_G726_40].jb.jb_type=jb_type_FIXED;
+	g_conf.codecs[cod_type_G726_40].jb.jb_loc_adpt=jb_loc_adpt_OFF;
+	g_conf.codecs[cod_type_G726_40].jb.jb_scaling=1.4*16;
+	g_conf.codecs[cod_type_G726_40].jb.jb_init_sz=120*8;
+	g_conf.codecs[cod_type_G726_40].jb.jb_min_sz=10*8;
+	g_conf.codecs[cod_type_G726_40].jb.jb_max_sz=200*8;
+	
+	
+	/* Override defaults from config file */
+	set = config_lookup (&cfg, "codecs" );
 	if( !set ){
-		SU_DEBUG_0(("No int_codecs entries in config file"));
-		goto __exit_fail;
-	}
-	rec_num = config_setting_length (set);
-
-	/* init one by one */
-	for (i=0; i<rec_num; i++){
-		rec_set = config_setting_get_elem (set, i);
-		init_codec_el(rec_set, 0, &g_conf.int_codecs[i]);
-	}
-
-	/* CODECS FOR EXTERNAL USAGE */
-	set = config_lookup (&cfg, "ext_codecs");
-	if( !set){
-		g_conf.sip_set.all_set = 0;
+		SU_DEBUG_0(("No codecs entries in config file: %s\n", CODECS_CONF_NAME));
 	} else {
 		rec_num = config_setting_length (set);
 
 		/* init one by one */
 		for (i=0; i<rec_num; i++){
 			rec_set = config_setting_get_elem (set, i);
-			init_codec_el(rec_set, 0, &g_conf.sip_set.ext_codecs[i]);
+			init_codec_el(rec_set, i);
 		}
 	}
-
+	
 	/* CODECS FOR FAX USAGE */
 	/* set type and standart payload type values */
 	g_conf.fax.codec_type = cod_type_ALAW;
-	g_conf.fax.internal_pt = g_conf.fax.external_pt = ALAW_PT_DF;
-
-	/* set internal fax payload type if it defined in config file */
-	for (i=0; g_conf.int_codecs[i].type!=cod_type_NONE; i++){
-		if(g_conf.int_codecs[i].type == g_conf.fax.codec_type){
-			g_conf.fax.internal_pt = g_conf.int_codecs[i].user_payload;
-			break;
-		}
-	}
-	/* set external fax payload type if it defined in config file */
-	if(g_conf.sip_set.all_set){
-		for (i=0; g_conf.sip_set.ext_codecs[i].type!=cod_type_NONE; i++){
-			if(g_conf.sip_set.ext_codecs[i].type == g_conf.fax.codec_type){
-				g_conf.fax.external_pt =
-						g_conf.sip_set.ext_codecs[i].user_payload;
-				break;
-			}
-		}
-	}
+	g_conf.fax.internal_pt = g_conf.fax.external_pt = g_conf.codecs[cod_type_ALAW].user_payload;
 
 	config_destroy (&cfg);
 	return 0;

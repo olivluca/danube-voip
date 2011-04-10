@@ -29,7 +29,6 @@
 
 unsigned int g_f_cnt= 0;
 unsigned int g_f_offset = 0;
-svd_t * g_svd = NULL;
 
 /** Switch to daemon mode.*/
 static int 	svd_daemonize(void);
@@ -110,13 +109,6 @@ main (int argc, char ** argv)
 	if (svd == NULL) {
 		goto __conf;
 	}
-	g_svd = svd;
-
-	/* place vf-calls */
-	err = svd_place_vf (svd);
-	if(err){
-		goto __svd;
-	}
 
 	/* create interface */
 	err = svd_create_interface(svd);
@@ -129,7 +121,6 @@ main (int argc, char ** argv)
 
 __if:
 	svd_destroy_interface(svd);
-__svd:
 	svd_destroy (&svd);
 __conf:
 	svd_conf_destroy ();
@@ -283,11 +274,11 @@ DFS
 	svd->nua = nua_create (svd->root, svd_nua_callback, svd,
 			SIPTAG_USER_AGENT_STR ("svd VoIP agent"),
 			SOATAG_AF (SOA_AF_IP4_IP6),
-	 		SOATAG_ADDRESS (g_conf.self_ip),
-			SIPTAG_FROM(from),
+	 		//SOATAG_ADDRESS (g_conf.self_ip),
+			//SIPTAG_FROM(from),
 			TPTAG_TOS (tos),
 	 		NUTAG_ALLOW ("INFO"),
-			NUTAG_URL(contact_url),
+			//NUTAG_URL(contact_url),
 			NUTAG_AUTOALERT (1),
 			NUTAG_ENABLEMESSAGE (1),
 			NUTAG_ENABLEINVITE (1),
@@ -300,17 +291,17 @@ DFS
 	su_free(svd->home, from);
 	from = NULL;
 
-	svd->op_reg = NULL;
+//	g_conf.sip_set[0].op_reg = NULL; //FIXME
 
-	if(g_conf.sip_set.all_set){
+//	if(g_conf.sip_set[0].all_set){ //FIXME como manejar varios registros?
 		nua_set_params(svd->nua,
-				NUTAG_REGISTRAR (g_conf.sip_set.registrar),
+			//	NUTAG_REGISTRAR (g_conf.sip_set[0].registrar), //FIXME
 				NUTAG_OUTBOUND ("gruuize no-outbound validate "
 						"natify use-rport options-keepalive"),
 				TAG_NULL () );
 
 		svd_refresh_registration (svd);
-	}
+//	}
 	nua_get_params(svd->nua, TAG_ANY(), TAG_NULL());
 DFE
 	return svd;

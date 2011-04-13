@@ -240,6 +240,7 @@ __exit_fail:
 void
 conf_show( void )
 {/*{{{*/
+	char * dtmf_name[] = {"off", "rfc2883", "info"};
 	struct dplan_record_s * curr_dp_rec;
 	struct sip_account_s  * curr_sip_rec;
 	int i;
@@ -258,7 +259,7 @@ conf_show( void )
 			g_conf.rtp_port_first,
 			g_conf.rtp_port_last));
 
-	for (i=0; g_conf.codecs[i].type != cod_type_NONE; i++){
+	for (i=i; i<COD_MAS_SIZE; i++) if (g_conf.codecs[i].type!=cod_type_NONE) {
 		SU_DEBUG_3(("t:%s/sz%d/pt:0x%X__[%d:%d]::[%d:%d:%d:%d]\n",
 				g_conf.cp[g_conf.codecs[i].type-CODEC_BASE].sdp_name,
 				g_conf.codecs[i].pkt_size,
@@ -306,6 +307,7 @@ conf_show( void )
 					curr_sip_rec->outgoing_priority[j]
 					));
 			}
+			SU_DEBUG_3((	"\tDtmf mode: %s\n", dtmf_name[curr_sip_rec->dtmf]));
 		}
 	}	
 
@@ -392,6 +394,7 @@ svd_conf_destroy (void)
 static int
 svd_init_cod_params( cod_prms_t * const cp )
 {/*{{{*/
+	static char * empty = "";
 	int i;
 	memset(cp, 0, sizeof(*cp)*COD_MAS_SIZE);
 
@@ -403,48 +406,36 @@ svd_init_cod_params( cod_prms_t * const cp )
 	/* G711 ALAW parameters. */
 	i=cod_type_ALAW-CODEC_BASE;
 	cp[i].type = cod_type_ALAW;
-	if(strlen("PCMA") >= COD_NAME_LEN){
-		goto __exit_fail;
-	}
-	strcpy(cp[i].sdp_name, "PCMA");
+	cp[i].sdp_name=strdup("PCMA");
+	cp[i].fmtp_str=empty;
 	cp[i].rate = 8000;
 
 	/* G729 parameters. */
 	i=cod_type_G729-CODEC_BASE;
 	cp[i].type = cod_type_G729;
-	if(strlen("G729") >= COD_NAME_LEN){
-		goto __exit_fail;
-	}
-	strcpy(cp[i].sdp_name, "G729");
+	cp[i].sdp_name=strdup("G729");
+	cp[i].fmtp_str=empty;
 	cp[i].rate = 8000;
 
 	/* G729E parameters. */
 	i=cod_type_G729E-CODEC_BASE;
 	cp[i].type = cod_type_G729E;
-	if(strlen("G729E") >= COD_NAME_LEN){
-		goto __exit_fail;
-	}
-	strcpy(cp[i].sdp_name, "G729E");
+	cp[i].sdp_name=strdup("G729E");
+	cp[i].fmtp_str=empty;
 	cp[i].rate = 8000;
 
 	/* G723 parameters. */
 	i=cod_type_G723-CODEC_BASE;
 	cp[i].type = cod_type_G723;
-	if(strlen("G723") >= COD_NAME_LEN){
-		goto __exit_fail;
-	}
-	strcpy(cp[i].sdp_name, "G723");
+	cp[i].sdp_name=strdup("G723");
+	cp[i].fmtp_str=empty;
 	cp[i].rate = 8000;
 
 	/* iLBC_133 parameters. */
 	i=cod_type_ILBC_133-CODEC_BASE;
 	cp[i].type = cod_type_ILBC_133;
-	if(     strlen("iLBC") >= COD_NAME_LEN ||
-			strlen("mode=30") >= FMTP_STR_LEN){
-		goto __exit_fail;
-	}
-	strcpy(cp[i].sdp_name, "iLBC");
-	strcpy(cp[i].fmtp_str, "mode=30");
+	cp[i].sdp_name=strdup("iLBC");
+	cp[i].fmtp_str=strdup("mode=30");
 	cp[i].rate = 8000;
 
 	/* iLBC_152 parameters.
@@ -462,42 +453,39 @@ svd_init_cod_params( cod_prms_t * const cp )
 	/* G726_16 parameters. */
 	i=cod_type_G726_16-CODEC_BASE;
 	cp[i].type = cod_type_G726_16;
-	if(strlen("G726-16") >= COD_NAME_LEN){
-		goto __exit_fail;
-	}
-	strcpy(cp[i].sdp_name, "G726-16");
+	cp[i].sdp_name=strdup("G726-16");
+	cp[i].fmtp_str=empty;
 	cp[i].rate = 8000;
 
 	/* G726_ parameters. */
 	i=cod_type_G726_24-CODEC_BASE;
 	cp[i].type = cod_type_G726_24;
-	if(strlen("G726-24") >= COD_NAME_LEN){
-		goto __exit_fail;
-	}
-	strcpy(cp[i].sdp_name, "G726-24");
+	cp[i].sdp_name=strdup("G726-24");
+	cp[i].fmtp_str=empty;
 	cp[i].rate = 8000;
 
 	/* G726_ parameters. */
 	i=cod_type_G726_32-CODEC_BASE;
 	cp[i].type = cod_type_G726_32;
-	if(strlen("G726-32") >= COD_NAME_LEN){
-		goto __exit_fail;
-	}
-	strcpy(cp[i].sdp_name, "G726-32");
+	cp[i].sdp_name=strdup("G726-32");
+	cp[i].fmtp_str=empty;
 	cp[i].rate = 8000;
 
 	/* G726_ parameters. */
 	i=cod_type_G726_40-CODEC_BASE;
 	cp[i].type = cod_type_G726_40;
-	if(strlen("G726-40") >= COD_NAME_LEN){
-		goto __exit_fail;
-	}
-	strcpy(cp[i].sdp_name, "G726-40");
+	cp[i].sdp_name=strdup("G726-40");
+	cp[i].fmtp_str=empty;
+	cp[i].rate = 8000;
+	
+	/* telephone event parameters. */
+	i=TELEPHONE_EVENT_CODEC-CODEC_BASE;
+	cp[i].type = TELEPHONE_EVENT_CODEC;
+	cp[i].sdp_name=strdup("telephone-event");
+	cp[i].fmtp_str=strdup("0-16");
 	cp[i].rate = 8000;
 
 	return 0;
-__exit_fail:
-	return -1;
 }/*}}}*/
 
 /**
@@ -848,6 +836,17 @@ sip_init( ab_t const * const ab )
 			    curr_rec->codecs[k++]=codec_type;
 		}
 		
+		curr_rec->dtmf=dtmf_off;
+		if (config_setting_lookup_string(rec_set, "dtmf", &str_elem) ==CONFIG_TRUE) {
+			if (!strcasecmp(str_elem,"rfc2883")) {
+				curr_rec->dtmf=dtmf_2883;
+				curr_rec->codecs[k++] = TELEPHONE_EVENT_CODEC;
+			} else if (!strcasecmp(str_elem,"info")) {
+				curr_rec->dtmf=dtmf_info;
+			}
+		}
+		
+		
 		/* Ring incoming */
 		rec_subset = config_lookup_from(rec_set, "ring_incoming");
 		if( !rec_subset ){
@@ -1118,6 +1117,8 @@ codecs_init( void )
 	g_conf.codecs[cod_type_G726_40].jb.jb_min_sz=10*8;
 	g_conf.codecs[cod_type_G726_40].jb.jb_max_sz=200*8;
 	
+	g_conf.codecs[TELEPHONE_EVENT_CODEC].type=TELEPHONE_EVENT_CODEC;
+	g_conf.codecs[TELEPHONE_EVENT_CODEC].user_payload=106;
 	
 	/* Override defaults from config file */
 	set = config_lookup (&cfg, "codecs" );

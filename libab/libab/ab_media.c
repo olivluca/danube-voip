@@ -73,7 +73,7 @@ ab_chan_fax_pass_through_start( ab_chan_t * const chan )
  */ 
 int 
 ab_chan_media_rtp_tune( ab_chan_t * const chan, codec_t const * const cod,
-		codec_t const * const fcod, rtp_session_prms_t const * const rtpp)
+		codec_t const * const fcod, rtp_session_prms_t const * const rtpp, int te_payload)
 {/*{{{*/
 	IFX_TAPI_PKT_RTP_PT_CFG_t rtpPTConf;
 	IFX_TAPI_PKT_RTP_CFG_t rtpConf;
@@ -204,10 +204,17 @@ ab_chan_media_rtp_tune( ab_chan_t * const chan, codec_t const * const cod,
 	rtpConf.nSeqNr = 0;
 	rtpConf.nSsrc = 0;
 	/* set out-of-band (RFC 2833 packet) configuratoin {{{*/
-	rtpConf.nEvents = IFX_TAPI_PKT_EV_OOB_NO;
-	rtpConf.nEventPT = 0x62;
-	rtpConf.nEventPlayPT = 0x62;
-	rtpConf.nPlayEvents = IFX_TAPI_PKT_EV_OOBPLAY_MUTE;
+	if (te_payload<0) {
+		rtpConf.nEvents = IFX_TAPI_PKT_EV_OOB_NO;
+		rtpConf.nEventPT = 0x62;
+		rtpConf.nEventPlayPT = 0x62;
+		rtpConf.nPlayEvents = IFX_TAPI_PKT_EV_OOBPLAY_MUTE;
+	} else {
+		rtpConf.nEvents = IFX_TAPI_PKT_EV_OOB_ONLY;
+		rtpConf.nEventPT = te_payload;
+		rtpConf.nEventPlayPT = te_payload;
+		rtpConf.nPlayEvents = IFX_TAPI_PKT_EV_OOBPLAY_PLAY;
+	}
 	/*}}}*/
 	/* Configure encoder and decoder gains {{{*/
 	codVolume.nEnc = rtpp->enc_dB;

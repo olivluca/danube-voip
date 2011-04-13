@@ -31,6 +31,9 @@
 #define ALAW_PT_DF 0
 /** @}*/
 
+/* Nasty hack to treat telehone-event as any oher codec */
+#define TELEPHONE_EVENT_CODEC (cod_type_G726_40+1)
+
 /** @defgroup DIAL_MARK Dial string markers.
  * 	@ingroup DIAL_SEQ
  * 	Dialling markers.
@@ -69,7 +72,7 @@ void startup_destroy( int argc, char ** argv );
  * First unusing codec \c type will be set as \c codec_type_NONE.
  * It should be greater then codecs count because application can
  * test the end of the list by \c == \c codec_type_NONE */
-#define COD_MAS_SIZE 12
+#define COD_MAS_SIZE 15
 /** Address payload length.*/
 #define ADDR_PAYLOAD_LEN 40 /* sip id or address, or full PSTN phone number */
 /** IP number length.*/
@@ -83,14 +86,11 @@ void conf_show( void );
 /** Destroy \ref g_conf.*/
 void svd_conf_destroy( void );
 
-
-#define FMTP_STR_LEN 20
-
 /** Codec rtp and sdp parameters.*/
 typedef struct cod_prms_s {
 	cod_type_t type;
-	char sdp_name[COD_NAME_LEN];
-	char fmtp_str[FMTP_STR_LEN];
+	char *sdp_name;
+	char *fmtp_str;
 	int rate;
 } cod_prms_t;
 
@@ -109,6 +109,12 @@ struct dial_plan_s {
 	struct dplan_record_s * records; /**< Records.*/
 };
 /** SIP registration and codec choise policy.*/
+typedef enum  {
+	dtmf_off,
+	dtmf_2883,
+	dtmf_info
+} dtmf_type_e;
+
 struct sip_account_s {
 	unsigned char all_set; /**< Shall we register on sip server?*/
 	int codecs[COD_MAS_SIZE];/**< Codecs sorted by priority.*/
@@ -123,6 +129,7 @@ struct sip_account_s {
 	unsigned char registered; /**< Account correctly registered.*/
 	char * registration_reply; /**<Last registration reply received from registrar-> */
 	nua_handle_t * op_reg; /**< Pointer to NUA Handle for registration.*/
+	dtmf_type_e dtmf; /**<How to send dtmf */
 };
 /** Fax parameters.*/
 struct fax_s {
@@ -130,6 +137,7 @@ struct fax_s {
 	int internal_pt;
 	int external_pt;
 };
+
 /** Routine main configuration struct.*/
 struct svd_conf_s {/*{{{*/
 	int channels; /**<Number of configured channels (from svd_chans_init). */

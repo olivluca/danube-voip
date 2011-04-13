@@ -19,8 +19,7 @@ typedef struct sip_account_s sip_account_t;
 #define SU_ROOT_MAGIC_T svd_t
 /*}}}*/
 
-/* Using in svd_cfg.h too.*/
-#define COD_NAME_LEN 15
+#define COD_NAME_LEN 30
 
 /* used to transmitt digits with SIP INFO,
  * first val is indicator, that it was tone digit,
@@ -63,6 +62,7 @@ struct svd_chan_s
 
 	char sdp_cod_name[COD_NAME_LEN]; /**< SDP selected codec.*/
 	int sdp_payload; /**< SDP Selected payload.*/
+	int te_payload;  /**< payload for telephone events */
 	int rtp_sfd; /**< RTP socket file descriptor.*/
 	int rtp_port; /**< Local RTP port.*/
 

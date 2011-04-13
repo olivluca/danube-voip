@@ -340,7 +340,7 @@ int ab_dev_event_get(
 int ab_chan_fax_pass_through_start( ab_chan_t * const chan );
 /** Tune rtp parameters on selected chan */
 int ab_chan_media_rtp_tune( ab_chan_t * const chan, codec_t const * const cod,
-		codec_t const * const fcod, rtp_session_prms_t const * const rtpp);
+		codec_t const * const fcod, rtp_session_prms_t const * const rtpp, int te_payload);
 /** Tune jitter buffer parameters on selected chan */
 int ab_chan_media_jb_tune( ab_chan_t * const chan, jb_prms_t const * const jbp);
 /** Tune wlec parameters on selected chan */

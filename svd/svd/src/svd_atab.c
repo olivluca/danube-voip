@@ -305,6 +305,7 @@ DFS
 
 	/* SDP */
 	chan_ctx->sdp_payload = -1;
+	chan_ctx->te_payload = -1;
 	memset(chan_ctx->sdp_cod_name,0,sizeof(chan_ctx->sdp_cod_name));
 
 	memset(&chan_ctx->vcod, 0, sizeof(chan_ctx->vcod));
@@ -382,7 +383,7 @@ ab_chan_media_activate ( ab_chan_t * const chan )
 
 	/* RTP */
 	err = ab_chan_media_rtp_tune (chan, &ctx->vcod, &ctx->fcod,
-			&g_conf.audio_prms[chan->abs_idx]);
+			&g_conf.audio_prms[chan->abs_idx], ctx->te_payload);
 	if(err){
 		SU_DEBUG_1(("Media_tune error : %s",ab_g_err_str));
 		goto __exit;
@@ -510,9 +511,10 @@ svd_cod_prms_get(enum cod_type_e ct ,char const * const cn)
 		pass_name = 1;
 	}
 
+	/* It shouldn't actually happen, this function is always called with one parameter set */
 	if(pass_type && pass_name){
 		ret_idx = get_next;
-		if(g_conf.cp[get_next].type == cod_type_NONE){
+		if(g_conf.cp[get_next].type == cod_type_NONE || g_conf.cp[get_next].type == TELEPHONE_EVENT_CODEC){
 			get_next = 0;
 		} else {
 			get_next++;
@@ -750,19 +752,19 @@ DFS
 			chan_ctx->op_handle));
 
 	if( chan_ctx->op_handle ){
-		/* allready connected - we can send info
-		 * see rfc_2976
-		 */
-		int tone = (data >> 8);
-		char pd[INFO_STR_LENGTH];
+		/* already connected, send dtmf info (rfc2976) if account configured for that */
+		if (chan_ctx->account->dtmf == dtmf_info) {
+			int tone = (data >> 8);
+			char pd[INFO_STR_LENGTH];
 
-		memset (pd, 0, sizeof(pd[0]));
-		snprintf(pd, INFO_STR_LENGTH, INFO_STR, tone, digit);
+			memset (pd, 0, sizeof(pd[0]));
+			snprintf(pd, INFO_STR_LENGTH, INFO_STR, tone, digit);
 
-		/* send INFO */
-		nua_info(chan_ctx->op_handle,
-				SIPTAG_PAYLOAD_STR(pd),
-				TAG_NULL());
+			/* send INFO */
+			nua_info(chan_ctx->op_handle,
+				  SIPTAG_PAYLOAD_STR(pd),
+				  TAG_NULL());
+		}
 	} else {
 		/* not connected yet - should process digits */
 		err = svd_handle_digit (svd, chan_idx, digit);

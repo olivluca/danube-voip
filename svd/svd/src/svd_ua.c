@@ -92,11 +92,15 @@ svd_r_info(int status, char const * phrase, svd_t * const svd,
 #define SDP_STR_MAX_LEN 512
 /** Parse SDP string and set appropriate session parameters.*/
 static void
-svd_parse_sdp(svd_t * const svd, ab_chan_t * const chan, char const * str);
+svd_parse_sdp(svd_t * const svd, sip_account_t * const account, ab_chan_t * const chan, char const * str);
 /** Create SDP string depends on codec choice policy.*/
 static char *
 svd_new_sdp_string (ab_chan_t const * const chan, sip_account_t const * const account);
 /** @}*/
+
+/** Sets the telephone even payload */
+static void
+svd_set_te_codec(sdp_session_t const * sdp_sess, sip_account_t const * const account, svd_chan_t * chan_ctx);
 
 /****************************************************************************/
 
@@ -306,8 +310,8 @@ DFS
 	if (account_index<0)
 		goto __exit_fail;
 	
+	account = &g_conf.sip_account[account_index];
 	from = sip_from_make(svd->home, account->user_URI);
-	
 	if (dplan_index<0 || dplan->replacelen==0) {
 		asprintf(&to_address, "sip:%s@%s", to_str, account->sip_domain);
 	} else {
@@ -362,6 +366,7 @@ DFS
 	chan_ctx->account = account;
 	nua_invite( nh,
 			TAG_IF (svd->outbound_ip[0], SOATAG_ADDRESS(svd->outbound_ip)),
+			SOATAG_AUDIO_AUX("telephone-event"),
 			SOATAG_USER_SDP_STR(l_sdp_str),
 			SOATAG_RTP_SORT (SOA_RTP_SORT_LOCAL),
 			SOATAG_RTP_SELECT (SOA_RTP_SELECT_SINGLE),
@@ -427,6 +432,7 @@ DFS
 		}
 
 		nua_respond (chan_ctx->op_handle, status, phrase,
+				SOATAG_AUDIO_AUX("telephone-event"),
 				SOATAG_RTP_SORT (SOA_RTP_SORT_LOCAL),
 				SOATAG_RTP_SELECT (SOA_RTP_SELECT_SINGLE),
 				TAG_IF(svd->outbound_ip[0],
@@ -750,7 +756,7 @@ DFS
 		SU_DEBUG_4(("Remote sdp:\n%s\n", r_sdp));
 		/* parse incoming sdp (offer or answer)
 		 * and set remote host/port/first_pt */
-		svd_parse_sdp(svd, chan, r_sdp);
+		svd_parse_sdp(svd, account, chan, r_sdp);
 	}
 	if (l_sdp) {
 		SU_DEBUG_4(("Local sdp:\n%s\n", l_sdp));
@@ -962,6 +968,7 @@ DFS
 				}
 				SU_DEBUG_5(("rm_fmtp: %s\n"
 						,sdp_sess->sdp_media->m_rtpmaps->rm_fmtp));
+				svd_set_te_codec(sdp_sess, account, chan_ctx);
 			}
 		}
 		sdp_parser_free (remote_sdp);
@@ -1169,7 +1176,7 @@ DFE
  * 		It sets chan-ctx port, host and payload from SDP string.
  */
 static void
-svd_parse_sdp(svd_t * const svd, ab_chan_t * const chan, char const *str)
+svd_parse_sdp(svd_t * const svd, sip_account_t * const account, ab_chan_t * const chan, const char * str)
 {/*{{{*/
 	sdp_parser_t * remote_sdp = NULL;
 	sdp_session_t * sdp_sess = NULL;
@@ -1204,13 +1211,14 @@ DFS
 			SU_DEBUG_0(("ERROR: SDP CODNAME string size too small\n"));
 			goto __exit;
 		}
-
-		SU_DEBUG_5(("Got remote %s:%d with coder/payload [%s/%d], fmtp: %s\n",
+		svd_set_te_codec(sdp_sess, account, chan_ctx);
+		SU_DEBUG_5(("Got remote %s:%d with coder/payload [%s/%d], fmtp: %s, telephone-event: %d\n",
 				chan_ctx->remote_host,
 				chan_ctx->remote_port,
 				chan_ctx->sdp_cod_name,
 				chan_ctx->sdp_payload,
-				sdp_sess->sdp_media->m_rtpmaps->rm_fmtp));
+				sdp_sess->sdp_media->m_rtpmaps->rm_fmtp,
+				chan_ctx->te_payload));
 	}
 __exit:
 	sdp_parser_free (remote_sdp);
@@ -1269,7 +1277,7 @@ svd_new_sdp_string (ab_chan_t const * const chan, sip_account_t const * const ac
 		ltmp = snprintf(pld_str, SDP_STR_MAX_LEN, " %d", g_conf.codecs[account->codecs[i]].user_payload);
 		if((ltmp == -1) || (ltmp >= SDP_STR_MAX_LEN)){
 			SU_DEBUG_0((LOG_FNC_A(
-					"ERROR: Codac PAYLOAD string buffer too small")));
+					"ERROR: Codec PAYLOAD string buffer too small")));
 			goto __exit_fail_allocated;
 		} else if(ltmp >= limit){
 			SU_DEBUG_0((LOG_FNC_A("ERROR: SDP string buffer too small")));
@@ -1338,3 +1346,28 @@ __exit_fail:
 	return NULL;
 }/*}}}*/
 
+/**
+ * Sets payload for telephone-event (dtmf tones according to rfc2883).
+ *
+ * \param[in] 	sdp_sess	parsed sdp session parameters.
+ * \param[in]	account		sip account
+ * \param[in]	chan_ctx	channel context to receive the payload.
+ */
+static void
+svd_set_te_codec(sdp_session_t const * sdp_sess, sip_account_t const * const account, svd_chan_t * chan_ctx)
+{/*{{{*/
+	sdp_rtpmap_t * rtpmap;
+DFS
+	if (account->dtmf == dtmf_2883) {
+		for (rtpmap = sdp_sess->sdp_media->m_rtpmaps; rtpmap !=NULL ; rtpmap = rtpmap->rm_next) {
+			SU_DEBUG_9(("Checking media for telephone-event: %s\n", rtpmap->rm_encoding));
+			if (!strcmp("telephone-event",rtpmap->rm_encoding)) {
+				chan_ctx->te_payload=rtpmap->rm_pt;
+				SU_DEBUG_9(("\tfound!\n"));
+				break;
+			}
+		}
+	}
+DFE
+	return;
+}/*}}}*/

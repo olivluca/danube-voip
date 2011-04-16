@@ -207,8 +207,6 @@ static svd_t *
 svd_create (ab_t * const ab)
 {/*{{{*/
 	svd_t * svd;
-	sip_to_t *from = NULL;
-	char contact_url[256];
 	int tos;
 	int err;
 DFS
@@ -260,13 +258,6 @@ DFS
 		goto __exit_fail;
 	}
 
-	/* Set from address and contact url according to config */
-	memset(contact_url, 0, sizeof(contact_url));
-	strcpy(contact_url, "sip:");
-	strcat(contact_url, g_conf.self_ip);
-	strcat(contact_url, ";maddr=0.0.0.0"); // Bind SIP socket to INADDR_ANY
-	from = sip_from_make(svd->home, contact_url);
-
 	/* launch the SIP stack */
 	/* *
 	 * NUTAG_AUTOANSWER (1)
@@ -280,11 +271,8 @@ DFS
 	svd->nua = nua_create (svd->root, svd_nua_callback, svd,
 			SIPTAG_USER_AGENT_STR ("svd VoIP agent"),
 			SOATAG_AF (SOA_AF_IP4_IP6),
-	 		//SOATAG_ADDRESS (g_conf.self_ip),
-			//SIPTAG_FROM(from),
 			TPTAG_TOS (tos),
 	 		NUTAG_ALLOW ("INFO"),
-			//NUTAG_URL(contact_url),
 			NUTAG_AUTOALERT (1),
 			NUTAG_ENABLEMESSAGE (1),
 			NUTAG_ENABLEINVITE (1),
@@ -295,20 +283,12 @@ DFS
 		goto __exit_fail;
 	}
 
-	su_free(svd->home, from);
-	from = NULL;
+	nua_set_params(svd->nua,
+		      NUTAG_OUTBOUND ("gruuize no-outbound validate "
+				      "natify use-rport options-keepalive"),
+		      TAG_NULL () );
 
-//	g_conf.sip_set[0].op_reg = NULL; //FIXME
-
-//	if(g_conf.sip_set[0].all_set){ //FIXME como manejar varios registros?
-		nua_set_params(svd->nua,
-			//	NUTAG_REGISTRAR (g_conf.sip_set[0].registrar), //FIXME
-				NUTAG_OUTBOUND ("gruuize no-outbound validate "
-						"natify use-rport options-keepalive"),
-				TAG_NULL () );
-
-		svd_refresh_registration (svd);
-//	}
+	svd_refresh_registration (svd);
 	nua_get_params(svd->nua, TAG_ANY(), TAG_NULL());
 DFE
 	return svd;

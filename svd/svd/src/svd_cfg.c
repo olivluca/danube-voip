@@ -211,8 +211,6 @@ svd_conf_init( ab_t const * const ab, su_home_t * home )
 {/*{{{*/
 	/* default presets */
 	memset (&g_conf, 0, sizeof(g_conf));
-	strcpy (g_conf.lo_ip, "192.168.10.168");  //FIXME
-	g_conf.self_ip=g_conf.lo_ip;
 	if(		main_init (ab) 	||
 			codecs_init()	||
 			sip_init (ab, home)||
@@ -247,7 +245,7 @@ conf_show( void )
 	int j;
 
 	SU_DEBUG_3(("=========================\n"));
-	SU_DEBUG_3(("%s[%s] channels %d : ", g_conf.self_number, g_conf.self_ip, g_conf.channels));
+	SU_DEBUG_3(("channels %d : ", g_conf.channels));
 	SU_DEBUG_3(("log["));
 
 	if( g_conf.log_level == -1 ){

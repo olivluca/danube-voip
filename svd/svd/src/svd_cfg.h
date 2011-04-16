@@ -139,8 +139,6 @@ struct fax_s {
 struct svd_conf_s {/*{{{*/
 	int channels; /**<Number of configured channels (from svd_chans_init). */
 	char * self_number; /**< Pointer to corresponding rt.rec[].id or NULL.*/
-	char * self_ip; /**< Pointer to corresponding rt.rec[].value or lo_ip.*/
-	char lo_ip[IP_LEN_MAX]; /**< Local Address IP. */
 	char log_level; /**< If log_level = -1 - do not log anything.*/
 	struct fax_s fax;/**< Fax parameters.*/ /* FIXME */
 	unsigned long rtp_port_first; /**< Min ports range bound for RTP.*/

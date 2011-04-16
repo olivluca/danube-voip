@@ -1434,7 +1434,8 @@ This is free software.  You may redistribute copies of it under the terms of\n\
 the GNU General Public License <http://www.gnu.org/licenses/gpl.html>.\n\
 There is NO WARRANTY, to the extent permitted by law.\n\
 \n\
-Written by Vladimir Luchko. <%s>\n\
+Originally written by Vladimir Luchko.\n\
+This version butchered by Luca Olivetti <%s>\n\
 "
 		, PACKAGE_NAME, PACKAGE_VERSION,
 		__DATE__, __TIME__, PACKAGE_BUGREPORT);

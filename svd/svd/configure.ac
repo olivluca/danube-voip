@@ -1,4 +1,4 @@
-AC_INIT(svd, 0.1, vlad.luch@mail.ru)
+AC_INIT(svd, 0.1, luca@ventoso.org)
 AC_CONFIG_SRCDIR([src/svd.c])
 AC_CONFIG_HEADER([config.h])
 

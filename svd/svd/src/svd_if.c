@@ -40,7 +40,7 @@ Mandatory arguments to long options are mandatory for short options too.\n\
 \n\
 Report bugs to <%s>.\n\
 "
-		, "svd_if", "svd_if", "vlad.luch@mail.ru");
+		, "svd_if", "svd_if", "luca@ventoso.org");
 }/*}}}*/
 
 /**

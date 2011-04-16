@@ -499,6 +499,7 @@ DFS
 	for (i=0; i<su_vector_len(g_conf.sip_account); i++) {
 		sip_account_t * account = su_vector_item(g_conf.sip_account, i);
 		account->registered = 0;
+		account->reg_tmr = su_timer_create(su_root_task(svd->root), 30000);
 		if ( nua_handle_has_registrations (account->op_reg)){
 			nua_unregister(account->op_reg,
 				SIPTAG_CONTACT_STR("*"),
@@ -539,7 +540,13 @@ DFE
 void
 svd_shutdown(svd_t * svd)
 {/*{{{*/
+	int i;
+	sip_account_t * account;
 DFS
+	for (i=0; i<su_vector_len(g_conf.sip_account); i++) {
+		account = su_vector_item(g_conf.sip_account, i);
+		su_timer_destroy(account->reg_tmr);
+	}
 	nua_shutdown (svd->nua);
 DFE
 }/*}}}*/
@@ -1123,6 +1130,22 @@ DFE
 }/*}}}*/
 
 /**
+ * Timer callback, retries registration.
+ * \param[in] magic	svd pointer.
+ * \param[in] t		initiator timer.
+ * \param[in] arg	account pointer.
+ */
+void
+reg_timer_cb (su_root_magic_t *magic, su_timer_t *t, su_timer_arg_t *arg)
+{/*{{{*/
+	svd_t * svd = magic;
+	sip_account_t * account = arg;
+	
+	SU_DEBUG_3(("Retrying registration to %s, user_URI %s\n", account->registrar, account->user_URI));
+	svd_register(svd,account);
+}/*}}}*/
+
+/**
  * Callback on nua-(un)register event.
  *
  * \param[in] 	status	status on event.
@@ -1167,7 +1190,10 @@ DFS
 	} else if (status == 401 || status == 407){
 		svd_authenticate (svd, account, nh, sip, tags);
 	} else if (status >= 300) {
+		//retry registration after 30 seconds
 		nua_handle_destroy (nh);
+		account->op_reg = NULL;
+		su_timer_set(account->reg_tmr, reg_timer_cb, account);
 	}
 DFE
 }/*}}}*/

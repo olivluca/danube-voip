@@ -100,13 +100,7 @@ struct dplan_record_s {
 	char *prefix; /**< prefix that matches this record.*/
 	int prefixlen;
 	char *replace; /**< if not empty, replace prefix with this value before dialling.*/
-	int replacelen;
 	int account; /**< sip account to use for this rule.*/
-};
-/** Address book.*/
-struct dial_plan_s {
-	unsigned int records_num; /**< Number of records in dial plan.*/
-	struct dplan_record_s * records; /**< Records.*/
 };
 /** SIP registration and codec choise policy.*/
 typedef enum  {
@@ -123,7 +117,9 @@ struct sip_account_s {
 	char *user_pass; /**< SIP user password.*/
 	char *user_URI; /**< SIP URI.*/
 	char *sip_domain; /**< sip domain for outgoing calls.*/
+#ifndef DONT_BIND_TO_DEVICE
 	char *rtp_interface; /**<interface to use for rtp traffic */
+#endif
 	int outgoing_priority[CHANS_MAX]; /**< priority of this account for each channel (lower number takse precedence */
 	unsigned char ring_incoming[CHANS_MAX]; /**< which channels to ring for incoming calls */
 	unsigned char registered; /**< Account correctly registered.*/
@@ -151,7 +147,7 @@ struct svd_conf_s {/*{{{*/
 	cod_prms_t cp[COD_MAS_SIZE]; /**<Codecs parameters.*/
 	codec_t codecs[COD_MAS_SIZE];/**< Codecs definitions.*/
 	su_vector_t *  sip_account; /**< SIP settings for registration.*/
-	struct dial_plan_s dial_plan; /**< Dial plan.*/
+	su_vector_t * dial_plan; /**< Dial plan.*/
 	struct rtp_session_prms_s audio_prms [CHANS_MAX]; /**< AUDIO channel params.*/
 	struct wlec_s       wlec_prms    [CHANS_MAX]; /**< WLEC channel parameters.*/
 	unsigned char sip_tos; /** Type of Service byte for sip-packets.*/

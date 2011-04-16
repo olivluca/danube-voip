@@ -280,10 +280,8 @@ DFS
 	/* find the account to use to place the call */
 	
 	/* first, try the dial plan */
-	for (i=0; i<g_conf.dial_plan.records_num; i++) {
-		dplan = &g_conf.dial_plan.records[i];
-		if (dplan->account<0 || dplan->prefixlen==0)
-			continue;
+	for (i=0; i<su_vector_len(g_conf.dial_plan); i++) {
+		dplan = su_vector_item(g_conf.dial_plan, i);
 		if (!strncmp(to_str, dplan->prefix, dplan->prefixlen)) {
 			account = su_vector_item(g_conf.sip_account,dplan->account);
 			if (account->all_set && account->registered) {
@@ -313,7 +311,7 @@ DFS
 	
 	account = su_vector_item(g_conf.sip_account, account_index);
 	from = sip_from_make(svd->home, account->user_URI);
-	if (dplan_index<0 || dplan->replacelen==0) {
+	if (dplan_index<0) {
 		asprintf(&to_address, "sip:%s@%s", to_str, account->sip_domain);
 	} else {
 		asprintf(&to_address, "sip:%s%s@%s", dplan->replace, to_str+dplan->prefixlen, account->sip_domain);

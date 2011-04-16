@@ -94,7 +94,7 @@ static int audio_init (void);
 /** Init WLEC parameters configuration.*/
 static int wlec_init (ab_t const * const ab);
 /** Init dialplan configuration.*/
-static int dialplan_init (void);
+static int dialplan_init (su_home_t * home);
 /** Initilize codecs parameters structure */
 static int svd_init_cod_params( cod_prms_t * const cp );
 /** Init codecs definitions.*/
@@ -218,7 +218,7 @@ svd_conf_init( ab_t const * const ab, su_home_t * home )
 			sip_init (ab, home)||
 			audio_init()	||
 			wlec_init (ab)	||
-			dialplan_init()
+			dialplan_init(home)
 			){
 		goto __exit_fail;
 	}
@@ -273,6 +273,7 @@ conf_show( void )
 				));
 	}
 
+	if (g_conf.sip_account)
 	for (i=0; i<su_vector_len(g_conf.sip_account); i++) {
 		curr_sip_rec = su_vector_item(g_conf.sip_account, i);  
 		SU_DEBUG_3(("SIP net %d : %d\n", i, curr_sip_rec->all_set));
@@ -325,12 +326,12 @@ conf_show( void )
 	}
 	*/
 
-	if(g_conf.dial_plan.records_num){
+	if(g_conf.dial_plan){
 		SU_DEBUG_3(("Dial plan :\n"));
 	
-		j = g_conf.dial_plan.records_num;
+		j = su_vector_len(g_conf.dial_plan);
 		for(i = 0; i < j; i++){
-			curr_dp_rec = &g_conf.dial_plan.records[ i ];
+			curr_dp_rec = su_vector_item(g_conf.dial_plan, i);
 			SU_DEBUG_3(("\tPrefix \"%s\", Replace \"%s\", Account %d\n",
 					curr_dp_rec->prefix, curr_dp_rec->replace, curr_dp_rec->account));
 		}
@@ -345,21 +346,8 @@ conf_show( void )
 void
 svd_conf_destroy (void)
 {/*{{{*/
-	int i;
-	int j;
-	struct dplan_record_s * dplan_rec;
-
-	j = g_conf.dial_plan.records_num;
-	if (j){
-		for(i = 0; i < j; i++){
-			dplan_rec = &g_conf.dial_plan.records[ i ];
-			if (dplan_rec->prefix)
-				free (dplan_rec->prefix);
-			if (dplan_rec->replace)
-				free (dplan_rec->replace);
-		}
-		free (g_conf.dial_plan.records);
-	}
+	if (g_conf.dial_plan)
+	  su_vector_destroy(g_conf.dial_plan);
 	
 	if (g_conf.sip_account)
 	  su_vector_destroy(g_conf.sip_account);
@@ -724,7 +712,7 @@ __exit_fail:
 }/*}}}*/
 
 /**
- * Free one sip account.
+ * Frees one sip account.
  *
  * \param[in] elem account to free.
  */
@@ -742,6 +730,10 @@ sip_free(void * elem)
 		free (account->user_URI);
 	if (account->sip_domain)
 		free (account->sip_domain);
+#ifndef DONT_BIND_TO_DEVICE
+	if (account->rtp_interface)
+		free (account->rtp_interface);
+#endif	
 	free (account);
 }/*}}}*/
 
@@ -749,6 +741,7 @@ sip_free(void * elem)
  * Read sip accounts.
  *
  * \param[in] ab ata-board hardware structure.
+ * \param[in] home su_home for memory allocation
  *
  * \retval 0 success.
  * \retval -1 fail.
@@ -818,10 +811,12 @@ sip_init( ab_t const * const ab, su_home_t * home )
 		if (config_setting_lookup_string(rec_set, "sip_domain", &str_elem) == CONFIG_FALSE)
 		  continue;
 		curr_rec->sip_domain = strdup(str_elem);
-		
+
+#ifndef DONT_BIND_TO_DEVICE
 		if (config_setting_lookup_string(rec_set, "rtp_interface", &str_elem) == CONFIG_FALSE)
 		  continue;
 		curr_rec->rtp_interface = strdup(str_elem);
+#endif
 		
 		/* CODECS */
 		for (j=0; j<COD_MAS_SIZE; j++)
@@ -880,20 +875,39 @@ sip_init( ab_t const * const ab, su_home_t * home )
 	return 0;
 __exit_fail:
 	config_destroy (&cfg);
-	if (g_conf.sip_account)
+	if (g_conf.sip_account) {
 	  su_vector_destroy(g_conf.sip_account);
+	  g_conf.sip_account = NULL;
+	}
 	return err;
 }/*}}}*/
 
 /**
+ * Frees one dialplan entry.
+ *
+ * \param[in] elem account to free.
+ */
+static void
+dialplan_free(void * elem)
+{/*{{{*/
+	struct dplan_record_s * record = elem;
+	if (record->prefix)
+		free (record->prefix);
+	if (record->replace)
+		free (record->replace);
+	free (record);
+}/*}}}*/
+/**
  * Inits dial plan records in main routine configuration
  * 		\ref g_conf structure.
+ *
+ * \param[in] home su_home for memory allocation
  *
  * \retval 0 success.
  * \retval -1 fail.
  */
 static int
-dialplan_init( void )
+dialplan_init( su_home_t * home )
 {/*{{{*/
 	struct config_t cfg;
 	struct config_setting_t * set;
@@ -913,29 +927,28 @@ dialplan_init( void )
 				__func__, err));
 		goto __exit_fail;
 	}
+	
+	g_conf.dial_plan = su_vector_create(home, dialplan_free);
+	if( !g_conf.dial_plan ){
+		SU_DEBUG_0((LOG_FNC_A(LOG_NOMEM)));
+		goto __exit_fail;
+	}
 
 	set = config_lookup (&cfg, "dial_plan" );
 	if( !set ){
-		g_conf.dial_plan.records_num = 0;
 		goto __exit_success;
 	}
 
 	rec_num = config_setting_length (set);
-
-	g_conf.dial_plan.records_num = rec_num;
-	SU_DEBUG_9(("Dialplan records %d\n", rec_num));
-	g_conf.dial_plan.records = malloc (rec_num *
-			sizeof(*(g_conf.dial_plan.records)));
-	if( !g_conf.dial_plan.records ){
-		SU_DEBUG_0((LOG_FNC_A(LOG_NOMEM)));
-		goto __exit_fail;
-	}
-	memset(g_conf.dial_plan.records, 0, rec_num *
-			sizeof(*(g_conf.dial_plan.records)));
-
 	int max_account = su_vector_len(g_conf.sip_account);
 	for(i = 0; i < rec_num; i++){
-		dplan_rec = &g_conf.dial_plan.records[ i ];
+		dplan_rec = malloc(sizeof(*dplan_rec));
+		if( !dplan_rec ){
+			SU_DEBUG_0((LOG_FNC_A(LOG_NOMEM)));
+			goto __exit_fail;
+		}
+		memset(dplan_rec, 0, sizeof(*dplan_rec));
+		
 		rec_set = config_setting_get_elem (set, i);
 
 		/* get prefix */
@@ -950,30 +963,30 @@ dialplan_init( void )
 		elem = config_setting_get_string_elem (rec_set, 1);
 		if (elem) {
 			dplan_rec->replace = strdup(elem);
-			dplan_rec->replacelen = strlen(elem);
-		} else
-			dplan_rec->replacelen = 0;
+		} else {
+			dplan_rec->replace = strdup("");
+		}
 		
 		/* get account */
 		dplan_rec->account = config_setting_get_int_elem(rec_set, 2)-1;
-		if (dplan_rec->account>=max_account)
-			dplan_rec->account=-1;
+		
+		/* bogus dial plan entry, ignore it */
+		if (dplan_rec->account>=max_account || dplan_rec->account <0 || dplan_rec->prefixlen == 0) {
+			free(dplan_rec);
+			continue;
+		}
+		/* add the record to the dial plan */
+		su_vector_append(g_conf.dial_plan, dplan_rec);
+		
 	}
 
 __exit_success:
 	config_destroy (&cfg);
 	return 0;
 __exit_fail:
-	if(g_conf.dial_plan.records) {
-		for(i=0; i<rec_num; i++){
-			dplan_rec = &g_conf.dial_plan.records[ i ];
-			if (dplan_rec->prefix)
-				free (dplan_rec->prefix);
-			if (dplan_rec->replace)
-				free (dplan_rec->replace);
-		}
-		free(g_conf.dial_plan.records);
-		g_conf.dial_plan.records = NULL;
+	if(g_conf.dial_plan) {
+		su_vector_destroy(g_conf.dial_plan);
+		g_conf.dial_plan=NULL;
 	}
 	config_destroy (&cfg);
 	return -1;

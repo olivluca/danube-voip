@@ -710,7 +710,7 @@ main_init( ab_t const * const ab )
 	struct config_t cfg;
 	int err;
 
-	g_conf.channels = 2; //FIXME
+	g_conf.channels = ab->chans_per_dev;
 	config_init (&cfg);
 
 	/* Load the file */

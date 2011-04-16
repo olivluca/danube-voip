@@ -56,6 +56,8 @@ struct svd_chan_s
 		char digits [ADDR_PAYLOAD_LEN]; /**< collected digits.*/
 		int num_digits; /**< how many digits have been collected.*/
 	} dial_status; /**< Dial status and values, gets in dial process.*/
+	
+	unsigned char off_hook; /**<The channel is off hook */
 
 	codec_t vcod; /**< voice coder */
 	codec_t fcod; /**< faxmodem coder */

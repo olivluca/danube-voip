@@ -95,14 +95,43 @@ ab_FXS_line_just_play_it (ab_chan_t * const chan, enum ab_chan_tone_e const tone
 	If the given ring state is actual - there is nothing happens
 */
 int 
-ab_FXS_line_ring (ab_chan_t * const chan, enum ab_chan_ring_e ring)
+ab_FXS_line_ring (ab_chan_t * const chan, enum ab_chan_ring_e ring, char * number, char * name)
 {/*{{{*/
 	int err = 0;
 	if (chan->status.ring != ring){
 		if( ring == ab_chan_ring_RINGING ) {
-			err = err_set_ioctl(
-				chan, IFX_TAPI_RING_START, 0,
-						"start ringing (ioctl)");
+			IFX_TAPI_CID_MSG_t cidType1;
+			IFX_TAPI_CID_MSG_ELEMENT_t message[2];
+			memset(&cidType1, 0, sizeof(cidType1));
+			memset(&message, 0, sizeof(message));
+			int i=0;
+			if (number!=NULL && number[0]!=0) {
+				message[i].string.elementType = IFX_TAPI_CID_ST_CLI;
+				message[i].string.len = strlen(number);
+				strncpy(message[i].string.element, number, sizeof(message[0].string.element));
+				i++;
+			}
+			if (name!=NULL && name[0]!=0) {
+				message[i].string.elementType = IFX_TAPI_CID_ST_NAME;
+				message[i].string.len = strlen(name);
+				strncpy(message[i].string.element, name, sizeof(message[0].string.element));
+				i++;
+			}
+			if (i==0) {
+				/* neither caller id or name, normal ring */
+				err = err_set_ioctl(
+					chan, IFX_TAPI_RING_START, 0,
+						  "start ringing (ioctl)");
+			} else {
+				cidType1.txMode = IFX_TAPI_CID_HM_ONHOOK;
+				cidType1.messageType = IFX_TAPI_CID_MT_CSUP;
+				cidType1.nMsgElements = i;
+				cidType1.message = message;
+				err = ioctl(chan->rtp_fd, IFX_TAPI_CID_TX_SEQ_START, &cidType1);
+				if (err){
+					ab_err_set(AB_ERR_UNKNOWN, "caller id and start ringing (ioctl)"); 
+				}
+			}
 			if (!err){
 				chan->status.ring = ab_chan_ring_RINGING;
 			}
@@ -375,3 +404,54 @@ __exit_fail:
 	return -1;
 }/*}}}*/
 
+/**
+	Set caller id standard
+\param[in,out] chan - channel to operate on it
+\param[in]     std - caller id standard	
+\return 
+	0 in success case and other value otherwise
+*/
+int 
+ab_chan_cid_standard( ab_chan_t * const chan, const cid_std_t std )
+{/*{{{*/
+	int err;
+	IFX_TAPI_CID_CFG_t cidConf;
+
+	memset(&cidConf, 0, sizeof(cidConf));
+	switch (std) {
+	  case cid_TELCORDIA:
+	    cidConf.nStandard = IFX_TAPI_CID_STD_TELCORDIA;
+	    break;
+	  case cid_ETSI_FSK:
+	    cidConf.nStandard = IFX_TAPI_CID_STD_ETSI_FSK;
+	    break;
+	  case cid_ETSI_DTMF:
+	    cidConf.nStandard = IFX_TAPI_CID_STD_ETSI_DTMF;
+	    break;
+	  case cid_SIN:
+	    cidConf.nStandard = IFX_TAPI_CID_STD_SIN;
+	    break;
+	  case cid_NTT:
+	    cidConf.nStandard = IFX_TAPI_CID_STD_NTT;
+	    break;
+	  case cid_KPN_DTMF:
+	    cidConf.nStandard = IFX_TAPI_CID_STD_KPN_DTMF;
+	    break;
+	  case cid_KPN_DTMF_FSK:
+	    cidConf.nStandard = IFX_TAPI_CID_STD_KPN_DTMF_FSK;
+	    break;
+	  default:
+	    goto __exit_fail;
+	}
+
+	err = ioctl (chan->rtp_fd, IFX_TAPI_CID_CFG_SET, cidConf);
+	if(err == IFX_ERROR){
+		ab_err_set (AB_ERR_UNKNOWN, "Set Caller Id ioctl error");
+		goto __exit_fail;
+	}
+
+__exit_success:
+	return 0;
+__exit_fail:
+	return -1;
+}/*}}}*/

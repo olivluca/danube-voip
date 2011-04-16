@@ -288,21 +288,6 @@ DFS
 	size = sizeof(chan_ctx->dial_status.digits);
 	memset (chan_ctx->dial_status.digits, 0, size);
 
-
-	/* ROUTER */
-#if 0 //FIXME	no tengo muy claro que hace
-	len = g_conf.route_table.id_len;
-	if( len ){
-		size = sizeof(*(chan_ctx->dial_status.route_id));
-		memset(chan_ctx->dial_status.route_id, 0, size * (len+1));
-	}
-#endif
-#if 0 //FIXME si no esta en mas sitios quitar	
-	/* CHAN */
-	size = sizeof(chan_ctx->dial_status.chan_id);
-	memset (chan_ctx->dial_status.chan_id, 0, size);
-#endif	
-
 	/* SDP */
 	chan_ctx->sdp_payload = -1;
 	chan_ctx->te_payload = -1;
@@ -644,13 +629,14 @@ svd_handle_event_FXS_OFFHOOK( svd_t * const svd, int const chan_idx )
 	int err;
 	int i;
 DFS
+	chan_ctx->off_hook = 1;
 	/* stop ringing all lines that were ringing for this call*/
 	if (chan_ctx->op_handle) {
 		for (i=0; i<g_conf.channels; i++) {
 			ab_chan_t * chan = &svd->ab->chans[i];
 			svd_chan_t * ctx = chan->ctx;
 			if (chan_ctx->op_handle == ctx->op_handle)
-			    ab_FXS_line_ring(chan, ab_chan_ring_MUTE);
+			    ab_FXS_line_ring(chan, ab_chan_ring_MUTE, NULL, NULL);
 			/* remove association with this call if it's not this line answering */
 			if (chan_idx != ctx->chan_idx) {
 			    ctx->op_handle = NULL;
@@ -699,9 +685,12 @@ static int
 svd_handle_event_FXS_ONHOOK( svd_t * const svd, int const chan_idx )
 {/*{{{*/
 	ab_chan_t * ab_chan = &svd->ab->chans[chan_idx];
+	svd_chan_t * chan_ctx = ab_chan->ctx;
 	int err;
 
 DFS
+	chan_ctx->off_hook = 0;
+	
 	/* say BYE on existing connection */
 	svd_bye(svd, ab_chan);
 

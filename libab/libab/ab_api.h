@@ -6,6 +6,7 @@
 /*{{{ typedefs */
 typedef enum ab_dev_type_e ab_dev_type_t;
 typedef enum cod_type_e cod_type_t;
+typedef enum cid_std_e cid_std_t;
 typedef struct codec_s codec_t;
 typedef struct wlec_s wlec_t;
 typedef struct jb_prms_s jb_prms_t;
@@ -61,6 +62,15 @@ enum cod_pkt_size_e {/*{{{*/
 enum bitpack_e {/*{{{*/
 	bitpack_RTP,
 	bitpack_AAL2,
+};/*}}}*/
+enum cid_std_e {/*{{{*/
+	cid_TELCORDIA,
+	cid_ETSI_FSK,
+	cid_ETSI_DTMF,
+	cid_SIN,
+	cid_NTT,
+	cid_KPN_DTMF,
+	cid_KPN_DTMF_FSK
 };/*}}}*/
 struct codec_s {/*{{{*/
 	enum cod_type_e 	type;
@@ -304,7 +314,7 @@ void ab_destroy (ab_t ** ab);
 	Rings and Tones.
   @{ */ /*{{{*/
 /** Play ring or mute it */
-int ab_FXS_line_ring( ab_chan_t * const chan, enum ab_chan_ring_e ring );
+int ab_FXS_line_ring( ab_chan_t * const chan, enum ab_chan_ring_e ring, char * number, char * name );
 /** Play tone or mute it */
 int ab_FXS_line_tone( ab_chan_t * const chan, enum ab_chan_tone_e tone );
 /** Change linefeed mode */
@@ -355,6 +365,8 @@ int ab_chan_media_enc_mute( ab_chan_t * const chan, unsigned char const mute );
 int ab_chan_media_jb_refresh( ab_chan_t * const chan );
 /** Refresh RTCP statistics of the channel */
 int ab_chan_media_rtcp_refresh( ab_chan_t * const chan );
+/** Set Caller id standard of the channel */
+int ab_chan_cid_standard( ab_chan_t * const chan, const cid_std_t std);
 /** @} */
 /*}}}*/
 

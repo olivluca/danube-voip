@@ -236,7 +236,12 @@ DFS
     		SU_DEBUG_0 (("svd_create() su_home_init() failed\n"));
 		goto __exit_fail;
 	}
-
+	
+	/* extended SIP parser */
+	if(sip_update_default_mclass(sip_extend_mclass(NULL)) < 0) {
+		SU_DEBUG_0 (("svd_create() sip_update_default_mclass() failed\n"));
+		goto __exit_fail;
+	}
 	/* svd root creation */
 	svd->root = su_root_create (svd);
 	if (svd->root == NULL) {

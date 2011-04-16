@@ -242,6 +242,9 @@ static int tapi_dev_start(ab_t *ab)
          return status;
       }
       
+      /* configure caller id */
+      ab_chan_cid_standard(&ab->chans[c], cid_ETSI_FSK);
+      
       /* ENABLE detection of FAX signals */
       memset (&faxSig, 0, sizeof(faxSig));
       faxSig.sig = IFX_TAPI_SIG_CEDRX | IFX_TAPI_SIG_CEDTX |

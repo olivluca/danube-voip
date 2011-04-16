@@ -37,11 +37,11 @@ static void
 svd_i_invite( svd_t * const svd, nua_handle_t * nh, sip_t const *sip);
 /** Incoming INVITE has been cancelled.*/
 static void
-svd_i_cancel (svd_t * const svd, nua_handle_t const * const nh, sip_account_t * const account);
+svd_i_cancel (svd_t * const svd, nua_handle_t const * const nh);
 /** Call state has changed.*/
 static void
 svd_i_state (int status, char const *phrase, nua_t * nua,
-		svd_t * svd, nua_handle_t * const nh, sip_account_t * account,
+		svd_t * svd, nua_handle_t * const nh,
 		sip_t const *sip, tagi_t tags[]);
 /** Incoming BYE call hangup.*/
 static void
@@ -57,7 +57,7 @@ static void svd_register (svd_t * const svd, sip_account_t * account);
 /** Answer to outgoing INVITE.*/
 static void
 svd_r_invite( int status, char const *phrase, nua_t * nua, svd_t * svd,
-		nua_handle_t * nh, sip_account_t * account, sip_t const *sip,
+		nua_handle_t * nh, sip_t const *sip,
 		tagi_t tags[]);
 /** Answer to nua_get_params() or nua_get_hparams().*/
 static void
@@ -143,7 +143,7 @@ DFS
 			svd_i_invite (svd, nh, sip);
 			break;
 		case nua_i_cancel: /*< 2 Incoming INVITE has been cancelled */
-			svd_i_cancel (svd, nh, account);
+			svd_i_cancel (svd, nh);
 			break;
 		case nua_i_ack: /*< 3 Final response to INVITE has been ACKed */
 		case nua_i_fork:	/*< 4 Outgoing call has been forked */
@@ -155,7 +155,7 @@ DFS
 		/* DEPRECATED END */
 
 		case nua_i_state: /*< 7 Call state has changed */
-			svd_i_state (status, phrase, nua, svd,nh,account,sip,tags);
+			svd_i_state (status, phrase, nua, svd, nh, sip, tags);
 			break;
 		case nua_i_outbound:	/*< 8 Status from outbound processing */
 			break;
@@ -211,7 +211,7 @@ DFS
 			break;
 		case nua_r_invite:/*< 31 Answer to outgoing INVITE */
 			svd_r_invite(status, phrase, nua, svd,
-					nh, account, sip, tags);
+					nh, sip, tags);
 			break;
 		case nua_r_cancel:	/*< 32 Answer to outgoing CANCEL */
 			break;
@@ -331,8 +331,6 @@ DFS
 		SU_DEBUG_0 ((LOG_FNC_A("url_sanitize()")));
 		goto __exit_fail;
 	}
-
-	assert(chan_ctx->op_handle == NULL);
 
 	nh = nua_handle (svd->nua, account,
 			NUTAG_URL(to->a_url),
@@ -464,8 +462,15 @@ void
 svd_bye (svd_t * const svd, ab_chan_t * const chan)
 {/*{{{*/
 DFS
-	assert ( chan );
-	assert ( chan->ctx );
+	if (!chan) {
+		SU_DEBUG_0(("svd_bye called without chan!\n"));
+		return;
+	}
+	if (!chan->ctx) {
+		SU_DEBUG_0(("svd_bye called without chan->ctx!\n"));
+		return;
+	}
+
 	svd_chan_t * chan_ctx = chan->ctx;
 
 	if (chan_ctx->op_handle){
@@ -630,7 +635,15 @@ svd_i_invite( svd_t * const svd, nua_handle_t * nh, sip_t const *sip)
 	svd_chan_t * chan_ctx;
 	sip_account_t * sip_account;
 	sip_to_t const *to = sip->sip_to;
+	sip_from_t const * from = sip->sip_from;
+	sip_p_asserted_identity_t const * pai = sip_p_asserted_identity( sip );
+	sip_remote_party_id_t * rpi = sip_remote_party_id( sip );
+	char *cid_display=NULL;
+	url_t *cid_from=NULL;
 	char *user_URI=NULL;
+	char *cid=NULL;
+	char *cname=NULL;
+	char *cname2=NULL;
 	int i;
 	unsigned char found = 0;
 DFS
@@ -654,18 +667,78 @@ DFS
 		nua_handle_destroy(nh);
 		goto __exit;
 	}
-		
+	
+	if (pai) {
+	  SU_DEBUG_9(("Call with p-asserted-identity %s  %s:%s@%s\n",
+		      pai->paid_display, pai->paid_url->url_scheme, pai->paid_url->url_user,
+		      pai->paid_url->url_host));
+	  cid_display = (char *)pai->paid_display;
+	  cid_from = (url_t *)pai->paid_url;
+	} else if (rpi) {  
+	  SU_DEBUG_9(("Call with remote party id %s  %s:%s@%s\n",
+		      rpi->rpid_display , rpi->rpid_url->url_scheme, rpi->rpid_url->url_user,
+		      rpi->rpid_url->url_host));
+	  cid_display = (char *)rpi->rpid_display;
+	  cid_from = rpi->rpid_url;
+	} else {
+	  SU_DEBUG_9(("Using from for the caller id\n"));
+	  cid_display = (char *)from->a_display;
+	  cid_from = (url_t *)from->a_url;
+	}
+	     
+	/* use remote user as caller id, but check if it's numeric */
+	if (cid_from) {
+		cid = strdup(cid_from->url_user);
+		for (i=0; i<strlen(cid); i++) {
+			if ((cid[i] < '0' || cid[i] > '9') && (cid[i] != '+' || i>0)) {
+				cid[i] = 0;
+				break;
+			}
+		}
+	}
+	/* Try to use the Display name as caller name, removing " */
+	if (cid_display) {
+		cname = strdup(cid_display);
+		cname2 = cname;
+		if (cname2[0] == 34)
+			cname2++;
+		int cl=strlen(cname2);
+		if (cl>0 && cname2[cl-1] == 34)
+			cname2[cl-1] = 0;
+	}
+	
+	if (!cname2 || cname2[0] == 0) {
+		if (cname)
+			free(cname);
+		/* no "Display name", use the remote user as caller name */
+		asprintf(&cname,"%s@%s", cid_from->url_user, cid_from->url_host);
+		cname2 = cname;
+	}
+	
+	
+	/* same name as number, only send the number */
+	if (cid && cid[0] && cname2 && !strncmp(cname2, cid, strlen(cid)))
+		cname2 = NULL;
+	
+	/* without a number some phones won't ring, provide a dummy number */
+	if ((!cid || cid[0] == 0) && cname2 && cname2[0] != 0) {
+		if (cid) 
+		      free(cid);
+		cid = strdup("0");
+	}
+	
+	SU_DEBUG_9(("===========> Using cid %s, caller name %s\n",cid, cname2));
 	for (i=0; i<g_conf.channels; i++) {
 		chan = &svd->ab->chans[i];
 		chan_ctx = chan->ctx;
-		if (sip_account->ring_incoming[i] && !(chan_ctx->op_handle)) {
-		  ab_FXS_line_ring(chan, ab_chan_ring_RINGING);
+		if (sip_account->ring_incoming[i] && !(chan_ctx->op_handle) && !chan_ctx->off_hook) {
+		  ab_FXS_line_ring(chan, ab_chan_ring_RINGING, cid, cname2);
 		  chan_ctx->op_handle = nh;
 		  chan_ctx->account = sip_account;
 		  found = 1;
 		}  
-	}  
-
+	}
+	
 	/* no channel available */
 	if( !found) {
 		/* user is busy */
@@ -679,18 +752,21 @@ DFS
 __exit:
 	if (user_URI)
 	  free(user_URI);
+	if (cid)
+	  free(cid);
+	if (cname)
+	  free(cname);
 DFE
 }/*}}}*/
 
 static void
-svd_i_cancel (svd_t * const svd, nua_handle_t const * const nh, sip_account_t * const account)
+svd_i_cancel (svd_t * const svd, nua_handle_t const * const nh)
 {/*{{{*/
 	int i;
 	ab_chan_t * chan;
 	svd_chan_t * chan_ctx;
 	
 DFS
-	assert (account);
 	SU_DEBUG_3 (("CANCEL received\n"));
 	/* Stop ringing all channels tied to this account */
 	for (i=0; i<g_conf.channels; i++) {
@@ -698,7 +774,7 @@ DFS
 		chan_ctx = chan->ctx;
 		if (chan_ctx->op_handle == nh) {
 			int err;
-			err = ab_FXS_line_ring (chan, ab_chan_ring_MUTE);
+			err = ab_FXS_line_ring (chan, ab_chan_ring_MUTE, NULL, NULL);
 			if(err){
 			      SU_DEBUG_3 (("Can`t mutes ring on [%02d]: %s\n",
 					      chan->abs_idx , ab_g_err_str));
@@ -724,7 +800,7 @@ DFE
  */
 static void
 svd_i_state(int status, char const *phrase, nua_t * nua, svd_t * svd,
-		nua_handle_t * const nh, sip_account_t * account, sip_t const *sip,
+		nua_handle_t * const nh, sip_t const *sip,
 		tagi_t tags[])
 {/*{{{*/
 	char const * l_sdp = NULL;
@@ -733,30 +809,41 @@ svd_i_state(int status, char const *phrase, nua_t * nua, svd_t * svd,
 	int err;
 	int i;
 	ab_chan_t * chan;
+	svd_chan_t * chan_ctx;
 DFS
+	SU_DEBUG_4(("CALLSTATE NAME : %s\n", nua_callstate_name(ss_state)));
+
+	/* no event handle, ignore */
+	if (!nh) {
+		SU_DEBUG_4(("CALLSTATE without event handle, ignoring\n"));
+		return;
+	}
+	
 	tl_gets( tags, NUTAG_CALLSTATE_REF (ss_state),
 			SOATAG_LOCAL_SDP_STR_REF (l_sdp),
 			SOATAG_REMOTE_SDP_STR_REF (r_sdp),
 			TAG_END() );
 
-	if( (!account) && (nh)){
-		/* for incoming calls? */
-		account = nua_handle_magic(nh);
+	/* find the channel associated to this event handle */		
+	for (i=0; i<g_conf.channels; i++) {
+		chan = &svd->ab->chans[i];
+		chan_ctx = chan->ctx;
+		if (chan_ctx->op_handle == nh)
+			break;
 	}
 	
-	for (i=0; i<g_conf.channels; i++) {
-	    chan = &svd->ab->chans[i];
-	    if (((svd_chan_t *)(chan->ctx))->op_handle == nh)
-	      break;
-	}  
-
-	SU_DEBUG_4(("CALLSTATE NAME : %s\n", nua_callstate_name(ss_state)));
+	/* channel not fount, ignore */
+	if (chan_ctx->op_handle!=nh) {
+		SU_DEBUG_4(("CALLSTATE without event handle, ignoring\n"));
+		return;
+	}
+	
 
 	if (r_sdp) {
 		SU_DEBUG_4(("Remote sdp:\n%s\n", r_sdp));
 		/* parse incoming sdp (offer or answer)
 		 * and set remote host/port/first_pt */
-		svd_parse_sdp(svd, account, chan, r_sdp);
+		svd_parse_sdp(svd, chan_ctx->account, chan, r_sdp);
 	}
 	if (l_sdp) {
 		SU_DEBUG_4(("Local sdp:\n%s\n", l_sdp));
@@ -842,7 +929,7 @@ DFS
 
 			/* stop ringing */
 			int err;
-			err = ab_FXS_line_ring (chan, ab_chan_ring_MUTE);
+			err = ab_FXS_line_ring (chan, ab_chan_ring_MUTE, NULL, NULL);
 			if (err){
 				SU_DEBUG_2 (("Can`t stop ringing on [%02d]\n",
 						chan->abs_idx));
@@ -928,13 +1015,21 @@ svd_r_get_params(int status, char const *phrase, nua_t * nua, svd_t * svd,
 	char buff [256];
 	char const * l_sdp_str = NULL;
 	ab_chan_t * chan;
+	svd_chan_t * chan_ctx;
 	int i;
 DFS
 	for (i=0; i<g_conf.channels; i++) {
 	  chan = &svd->ab->chans[i];
-	  if (((svd_chan_t *)(chan->ctx))->op_handle == nh)
+	  chan_ctx = chan->ctx;
+	  if (chan_ctx->op_handle == nh)
 	    break;
 	}  
+	
+	/* no channel for this handle, ignore */
+	if (chan_ctx->op_handle != nh) {
+		SU_DEBUG_4(("svd_r_get_params: no channel with this handle, ignoring\n"));
+		return;
+	}
 	
 	tl_gets( tags, SOATAG_LOCAL_SDP_STR_REF(l_sdp_str),
 			TAG_NULL() );
@@ -1055,6 +1150,7 @@ DFS
 		free(account->registration_reply);
 	asprintf(&account->registration_reply, "%03d %s", status, phrase);
 	
+	account->registered = 0;
 	if (status == 200) {
 		sip_contact_t *m = sip ? sip->sip_contact : NULL;
 		for (; m; m = m->m_next){
@@ -1091,20 +1187,29 @@ DFE
  */
 static void
 svd_r_invite( int status, char const *phrase, nua_t * nua, svd_t * svd,
-		nua_handle_t * nh, sip_account_t * account, sip_t const *sip,
+		nua_handle_t * nh, sip_t const *sip,
 		tagi_t tags[])
 {/*{{{*/
 	ab_chan_t * chan;
+	svd_chan_t * chan_ctx;
+	sip_account_t * account;
 	int i;
 DFS
 	SU_DEBUG_3(("got answer on INVITE: %03d %s\n", status, phrase));
 
 	for (i=0; i<g_conf.channels; i++) {
 		chan = &svd->ab->chans[i];
-		if (((svd_chan_t *)(chan->ctx))->op_handle == nh) 
+		chan_ctx = chan->ctx;
+		if (chan_ctx->op_handle == nh) 
 		  break;
 	}
 	
+	if (chan_ctx->op_handle != nh) {
+		SU_DEBUG_0(("svd_r_invite, no channel with this handle, ignoring!\n"));
+		return;
+	}
+	  
+	account = chan_ctx->account;
 	if (status >= 300) {
 		if (status == 401 || status == 407) {
 			svd_authenticate (svd, account, nh, sip, tags);

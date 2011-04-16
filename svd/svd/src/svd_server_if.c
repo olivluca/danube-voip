@@ -35,6 +35,8 @@ static int svd_exec_2af(svd_t * const svd, struct svdif_msg_s * const msg,
 		char ** const buf, int * const palc, enum msg_fmt_e const fm));
 /** Execute 'shutdown' command.*/
 static int svd_exec_shutdown(svd_t * svd, char ** const buff, int * const buff_sz);
+/** Execute 'get_registrations' command.*/
+static int svd_exec_regs(svd_t * svd, char ** const buff, int * const buff_sz);
 /** Add to string another and resize it if necessary */
 static int svd_addtobuf(char ** const buf, int * const palc, char const * fmt, ...);
 /** Put chan rtcp statistics to buffer */
@@ -204,6 +206,8 @@ svd_exec_msg(svd_t * const svd, char const * const buf,
 		err = svd_exec_2af(svd, &msg, buff, buff_sz, svd_rtcp_for_chan);
 	} else if(msg.type == msg_type_SHUTDOWN){
 		err = svd_exec_shutdown(svd, buff, buff_sz);
+	} else if(msg.type == msg_type_REGISTRATIONS){
+		err = svd_exec_regs(svd, buff, buff_sz);
 	}
 	if(err){
 		goto __exit_fail;
@@ -410,6 +414,37 @@ svd_exec_2af(svd_t * const svd, struct svdif_msg_s * const msg,
 		}
 	}/*}}}*/
 __exit_success:
+	return 0;
+__exit_fail:
+	return -1;
+}/*}}}*/
+
+static int
+svd_exec_regs(svd_t * svd, char ** const buff, int * const buff_sz)
+{/*{{{*/
+	int i;
+	sip_account_t * account;
+	int accounts;
+	
+	if(svd_addtobuf(buff, buff_sz,"[\n")){
+		goto __exit_fail;
+	}
+	accounts=su_vector_len(g_conf.sip_account);
+	for (i=0; i<accounts; i++) {
+		account = su_vector_item(g_conf.sip_account, i);
+		if(svd_addtobuf(buff, buff_sz, "{\"account\":\"%d\", \"uri\":\"%s\", \"registered\":\"%d\", \"last_message\":\"%s\"}",
+		  i, account->user_URI, account->registered, account->registration_reply)) {
+			goto __exit_fail;
+		}
+		if (i<accounts-1) {
+			if(svd_addtobuf(buff, buff_sz,",\n")){
+				goto __exit_fail;
+			}
+		}
+	}
+	if(svd_addtobuf(buff, buff_sz,"\n]\n")){
+		goto __exit_fail;
+	}
 	return 0;
 __exit_fail:
 	return -1;

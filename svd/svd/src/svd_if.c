@@ -30,6 +30,7 @@ Mandatory arguments to long options are mandatory for short options too.\n\
 	get_jb_stat[chan_N/all/act/*;*]\n\
 	get_rtcp_stat[chan_N/all/act/*;*]\n\
 	shutdown[]\n\
+	get_regs[]\n\
 	Execution example :\n\
 	echo \'get_jb_stat[4;*]\' %s\n\
 	Means, that you want to get jitter buffer statistics from the\n\

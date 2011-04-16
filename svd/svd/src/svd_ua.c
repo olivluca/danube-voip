@@ -285,7 +285,7 @@ DFS
 		if (dplan->account<0 || dplan->prefixlen==0)
 			continue;
 		if (!strncmp(to_str, dplan->prefix, dplan->prefixlen)) {
-			account = &g_conf.sip_account[dplan->account];
+			account = su_vector_item(g_conf.sip_account,dplan->account);
 			if (account->all_set && account->registered) {
 				account_index=dplan->account;
 				dplan_index=i;
@@ -296,8 +296,9 @@ DFS
 	
 	/* no entry in the dial plan, try accounts based on priority */
 	if (dplan_index<0) {
-		for (i=0; i<g_conf.sip_accounts; i++) {
-			account = &g_conf.sip_account[i];
+		for (i=0; i<su_vector_len(g_conf.sip_account); i++) {
+			account = su_vector_item(g_conf.sip_account,i);
+#include "svd_cfg.h"
 			pri = account->outgoing_priority[chan_idx];
 			if (account->all_set && account->registered &&
 			  pri > 0 && (pri < account_priority || account_priority == 0)) {
@@ -310,7 +311,7 @@ DFS
 	if (account_index<0)
 		goto __exit_fail;
 	
-	account = &g_conf.sip_account[account_index];
+	account = su_vector_item(g_conf.sip_account, account_index);
 	from = sip_from_make(svd->home, account->user_URI);
 	if (dplan_index<0 || dplan->replacelen==0) {
 		asprintf(&to_address, "sip:%s@%s", to_str, account->sip_domain);
@@ -497,27 +498,28 @@ svd_refresh_registration (svd_t * const svd)
 {/*{{{*/
 	int i;
 DFS
-	for (i=0; i<g_conf.sip_accounts; i++) {
-		g_conf.sip_account[i].registered = 0;
-		if ( nua_handle_has_registrations (g_conf.sip_account[i].op_reg)){
-			nua_unregister(g_conf.sip_account[0].op_reg,
+	for (i=0; i<su_vector_len(g_conf.sip_account); i++) {
+		sip_account_t * account = su_vector_item(g_conf.sip_account, i);
+		account->registered = 0;
+		if ( nua_handle_has_registrations (account->op_reg)){
+			nua_unregister(account->op_reg,
 				SIPTAG_CONTACT_STR("*"),
 				TAG_NULL());
 		} else {
 			/* unregister all previously registered on server */
 			sip_to_t * fr_to = NULL;
-			fr_to = sip_to_make(svd->home, g_conf.sip_account[i].user_URI);
+			fr_to = sip_to_make(svd->home, account->user_URI);
 			if( !fr_to){
 			      SU_DEBUG_2((LOG_FNC_A(LOG_NOMEM)));
 			      continue;
 			}
-			g_conf.sip_account[i].op_reg = nua_handle( svd->nua, NULL,
+			account->op_reg = nua_handle( svd->nua, NULL,
 				SIPTAG_TO(fr_to),
 				SIPTAG_FROM(fr_to),
 				TAG_NULL());
-			if (g_conf.sip_account[i].op_reg) {
-			        nua_handle_bind(g_conf.sip_account[i].op_reg, &g_conf.sip_account[i]);
-				nua_unregister(g_conf.sip_account[i].op_reg,
+			if (account->op_reg) {
+			        nua_handle_bind(account->op_reg, account);
+				nua_unregister(account->op_reg,
 					SIPTAG_CONTACT_STR("*"),
 					TAG_NULL());
 			}
@@ -651,13 +653,14 @@ DFS
 	asprintf(&user_URI,"%s:%s@%s", to->a_url->url_scheme, to->a_url->url_user, to->a_url->url_host);
 	sip_account = NULL;
 	SU_DEBUG_0(("INCOMING CALL TO  %s\n", user_URI ));
-	for (i=0; i<g_conf.sip_accounts; i++) {
-		if( !g_conf.sip_account[i].all_set)
+	for (i=0; i<su_vector_len(g_conf.sip_account); i++) {
+		sip_account_t * temp_account = su_vector_item(g_conf.sip_account, i);
+		if( !temp_account->all_set)
 		  continue;
 
-		if ( !strcmp (g_conf.sip_account[i].user_URI, user_URI)){
+		if ( !strcmp(temp_account->user_URI, user_URI)){
 			/* found the account the call is coming from */
-			sip_account = &g_conf.sip_account[i];
+			sip_account = temp_account;
 			break;
 		}
 	}

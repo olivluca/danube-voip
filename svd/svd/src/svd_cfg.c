@@ -88,7 +88,7 @@ static void init_codec_el(struct config_setting_t const * const rec_set,
 /** Init main configuration.*/
 static int main_init (ab_t const * const ab);
 /** Read sip accounts.*/
-static int sip_init (ab_t const * const ab);
+static int sip_init (ab_t const * const ab, su_home_t * home);
 /** Init AUDIO parameters configuration.*/
 static int audio_init (void);
 /** Init WLEC parameters configuration.*/
@@ -207,7 +207,7 @@ startup_destroy( int argc, char ** argv )
  *		It init`s main routine configuration \ref g_conf.
  */
 int
-svd_conf_init( ab_t const * const ab )
+svd_conf_init( ab_t const * const ab, su_home_t * home )
 {/*{{{*/
 	/* default presets */
 	memset (&g_conf, 0, sizeof(g_conf));
@@ -215,7 +215,7 @@ svd_conf_init( ab_t const * const ab )
 	g_conf.self_ip=g_conf.lo_ip;
 	if(		main_init (ab) 	||
 			codecs_init()	||
-			sip_init (ab)	||
+			sip_init (ab, home)||
 			audio_init()	||
 			wlec_init (ab)	||
 			dialplan_init()
@@ -273,8 +273,8 @@ conf_show( void )
 				));
 	}
 
-	for (i=0; i<g_conf.sip_accounts; i++) {
-		curr_sip_rec = &g_conf.sip_account[i];  
+	for (i=0; i<su_vector_len(g_conf.sip_account); i++) {
+		curr_sip_rec = su_vector_item(g_conf.sip_account, i);  
 		SU_DEBUG_3(("SIP net %d : %d\n", i, curr_sip_rec->all_set));
 		if(curr_sip_rec->all_set){
 			SU_DEBUG_3((	"\tCodecs:\t"));
@@ -348,7 +348,6 @@ svd_conf_destroy (void)
 	int i;
 	int j;
 	struct dplan_record_s * dplan_rec;
-	struct sip_account_s  * account;
 
 	j = g_conf.dial_plan.records_num;
 	if (j){
@@ -362,23 +361,8 @@ svd_conf_destroy (void)
 		free (g_conf.dial_plan.records);
 	}
 	
-	j = g_conf.sip_accounts;
-	if (j){
-		for(i = 0; i < j; i++){
-			account = &g_conf.sip_account[ i ];
-			if (account->registrar)
-				free (account->registrar);
-			if (account->user_name)
-				free (account->user_name);
-			if (account->user_pass)
-				free (account->user_pass);
-			if (account->user_URI)
-				free (account->user_URI);
-			if (account->sip_domain)
-				free (account->sip_domain);
-		}
-		free (g_conf.sip_account);
-	}
+	if (g_conf.sip_account)
+	  su_vector_destroy(g_conf.sip_account);
 	
 	memset(&g_conf, 0, sizeof(g_conf));
 }/*}}}*/
@@ -740,6 +724,28 @@ __exit_fail:
 }/*}}}*/
 
 /**
+ * Free one sip account.
+ *
+ * \param[in] elem account to free.
+ */
+static void
+sip_free(void * elem)
+{/*{{{*/
+	struct sip_account_s * account = elem;
+	if (account->registrar)
+		free (account->registrar);
+	if (account->user_name)
+		free (account->user_name);
+	if (account->user_pass)
+		free (account->user_pass);
+	if (account->user_URI)
+		free (account->user_URI);
+	if (account->sip_domain)
+		free (account->sip_domain);
+	free (account);
+}/*}}}*/
+
+/**
  * Read sip accounts.
  *
  * \param[in] ab ata-board hardware structure.
@@ -747,8 +753,8 @@ __exit_fail:
  * \retval 0 success.
  * \retval -1 fail.
  */
- static int
-sip_init( ab_t const * const ab )
+static int
+sip_init( ab_t const * const ab, su_home_t * home )
 {/*{{{*/
 	struct config_t cfg;
 	struct config_setting_t * set;
@@ -773,25 +779,23 @@ sip_init( ab_t const * const ab )
 	
 	set = config_lookup (&cfg, "accounts" );
 	if( !set ){
-		g_conf.sip_accounts = 0;
 		goto __exit_fail;
 	}
-
-	rec_num = config_setting_length (set);
-	g_conf.sip_accounts = rec_num;
-	
-	g_conf.sip_account = malloc (rec_num *
-			sizeof(*(g_conf.sip_account)));
+	g_conf.sip_account = su_vector_create(home,sip_free);
 	if( !g_conf.sip_account ){
 		SU_DEBUG_0((LOG_FNC_A(LOG_NOMEM)));
 		goto __exit_fail;
 	}
-	g_conf.sip_accounts = rec_num;
-	memset(g_conf.sip_account, 0, rec_num *
-			sizeof(*(g_conf.sip_account)));
-	
+
+	rec_num = config_setting_length (set);
 	for(i = 0; i < rec_num; i++){
-		curr_rec = &g_conf.sip_account[ i ];
+		curr_rec = malloc(sizeof(*curr_rec));
+		if( !curr_rec ){
+			SU_DEBUG_0((LOG_FNC_A(LOG_NOMEM)));
+			goto __exit_fail;
+		}
+		memset(curr_rec, 0, sizeof(*curr_rec));
+		su_vector_append(g_conf.sip_account, curr_rec);
 		rec_set = config_setting_get_elem (set, i);
                 
 		curr_rec->all_set = 0;
@@ -877,7 +881,7 @@ sip_init( ab_t const * const ab )
 __exit_fail:
 	config_destroy (&cfg);
 	if (g_conf.sip_account)
-	  free(g_conf.sip_account);
+	  su_vector_destroy(g_conf.sip_account);
 	return err;
 }/*}}}*/
 
@@ -929,7 +933,7 @@ dialplan_init( void )
 	memset(g_conf.dial_plan.records, 0, rec_num *
 			sizeof(*(g_conf.dial_plan.records)));
 
-
+	int max_account = su_vector_len(g_conf.sip_account);
 	for(i = 0; i < rec_num; i++){
 		dplan_rec = &g_conf.dial_plan.records[ i ];
 		rec_set = config_setting_get_elem (set, i);
@@ -952,7 +956,7 @@ dialplan_init( void )
 		
 		/* get account */
 		dplan_rec->account = config_setting_get_int_elem(rec_set, 2)-1;
-		if (dplan_rec->account>=g_conf.sip_accounts)
+		if (dplan_rec->account>=max_account)
 			dplan_rec->account=-1;
 	}
 

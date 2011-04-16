@@ -80,7 +80,7 @@ void startup_destroy( int argc, char ** argv );
 /*}}}*/
 
 /** Reads config files and init \ref g_conf structure.*/
-int  svd_conf_init( ab_t const * const ab );
+int  svd_conf_init( ab_t const * const ab, su_home_t * home );
 /** Show the config information from \ref g_conf.*/
 void conf_show( void );
 /** Destroy \ref g_conf.*/
@@ -148,10 +148,9 @@ struct svd_conf_s {/*{{{*/
 	struct fax_s fax;/**< Fax parameters.*/ /* FIXME */
 	unsigned long rtp_port_first; /**< Min ports range bound for RTP.*/
 	unsigned long rtp_port_last; /**< Max ports range bound for RTP.*/
-	int sip_accounts; /** how many sip accounts have been defined */
 	cod_prms_t cp[COD_MAS_SIZE]; /**<Codecs parameters.*/
 	codec_t codecs[COD_MAS_SIZE];/**< Codecs definitions.*/
-	struct sip_account_s * sip_account; /**< SIP settings for registration.*/
+	su_vector_t *  sip_account; /**< SIP settings for registration.*/
 	struct dial_plan_s dial_plan; /**< Dial plan.*/
 	struct rtp_session_prms_s audio_prms [CHANS_MAX]; /**< AUDIO channel params.*/
 	struct wlec_s       wlec_prms    [CHANS_MAX]; /**< WLEC channel parameters.*/

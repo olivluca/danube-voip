@@ -17,6 +17,7 @@
 #include <sofia-sip/su_tag.h>
 #include <sofia-sip/su_debug.h>
 #include <sofia-sip/su_alloc.h>
+#include <sofia-sip/su_vector.h>
 #include <sofia-sip/nua_tag.h>
 #include <sofia-sip/sdp.h>
 #include <sofia-sip/sip_status.h>

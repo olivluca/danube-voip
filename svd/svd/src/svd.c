@@ -92,17 +92,6 @@ main (int argc, char ** argv)
 		goto __su;
 	}
 
-	/* read svd *.conf files */
-	err = svd_conf_init (ab);
-	if (err){
-		goto __conf;
-	}
-
-	/* change log level, if it is not debug mode, from config sets */
-	if (g_so.debug_level == -1){
-		svd_log_set (g_conf.log_level, 0);
-	}
-
 	/* create svd structure */
 	/* uses !!g_conf */
 	svd = svd_create (ab);
@@ -237,11 +226,23 @@ DFS
 		goto __exit_fail;
 	}
 	
+	/* read svd *.conf files */
+	err = svd_conf_init (ab, svd->home);
+	if (err){
+		goto __exit_fail;
+	}
+
+	/* change log level, if it is not debug mode, from config sets */
+	if (g_so.debug_level == -1){
+		svd_log_set (g_conf.log_level, 0);
+	}
+
 	/* extended SIP parser */
 	if(sip_update_default_mclass(sip_extend_mclass(NULL)) < 0) {
 		SU_DEBUG_0 (("svd_create() sip_update_default_mclass() failed\n"));
 		goto __exit_fail;
 	}
+	
 	/* svd root creation */
 	svd->root = su_root_create (svd);
 	if (svd->root == NULL) {

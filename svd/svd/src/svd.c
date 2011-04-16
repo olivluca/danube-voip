@@ -288,6 +288,7 @@ DFS
 			NUTAG_AUTOALERT (1),
 			NUTAG_ENABLEMESSAGE (1),
 			NUTAG_ENABLEINVITE (1),
+			NUTAG_DETECT_NETWORK_UPDATES (NUA_NW_DETECT_TRY_FULL), 
 			TAG_NULL () );
 	if (!svd->nua) {
 		SU_DEBUG_0 (("Network is not initialized\n"));

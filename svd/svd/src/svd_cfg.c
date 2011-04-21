@@ -11,6 +11,8 @@
 #include "svd_cfg.h"
 #include "svd_log.h"
 
+#include <uci.h>
+#include <ucimap.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -39,6 +41,166 @@
 static unsigned char g_err_no;
 /** @}*/
 
+/**
+ * Converts a string representation of a codec name to a codec type.
+ *
+ * \param[in] name name of the codec.
+ * \retval  codec type (cod_type_NONE if name doesn't match any codec)
+ */
+static int get_codec_type(const char *name)
+{
+	int i;
+	
+	for (i=0; g_conf.cp[i].type != cod_type_NONE; i++)
+		if (!strcasecmp(name, g_conf.cp[i].sdp_name))
+			return (g_conf.cp[i].type);
+	return(cod_type_NONE);
+ }
+
+struct uci_account {
+	struct ucimap_section_data map;
+	char *name;
+	char *registrar;
+	char *user_name;
+	char *user_pass;
+	char *user_URI;
+	char *sip_domain;
+	struct ucimap_list *outgoing_priority;
+	struct ucimap_list *ring_incoming;
+	struct ucimap_list *codecs;
+	char *dtmf;
+};
+
+static int
+account_init(struct uci_map *map, void *section, struct uci_section *s)
+{
+	struct uci_account *a = section;
+	a->name = strdup(s->e.name);
+	return 0;
+}
+
+static int
+account_add(struct uci_map *map, void *section)
+{
+	struct uci_account *a = section;
+	struct sip_account_s *s;
+	int i;
+	int k;
+	int codec_type;
+
+	s = malloc(sizeof(*s));
+	if( !s ){
+		SU_DEBUG_0((LOG_FNC_A(LOG_NOMEM)));
+		goto __exit_fail;
+	}
+	memset(s, 0, sizeof(*s));
+	su_vector_append(g_conf.sip_account, s);
+	
+	if (!a->registrar || !a->user_name || !a->user_pass ||
+	    !a->user_URI || !a->sip_domain || !a->codecs || !a->outgoing_priority ||
+	    !a->ring_incoming || !a->dtmf) {
+		SU_DEBUG_0(("settings for account %s incomplete\n",a->name));
+		goto __exit_fail;
+	}
+	 
+	s->name = strdup(a->name); 
+	s->registrar = strdup(a->registrar);
+	s->user_name = strdup(a->user_name);
+	s->user_pass = strdup(a->user_pass);
+	s->user_URI = strdup(a->user_URI);
+	s->sip_domain = strdup(a->sip_domain);
+	
+	k=0;
+	for (i=0; i<a->codecs->n_items; i++){
+	        codec_type = get_codec_type(a->codecs->item[i].s);
+		if (codec_type != cod_type_NONE) 
+			    s->codecs[k++]=codec_type;
+	}
+	for (i=0; i<a->outgoing_priority->n_items && i<g_conf.channels; i++)
+		s->outgoing_priority[i] = a->outgoing_priority->item[i].i;
+	for (i=0; i<a->ring_incoming->n_items && i<g_conf.channels; i++)
+		s->ring_incoming[i] = a->ring_incoming->item[i].b;
+	s->all_set = 1;	
+__exit_fail:	
+	free(section);
+	return 0;
+}
+
+static struct uci_optmap account_uci_map[] =
+{
+	{
+		UCIMAP_OPTION(struct uci_account, registrar),
+		.type = UCIMAP_STRING,
+		.name = "registrar",
+	},{
+		UCIMAP_OPTION(struct uci_account, user_name),
+		.type = UCIMAP_STRING,
+		.name = "user_name",
+	},{
+		UCIMAP_OPTION(struct uci_account, user_pass),
+		.type = UCIMAP_STRING,
+		.name = "user_pass",
+	},{
+		UCIMAP_OPTION(struct uci_account, user_URI),
+		.type = UCIMAP_STRING,
+		.name = "uri",
+	},{
+		UCIMAP_OPTION(struct uci_account, sip_domain),
+		.type = UCIMAP_STRING,
+		.name = "domain",
+	},{
+		UCIMAP_OPTION(struct uci_account, codecs),
+		.type = UCIMAP_STRING | UCIMAP_LIST | UCIMAP_LIST_AUTO,
+		.name = "codecs",
+	},{
+		UCIMAP_OPTION(struct uci_account, ring_incoming),
+		.type = UCIMAP_BOOL | UCIMAP_LIST | UCIMAP_LIST_AUTO,
+		.name = "ring",
+	},{
+		UCIMAP_OPTION(struct uci_account, outgoing_priority),
+		.type = UCIMAP_INT | UCIMAP_LIST | UCIMAP_LIST_AUTO,
+		.name = "priority",
+	},{
+		UCIMAP_OPTION(struct uci_account, dtmf),
+		.type = UCIMAP_STRING,
+		.name = "dtmf",
+	},
+};
+
+static struct uci_sectionmap account_sectionmap = {
+	UCIMAP_SECTION(struct uci_account, map),
+	.type = "account",
+	.init = account_init,
+	.add = account_add,
+	.options = account_uci_map,
+	.n_options = ARRAY_SIZE(account_uci_map),
+	.options_size = sizeof(struct uci_optmap),
+};
+
+
+static struct uci_sectionmap *svd_smap[] = {
+	&account_sectionmap,
+};
+
+static struct uci_map svd_map = {
+	.sections = svd_smap,
+	.n_sections = ARRAY_SIZE(svd_smap),
+};
+
+int
+config_load(void)
+{
+	int ret;
+	struct uci_context *ctx = uci_alloc_context();
+	struct uci_package *pkg;
+
+	ucimap_init(&svd_map);
+	ret = uci_load(ctx, "svd", &pkg);
+	if (ret)
+		return -1;
+	ucimap_parse(&svd_map, pkg);
+	return 0;
+}
 
 /** @defgroup CFG_N Config file text values.
  *  @ingroup CFG_M
@@ -544,22 +706,6 @@ __exit_fail:
 	return -1;
 	
 }/*}}}*/
-
-/**
- * Converts a string representation of a codec name to a codec type.
- *
- * \param[in] name name of the codec.
- * \retval  codec type (cod_type_NONE if name doesn't match any codec)
- */
-static int get_codec_type(const char *name)
-{
-	int i;
-	
-	for (i=0; g_conf.cp[i].type != cod_type_NONE; i++)
-		if (!strcasecmp(name, g_conf.cp[i].sdp_name))
-			return (g_conf.cp[i].type);
-	return(cod_type_NONE);
- }
 
 /**
  * Overrides one codec element from appropriate config setting.

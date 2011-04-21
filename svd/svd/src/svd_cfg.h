@@ -112,6 +112,7 @@ typedef enum  {
 struct sip_account_s {
 	unsigned char all_set; /**< Shall we register on sip server?*/
 	int codecs[COD_MAS_SIZE];/**< Codecs sorted by priority.*/
+	char *name; /**<account name.*/
 	char *registrar; /**< SIP registrar address.*/
 	char *user_name; /**< SIP user name.*/
 	char *user_pass; /**< SIP user password.*/

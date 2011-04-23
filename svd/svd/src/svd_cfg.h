@@ -110,7 +110,7 @@ typedef enum  {
 } dtmf_type_e;
 
 struct sip_account_s {
-	unsigned char all_set; /**< Shall we register on sip server?*/
+	unsigned char enabled; /**< Should we use this account?*/
 	int codecs[COD_MAS_SIZE];/**< Codecs sorted by priority.*/
 	char *name; /**<account name.*/
 	char *registrar; /**< SIP registrar address.*/

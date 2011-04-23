@@ -284,7 +284,7 @@ DFS
 		dplan = su_vector_item(g_conf.dial_plan, i);
 		if (!strncmp(to_str, dplan->prefix, dplan->prefixlen)) {
 			account = su_vector_item(g_conf.sip_account,dplan->account);
-			if (account->all_set && account->registered) {
+			if (account->enabled && account->registered) {
 				account_index=dplan->account;
 				dplan_index=i;
 				break;
@@ -298,7 +298,7 @@ DFS
 			account = su_vector_item(g_conf.sip_account,i);
 #include "svd_cfg.h"
 			pri = account->outgoing_priority[chan_idx];
-			if (account->all_set && account->registered &&
+			if (account->enabled && account->registered &&
 			  pri > 0 && (pri < account_priority || account_priority == 0)) {
 				account_index = i;
 				account_priority=pri;
@@ -500,6 +500,8 @@ DFS
 		sip_account_t * account = su_vector_item(g_conf.sip_account, i);
 		account->registered = 0;
 		account->reg_tmr = su_timer_create(su_root_task(svd->root), 30000);
+		if (!account->enabled)
+			continue;
 		if ( nua_handle_has_registrations (account->op_reg)){
 			nua_unregister(account->op_reg,
 				SIPTAG_CONTACT_STR("*"),
@@ -660,7 +662,7 @@ DFS
 	SU_DEBUG_0(("INCOMING CALL TO  %s\n", user_URI ));
 	for (i=0; i<su_vector_len(g_conf.sip_account); i++) {
 		sip_account_t * temp_account = su_vector_item(g_conf.sip_account, i);
-		if( !temp_account->all_set)
+		if( !temp_account->enabled)
 		  continue;
 
 		if ( !strcmp(temp_account->user_URI, user_URI)){

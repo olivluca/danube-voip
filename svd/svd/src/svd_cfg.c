@@ -211,6 +211,7 @@ static struct uci_sectionmap main_sectionmap = {
 struct uci_account {
 	struct ucimap_section_data map;
 	char *name;
+	bool disabled;
 	char *registrar;
 	char *user_name;
 	char *user_pass;
@@ -292,7 +293,9 @@ account_add(struct uci_map *map, void *section)
 		s->outgoing_priority[i] = a->outgoing_priority->item[i].i;
 	for (i=0; i<a->ring_incoming->n_items && i<g_conf.channels; i++)
 		s->ring_incoming[i] = a->ring_incoming->item[i].b;
-	s->all_set = 1;	
+	s->enabled = 1;
+	if (a->disabled)
+		s->enabled = 0;
 	su_vector_append(g_conf.sip_account, s);
 	return 0;
 
@@ -305,6 +308,10 @@ __exit_fail:
 static struct uci_optmap account_uci_map[] =
 {
 	{
+		UCIMAP_OPTION(struct uci_account, disabled),
+		.type = UCIMAP_BOOL,
+		.name = "disabled",
+	},{
 		UCIMAP_OPTION(struct uci_account, registrar),
 		.type = UCIMAP_STRING,
 		.name = "registrar",
@@ -961,8 +968,18 @@ svd_conf_init( ab_t const * const ab, su_home_t * home )
 		goto __exit;
 	}
 	
+	bool at_least_one_account = false;
+	int i;
+	for (i=0; i<su_vector_len(g_conf.sip_account); i++) {
+		sip_account_t * account = su_vector_item(g_conf.sip_account, i);
+		if (account->enabled) {
+			  at_least_one_account = true;
+			  break;
+		}
+	}
+
 	if (g_conf.rtp_port_first && g_conf.rtp_port_last && g_conf.sip_tos &&
-	    g_conf.rtp_tos && su_vector_len(g_conf.sip_account)>0) {
+	    g_conf.rtp_tos && at_least_one_account) {
 		err = 0;
 		goto __exit;
 	}
@@ -975,8 +992,8 @@ svd_conf_init( ab_t const * const ab, su_home_t * home )
 		SU_DEBUG_0(("Missing/invalid \"option sip_tos\" in \"config main\"\n"));
 	if (!g_conf.rtp_tos)
 		SU_DEBUG_0(("Missing/invalid \"option rtp_tos\" in \"config main\"\n"));
-	if (su_vector_len(g_conf.sip_account)==0)
-		SU_DEBUG_0(("No accounts defined\n"));
+	if (!at_least_one_account)
+		SU_DEBUG_0(("No accounts defined/enabled\n"));
 
 __exit:
 	conf_show();
@@ -1029,40 +1046,37 @@ conf_show( void )
 	if (g_conf.sip_account)
 	for (i=0; i<su_vector_len(g_conf.sip_account); i++) {
 		curr_sip_rec = su_vector_item(g_conf.sip_account, i);  
-		SU_DEBUG_3(("SIP net %d : %s %d\n", i, curr_sip_rec->name, curr_sip_rec->all_set));
-		if(curr_sip_rec->all_set){
-			SU_DEBUG_3((	"\tCodecs:\t"));
-			for (j=0; curr_sip_rec->codecs[j] != cod_type_NONE; j++){
-			      SU_DEBUG_3(("%s ",
-					g_conf.cp[curr_sip_rec->codecs[j]-CODEC_BASE].sdp_name
-					));
-			}
-			SU_DEBUG_3(("\n"));
-
-			SU_DEBUG_3((	"\tRegistrar   : '%s'\n"
-					"\tUser/Pass   : '%s/%s'\n"
-					"\tUser_URI    : '%s'\n",
-					curr_sip_rec->registrar,
-					curr_sip_rec->user_name,
-					curr_sip_rec->user_pass,
-					curr_sip_rec->user_URI));
-					
-			SU_DEBUG_3((	"\tRing incoming:\n"));
-			for (j=0; j<g_conf.channels; j++){
-			      SU_DEBUG_3(("\t\tchannel %d:%d\n",
-					j,  
-					curr_sip_rec->ring_incoming[j]
-					));
-			}
-			SU_DEBUG_3((	"\tOutgoing priority:\n"));
-			for (j=0; j<g_conf.channels; j++){
-			      SU_DEBUG_3(("\t\tchannel %d:%d\n",
-					j,  
-					curr_sip_rec->outgoing_priority[j]
-					));
-			}
-			SU_DEBUG_3((	"\tDtmf mode: %s\n", dtmf_name[curr_sip_rec->dtmf]));
+		SU_DEBUG_3(("SIP net %d : %s, enabled: %d\n", i, curr_sip_rec->name, curr_sip_rec->enabled));
+		SU_DEBUG_3((	"\tCodecs:\t"));
+		for (j=0; curr_sip_rec->codecs[j] != cod_type_NONE; j++){
+		      SU_DEBUG_3(("%s ",
+				g_conf.cp[curr_sip_rec->codecs[j]-CODEC_BASE].sdp_name
+				));
 		}
+		SU_DEBUG_3(("\n"));
+		SU_DEBUG_3((	"\tRegistrar   : '%s'\n"
+				"\tUser/Pass   : '%s/%s'\n"
+				"\tUser_URI    : '%s'\n",
+				curr_sip_rec->registrar,
+				curr_sip_rec->user_name,
+				curr_sip_rec->user_pass,
+				curr_sip_rec->user_URI));
+				
+		SU_DEBUG_3((	"\tRing incoming:\n"));
+		for (j=0; j<g_conf.channels; j++){
+		      SU_DEBUG_3(("\t\tchannel %d:%d\n",
+				j,  
+				curr_sip_rec->ring_incoming[j]
+				));
+		}
+		SU_DEBUG_3((	"\tOutgoing priority:\n"));
+		for (j=0; j<g_conf.channels; j++){
+		      SU_DEBUG_3(("\t\tchannel %d:%d\n",
+				j,  
+				curr_sip_rec->outgoing_priority[j]
+				));
+		}
+		SU_DEBUG_3((	"\tDtmf mode: %s\n", dtmf_name[curr_sip_rec->dtmf]));
 	}	
 
 	/* rtp audio and wlec parameters */

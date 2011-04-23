@@ -501,10 +501,14 @@ int svd_set_cid( ab_chan_t * const chan, const char *cid)
 	else if (!strcasecmp(cid, "KPN_DTMF_FSK")) {
 		standard = cid_KPN_DTMF_FSK;
 	} else {
+	        SU_DEBUG_9(("Caller id %s not mapped\n",cid));
 		return -1;
 	}
-	
-	return ab_chan_cid_standard(chan, standard);
+	SU_DEBUG_9(("Mapped caller id standard: %s to: %d\n",cid, standard));
+	int err=ab_chan_cid_standard(chan, standard);
+	if (err)
+	  SU_DEBUG_9(("%s\n",ab_g_err_str));
+	return err;
 }
 
 /**

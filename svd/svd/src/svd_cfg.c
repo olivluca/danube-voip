@@ -167,7 +167,7 @@ main_add(struct uci_map *map, void *section)
 	g_conf.sip_tos = a->sip_tos;
 	g_conf.rtp_tos = a->rtp_tos;
 	
-	return -1; /* let ucimap free this section */
+	return 0;
 }
 
 static struct uci_optmap main_uci_map[] =
@@ -260,6 +260,7 @@ account_add(struct uci_map *map, void *section)
 	}
 	 
 	s->name = strdup(a->name);
+	free(a->name);
 	s->registrar = strdup(a->registrar);
 	s->user_name = strdup(a->user_name);
 	s->user_pass = strdup(a->user_pass);
@@ -293,13 +294,12 @@ account_add(struct uci_map *map, void *section)
 		s->ring_incoming[i] = a->ring_incoming->item[i].b;
 	s->all_set = 1;	
 	su_vector_append(g_conf.sip_account, s);
-	s = NULL;
+	return 0;
+
 __exit_fail:	
 	if (s)
 		sip_free(s);
-	if (a->name)
-		free(a->name);
-	return -1; /* let ucimap free this section */
+	return 0;
 }
 
 static struct uci_optmap account_uci_map[] =
@@ -402,7 +402,7 @@ dialplan_add(struct uci_map *map, void *section)
 	}
 		  
 	if (account_index<0) { 
-		SU_DEBUG_0(("dialplan: account %s not found\n"));
+		SU_DEBUG_0(("dialplan: account %s not found\n", a->account));
 		goto __exit_fail;
 	}
 	
@@ -421,11 +421,11 @@ dialplan_add(struct uci_map *map, void *section)
 		d->replace = strdup(a->prefix);
 	d->account = account_index;
 	su_vector_append(g_conf.dial_plan, d);
-	d = NULL;
+	return 0;
 __exit_fail:	
 	if (d)
 		dialplan_free(d);
-	return -1; /* let ucimap free this section */
+	return 0;
 }
 
 static struct uci_optmap dialplan_uci_map[] =
@@ -465,7 +465,7 @@ struct uci_codec {
 	int payload;
 	char *bitpack;
 	char *jb_type;
-	int local_adaptation;
+	bool local_adaptation;
 	char *scaling;
 	int jb_init_sz;
 	int jb_min_sz;
@@ -481,11 +481,6 @@ codec_init(struct uci_map *map, void *section, struct uci_section *s)
 	if (a->codec_type == cod_type_NONE)
 		SU_DEBUG_0(("Wrong codec name \"%s\"\n",
 				s->e.name));
-	a->local_adaptation = -1;
-	a->payload = 0;
-	a->jb_init_sz = 0;
-	a->jb_max_sz = 0;
-	a->jb_min_sz = 0;
 	
 	return 0;
 }
@@ -545,13 +540,11 @@ codec_add(struct uci_map *map, void *section)
 			cod->jb.jb_type = jb_type_ADAPTIVE;
 		}
 	}
-	
-	if (a->local_adaptation>=0) {
-		if (a->local_adaptation)
-			cod->jb.jb_loc_adpt = jb_loc_adpt_OFF;
-		else
-			cod->jb.jb_loc_adpt = jb_loc_adpt_ON;
-	}
+
+	if (a->local_adaptation)
+		cod->jb.jb_loc_adpt = jb_loc_adpt_ON;
+	else
+		cod->jb.jb_loc_adpt = jb_loc_adpt_OFF;
 	
 	if (a->scaling) {
 	      scal=atof(a->scaling);
@@ -567,7 +560,7 @@ codec_add(struct uci_map *map, void *section)
 		cod->jb.jb_max_sz = a->jb_max_sz;
 
 __exit_fail:	
-	return -1; /* let ucimap free this section */
+	return 0;
 }
 
 static struct uci_optmap codec_uci_map[] =
@@ -590,7 +583,7 @@ static struct uci_optmap codec_uci_map[] =
 		.name = "jb_type",
 	},{
 		UCIMAP_OPTION(struct uci_codec, local_adaptation),
-		.type = UCIMAP_INT,
+		.type = UCIMAP_BOOL,
 		.name = "local_adaptation",
 	},{
 		UCIMAP_OPTION(struct uci_codec, scaling),
@@ -630,9 +623,9 @@ struct uci_channel {
 	int enc_db;
 	int dec_db;
 	char *vad;
-	int hpf;
+	bool hpf;
 	char *wlec_type;
-	int wlec_nlp;
+	bool wlec_nlp;
 	int wlec_ne_nb;
 	int wlec_fe_nb;
 	char *cid;
@@ -650,12 +643,6 @@ channel_init(struct uci_map *map, void *section, struct uci_section *s)
 				s->e.name));
 		a->channel = -1;
 	}
-	a->enc_db = 0;
-	a->dec_db = 0;
-	a->hpf = -1;
-	a->wlec_nlp = -1;
-	a->wlec_ne_nb = 0;
-	a->wlec_fe_nb = 0;
 
 	return 0;
 }
@@ -691,8 +678,7 @@ channel_add(struct uci_map *map, void *section)
 		}
 	}
 	
-	if (a->hpf != -1)
-		c->HPF_is_ON = a->hpf;
+	c->HPF_is_ON = a->hpf;
 	
 	/* wlec parameters */
 	w = &g_conf.wlec_prms[a->channel];
@@ -707,12 +693,10 @@ channel_add(struct uci_map *map, void *section)
 	  
 	}
 	
-	if (a->wlec_nlp != -1) {
-		if (a->wlec_nlp)
-			w->nlp = wlec_nlp_ON;
-		else
-			w->nlp = wlec_nlp_OFF;
-	}
+	if (a->wlec_nlp)
+		w->nlp = wlec_nlp_ON;
+	else
+		w->nlp = wlec_nlp_OFF;
 
 	if (a->wlec_ne_nb)
 		w->ne_nb = a->wlec_ne_nb;
@@ -730,12 +714,13 @@ channel_add(struct uci_map *map, void *section)
 	
 	/* caller id standard */
 	if (a->cid) {
-		if (svd_set_cid(global_ab->chans[a->channel], a->cid)) {
+		SU_DEBUG_0(("Setting caller id standard for channel %d to %s\n", a->channel+1, a->cid));
+		if (svd_set_cid(&global_ab->chans[a->channel], a->cid)) {
 			SU_DEBUG_0(("Invalid caller id %s\n",a->cid));
 		}
 	}
 		
-	return -1; /* let ucimap free this section */
+	return 0;
 }
 
 static struct uci_optmap channel_uci_map[] =
@@ -743,7 +728,7 @@ static struct uci_optmap channel_uci_map[] =
 	{
 		UCIMAP_OPTION(struct uci_channel, enc_db),
 		.type = UCIMAP_INT,
-		.name = "end_db",
+		.name = "enc_db",
 	},{
 		UCIMAP_OPTION(struct uci_channel, dec_db),
 		.type = UCIMAP_INT,
@@ -756,6 +741,22 @@ static struct uci_optmap channel_uci_map[] =
 		UCIMAP_OPTION(struct uci_channel, hpf),
 		.type = UCIMAP_BOOL,
 		.name = "hpf",
+	},{
+		UCIMAP_OPTION(struct uci_channel, wlec_type),
+		.type = UCIMAP_STRING,
+		.name = "wlec_type",
+	},{
+		UCIMAP_OPTION(struct uci_channel, wlec_nlp),
+		.type = UCIMAP_BOOL,
+		.name = "wlec_nlp",
+	},{
+		UCIMAP_OPTION(struct uci_channel, wlec_ne_nb),
+		.type = UCIMAP_INT,
+		.name = "wlec_ne_nb",
+	},{
+		UCIMAP_OPTION(struct uci_channel, wlec_fe_nb),
+		.type = UCIMAP_INT,
+		.name = "wlec_fe_nb",
 	},{
 		UCIMAP_OPTION(struct uci_channel, cid),
 		.type = UCIMAP_STRING,
@@ -933,6 +934,7 @@ startup_destroy( int argc, char ** argv )
 int
 svd_conf_init( ab_t const * const ab, su_home_t * home )
 {/*{{{*/
+	int err = -1;
 	/* default presets */
 	memset (&g_conf, 0, sizeof(g_conf));
 
@@ -942,13 +944,13 @@ svd_conf_init( ab_t const * const ab, su_home_t * home )
 	g_conf.sip_account = su_vector_create(home,sip_free);
 	if( !g_conf.sip_account ){
 		SU_DEBUG_0((LOG_FNC_A(LOG_NOMEM)));
-		goto __exit_fail;
+		goto __exit;
 	}
 	
 	g_conf.dial_plan = su_vector_create(home, dialplan_free);
 	if( !g_conf.dial_plan ){
 		SU_DEBUG_0((LOG_FNC_A(LOG_NOMEM)));
-		goto __exit_fail;
+		goto __exit;
 	}
 
 	codec_defaults();
@@ -956,15 +958,29 @@ svd_conf_init( ab_t const * const ab, su_home_t * home )
 	wlec_defaults(ab);
 	
 	if(uci_config_load()){
-		goto __exit_fail;
+		goto __exit;
 	}
+	
+	if (g_conf.rtp_port_first && g_conf.rtp_port_last && g_conf.sip_tos &&
+	    g_conf.rtp_tos && su_vector_len(g_conf.sip_account)>0) {
+		err = 0;
+		goto __exit;
+	}
+	
+	if (!g_conf.rtp_port_first)
+		SU_DEBUG_0(("Missing/invalid \"option rtp_port_first\" in \"config main\"\n"));
+	if (!g_conf.rtp_port_last)
+		SU_DEBUG_0(("Missing/invalid \"option rtp_port_last\" in \"config main\"\n"));
+	if (!g_conf.sip_tos)
+		SU_DEBUG_0(("Missing/invalid \"option sip_tos\" in \"config main\"\n"));
+	if (!g_conf.rtp_tos)
+		SU_DEBUG_0(("Missing/invalid \"option rtp_tos\" in \"config main\"\n"));
+	if (su_vector_len(g_conf.sip_account)==0)
+		SU_DEBUG_0(("No accounts defined\n"));
 
+__exit:
 	conf_show();
-	return 0;
-
-__exit_fail:
-	conf_show();
-	return -1;
+	return err;
 }/*}}}*/
 
 /**
@@ -996,8 +1012,9 @@ conf_show( void )
 			g_conf.rtp_port_last));
 
 	for (i=i; i<COD_MAS_SIZE; i++) if (g_conf.codecs[i].type!=cod_type_NONE) {
-		SU_DEBUG_3(("t:%s/sz%d/pt:0x%X__[%d:%d]::[%d:%d:%d:%d]\n",
+		SU_DEBUG_3(("t:%s/bp%d/sz%d/pt:0x%X__[%d:%d]::[%d:%d:%d:%d]\n",
 				g_conf.cp[g_conf.codecs[i].type-CODEC_BASE].sdp_name,
+				g_conf.codecs[i].bpack,
 				g_conf.codecs[i].pkt_size,
 				g_conf.codecs[i].user_payload,
 				g_conf.codecs[i].jb.jb_type,
@@ -1012,7 +1029,7 @@ conf_show( void )
 	if (g_conf.sip_account)
 	for (i=0; i<su_vector_len(g_conf.sip_account); i++) {
 		curr_sip_rec = su_vector_item(g_conf.sip_account, i);  
-		SU_DEBUG_3(("SIP net %d : %d\n", i, curr_sip_rec->all_set));
+		SU_DEBUG_3(("SIP net %d : %s %d\n", i, curr_sip_rec->name, curr_sip_rec->all_set));
 		if(curr_sip_rec->all_set){
 			SU_DEBUG_3((	"\tCodecs:\t"));
 			for (j=0; curr_sip_rec->codecs[j] != cod_type_NONE; j++){
@@ -1052,7 +1069,7 @@ conf_show( void )
 	for (i=0; i<g_conf.channels; i++) {
 		struct rtp_session_prms_s * c = &g_conf.audio_prms[i];
 		struct wlec_s * w = &g_conf.wlec_prms[i];
-		SU_DEBUG_3(("chan %d enc_dB %d dec_db vad %d %d hpf %d wlec_mode %d wlec_nlp %d wlec_ne_nb %d wlec_fe_nb %d\n",
+		SU_DEBUG_3(("chan %d enc_dB %d dec_db %d vad %d hpf %d wlec_mode %d wlec_nlp %d wlec_ne_nb %d wlec_fe_nb %d\n",
 			    i, c->enc_dB, c->dec_dB, c->VAD_cfg, c->HPF_is_ON,
 			    w->mode, w->nlp, w->ne_nb, w->fe_nb));
 	}

@@ -108,7 +108,17 @@ svd_if_cli_start (char * const err_msg)
 	memset(&cl_addr, 0, sizeof(cl_addr));
 	cl_addr.sun_family = AF_UNIX;
 	strcpy(cl_addr.sun_path, "/var/svd/svd_if.XXXXXX");
-	mktemp(cl_addr.sun_path);
+	if(mkstemp(cl_addr.sun_path) < 0){
+		snprintf(err_msg,ERR_MSG_SIZE,"Unable to generate temporary file %s (%s)\n",
+				cl_addr.sun_path, strerror(errno));
+		goto __close;
+	}
+	int err=unlink(cl_addr.sun_path);
+	if(err < 0 && errno!=ENOENT){
+		snprintf(err_msg,ERR_MSG_SIZE,"Unable to remove local controlsocket %s (%s)\n",
+				cl_addr.sun_path, strerror(errno));
+		goto __close;
+	}
 
 	if(-1== bind(socket_fd, (struct sockaddr*)&cl_addr, SUN_LEN(&cl_addr))){
 		snprintf(err_msg,ERR_MSG_SIZE,"Can`t bind %s (%s)\n",

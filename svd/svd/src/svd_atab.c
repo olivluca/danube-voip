@@ -468,6 +468,47 @@ __exit_fail:
 }/*}}}*/
 
 /**
+ * Sets channel id standard.
+ *
+ * \param[in,out] chan channel to operate on it.
+ * \param[in]     cid  name of standard.
+ * \retval 0 Success.
+ * \retval -1 Fail.
+ * \ remark 
+ *   Valid values: "TELCORDIA", "ETSI_FSK", "ETSI_DTMF", "SIN", "NTT", "KPN_DTMF", "KPN_DTMF_FSK"
+ */
+int svd_set_cid( ab_chan_t * const chan, const char *cid)
+{
+	cid_std_t standard;
+	
+	if (!strcasecmp(cid, "TELCORDIA")) {
+		standard = cid_TELCORDIA;
+	}
+	else if (!strcasecmp(cid, "ETSI_FSK")) {
+		standard = cid_ETSI_FSK;
+	}
+	else if (!strcasecmp(cid, "ETSI_DTMF")) {
+		standard = cid_ETSI_DTMF;
+	}
+	else if (!strcasecmp(cid, "SIN")) {
+		standard = cid_SIN;
+	}
+	else if (!strcasecmp(cid, "NTT")) {
+		standard = cid_NTT;
+	}
+	else if (!strcasecmp(cid, "KPN_DTMF")) {
+		standard = cid_KPN_DTMF;
+	}
+	else if (!strcasecmp(cid, "KPN_DTMF_FSK")) {
+		standard = cid_KPN_DTMF_FSK;
+	} else {
+		return -1;
+	}
+	
+	return ab_chan_cid_standard(chan, standard);
+}
+
+/**
  * \param[in] ct codec type.
  * \param[in] cn codec sdp name.
  * \return cod_prms_t pointer.

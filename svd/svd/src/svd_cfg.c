@@ -7,7 +7,6 @@
 
 /*Includes {{{*/
 #include "svd.h"
-#include "libconfig.h"
 #include "svd_cfg.h"
 #include "svd_log.h"
 
@@ -74,6 +73,12 @@ static unsigned char g_err_no;
 #define CONF_WLEC_NLP_OFF  "off"
 /*First "real" codec (index 0 in various arrays)*/
 #define CODEC_BASE cod_type_ALAW
+
+/**
+ * Ab context for configuration functions
+ */
+
+ab_t * global_ab;
 
 /**
  * Converts a string representation of a codec name to a codec type.
@@ -626,6 +631,10 @@ struct uci_channel {
 	int dec_db;
 	char *vad;
 	int hpf;
+	char *wlec_type;
+	int wlec_nlp;
+	int wlec_ne_nb;
+	int wlec_fe_nb;
 	char *cid;
 };
 
@@ -635,7 +644,7 @@ channel_init(struct uci_map *map, void *section, struct uci_section *s)
 	struct uci_channel *a = section;
 
 	errno = 0;
-	a->channel = strtol(s->e.name, NULL, 0);
+	a->channel = strtol(s->e.name, NULL, 0) - 1;
 	if (errno != 0 || a->channel<0 || a->channel >= g_conf.channels) {
 		SU_DEBUG_0(("Wrong channel number \"%s\"\n",
 				s->e.name));
@@ -644,6 +653,9 @@ channel_init(struct uci_map *map, void *section, struct uci_section *s)
 	a->enc_db = 0;
 	a->dec_db = 0;
 	a->hpf = -1;
+	a->wlec_nlp = -1;
+	a->wlec_ne_nb = 0;
+	a->wlec_fe_nb = 0;
 
 	return 0;
 }
@@ -653,10 +665,12 @@ channel_add(struct uci_map *map, void *section)
 {
 	struct uci_channel *a = section;
 	struct rtp_session_prms_s * c;
+	struct wlec_s * w;
 	
 	if (a->channel < 0 || a->channel >= g_conf.channels)
 		return -1;
 	
+	/* rtp audio parameters */
 	c = &g_conf.audio_prms[a->channel];
 	
 	if (a->enc_db)
@@ -679,7 +693,48 @@ channel_add(struct uci_map *map, void *section)
 	
 	if (a->hpf != -1)
 		c->HPF_is_ON = a->hpf;
+	
+	/* wlec parameters */
+	w = &g_conf.wlec_prms[a->channel];
+	if (a->wlec_type ) {
+		if       ( !strcmp(a->wlec_type, CONF_WLEC_TYPE_OFF)){
+			w->mode = wlec_mode_OFF;
+		} else if( !strcmp(a->wlec_type, CONF_WLEC_TYPE_NE)){
+			w->mode = wlec_mode_NE;
+		} else if( !strcmp(a->wlec_type, CONF_WLEC_TYPE_NFE)){
+			w->mode = wlec_mode_NFE;
+		}
+	  
+	}
+	
+	if (a->wlec_nlp != -1) {
+		if (a->wlec_nlp)
+			w->nlp = wlec_nlp_ON;
+		else
+			w->nlp = wlec_nlp_OFF;
+	}
 
+	if (a->wlec_ne_nb)
+		w->ne_nb = a->wlec_ne_nb;
+	if (a->wlec_fe_nb)
+		w->fe_nb = a->wlec_fe_nb;
+		
+	if(w->mode == wlec_mode_NFE){
+		if(w->ne_nb == 16){
+			w->ne_nb = 8;
+		}
+		if(w->fe_nb == 16){
+			w->fe_nb = 8;
+		}
+	}
+	
+	/* caller id standard */
+	if (a->cid) {
+		if (svd_set_cid(global_ab->chans[a->channel], a->cid)) {
+			SU_DEBUG_0(("Invalid caller id %s\n",a->cid));
+		}
+	}
+		
 	return -1; /* let ucimap free this section */
 }
 
@@ -763,11 +818,11 @@ uci_config_load(void)
  *  This functions using while reading config file.
  *  @{*/
 /** Init AUDIO parameters configuration.*/
-static void audio_defaults_init (void);
-/** Init WLEC parameters configuration.*/
-static int wlec_init (ab_t const * const ab);
+static void audio_defaults (void);
+/** Init WLEC defaults.*/
+static void wlec_defaults (ab_t const * const ab);
 /** Init codecs definitions.*/
-static void codec_defaults_init (void);
+static void codec_defaults (void);
 /** Print error message if something occures.*/
 static void error_message (void);
 /** Print help message.*/
@@ -881,6 +936,7 @@ svd_conf_init( ab_t const * const ab, su_home_t * home )
 	/* default presets */
 	memset (&g_conf, 0, sizeof(g_conf));
 
+	global_ab = (ab_t *)ab;
 	g_conf.channels = ab->chans_per_dev;
 
 	g_conf.sip_account = su_vector_create(home,sip_free);
@@ -895,12 +951,11 @@ svd_conf_init( ab_t const * const ab, su_home_t * home )
 		goto __exit_fail;
 	}
 
-	codec_defaults_init();
-	audio_defaults_init();
+	codec_defaults();
+	audio_defaults();
+	wlec_defaults(ab);
 	
-	if(		wlec_init (ab) ||
-			uci_config_load()
-			){
+	if(uci_config_load()){
 		goto __exit_fail;
 	}
 
@@ -1040,7 +1095,7 @@ svd_conf_destroy (void)
  * Init codecs names and default parameters
  */
 static void
-codec_defaults_init( void )
+codec_defaults( void )
 {/*{{{*/
 	static char * empty = "";
 	int i;
@@ -1257,7 +1312,7 @@ codec_defaults_init( void )
  * \retval -1 fail.
  */
 static void
-audio_defaults_init( void )
+audio_defaults( void )
 {/*{{{*/
 	struct rtp_session_prms_s * curr_rec;
 	int i;
@@ -1275,35 +1330,14 @@ audio_defaults_init( void )
 }/*}}}*/
 
 /**
- * Init`s WLEC parameters in main routine configuration \ref g_conf structure.
- *
- * \param[in] ab ata-board hardware structure.
- *
- * \retval 0 success.
- * \retval -1 fail.
+ * Init`s WLEC default parameters
  */
-static int
-wlec_init( ab_t const * const ab )
+static void
+wlec_defaults( ab_t const * const ab )
 {/*{{{*/
-	struct config_t cfg;
-	struct config_setting_t * set;
-	struct config_setting_t * rec_set;
 	struct wlec_s * curr_rec;
 	ab_chan_t * cc; /* current channel */
-	char const * elem;
-	int rec_num;
 	int i;
-	int err;
-
-	config_init (&cfg);
-
-	/* Load the file */
-	if (!config_read_file (&cfg, WLEC_CONF_NAME)){
-		err = config_error_line (&cfg);
-		SU_DEBUG_0(("%s(): Config file syntax error in line %d\n", __func__, err));
-		goto __exit_fail;
-	}
-
 	/* Standart params for all chans */
 	for (i=0; i<CHANS_MAX; i++){
 		curr_rec = &g_conf.wlec_prms[i];
@@ -1328,68 +1362,6 @@ wlec_init( ab_t const * const ab )
 		}
 	}
 
-	/* Get values */
-	set = config_lookup (&cfg, "wlec_prms" );
-	if( !set ){
-		/* We will use standart params for all channels */
-		goto __exit_success;
-	}
-
-	rec_num = config_setting_length (set);
-
-	if(rec_num > CHANS_MAX){
-		SU_DEBUG_0(("%s(): Too many channels (%d) in config - max is %d\n",
-				__func__, rec_num, CHANS_MAX));
-		goto __exit_fail;
-	}
-
-	for(i=0; i<rec_num; i++){
-		int abs_idx;
-		rec_set = config_setting_get_elem (set, i);
-
-		/* get chan id */
-		elem = config_setting_get_string_elem (rec_set, 0);
-		abs_idx = strtol(elem, NULL, 10);
-
-		curr_rec = &g_conf.wlec_prms[ abs_idx ];
-
-		/* get rtp params */
-		elem = config_setting_get_string_elem (rec_set, 1);
-		if       ( !strcmp(elem, CONF_WLEC_TYPE_OFF)){
-			curr_rec->mode = wlec_mode_OFF;
-		} else if( !strcmp(elem, CONF_WLEC_TYPE_NE)){
-			curr_rec->mode = wlec_mode_NE;
-		} else if( !strcmp(elem, CONF_WLEC_TYPE_NFE)){
-			curr_rec->mode = wlec_mode_NFE;
-		}
-
-		elem = config_setting_get_string_elem (rec_set, 2);
-		if( !strcmp(elem, CONF_WLEC_NLP_ON)){
-			curr_rec->nlp = wlec_nlp_ON;
-		} else if( !strcmp(elem, CONF_WLEC_NLP_OFF)){
-			curr_rec->nlp = wlec_nlp_OFF;
-		}
-
-		curr_rec->ne_nb = config_setting_get_int_elem(rec_set, 3);
-		curr_rec->fe_nb = config_setting_get_int_elem(rec_set, 4);
-		/* tag__ to remove - because we not using wb */
-		//curr_rec->ne_wb = config_setting_get_int_elem(rec_set, 5);
-
-		if(curr_rec->mode == wlec_mode_NFE){
-			if(curr_rec->ne_nb == 16){
-				curr_rec->ne_nb = 8;
-			}
-			if(curr_rec->fe_nb == 16){
-				curr_rec->fe_nb = 8;
-			}
-		}
-	}
-__exit_success:
-	config_destroy (&cfg);
-	return 0;
-__exit_fail:
-	config_destroy (&cfg);
-	return -1;
 }/*}}}*/
 
 /**

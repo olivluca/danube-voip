@@ -20,6 +20,8 @@ void svd_atab_delete (svd_t * svd);
 void svd_clear_call(svd_t * const svd, ab_chan_t * const chan);
 /** Found first free fxs channel.*/
 int get_FF_FXS_idx ( ab_t const * const ab, char const self_chan_idx );
+/** Set caller id standard.*/
+int svd_set_cid( ab_chan_t * const chan, const char *cid);
 /** @}*/
 
 

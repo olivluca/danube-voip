@@ -1048,19 +1048,14 @@ conf_show( void )
 		}
 	}	
 
-	/* RTP parameters *//*
-	for (i=0; i<CHANS_MAX; i++){
-		rtp_rec = &g_conf.rtp_prms[i];
-		SU_DEBUG_3(("%d: vol(%d/%d) vh(%d/%d)\n",
-				i, rtp_rec->COD_Tx_vol, rtp_rec->COD_Rx_vol,
-				rtp_rec->VAD_cfg, rtp_rec->HPF_is_ON));
+	/* rtp audio and wlec parameters */
+	for (i=0; i<g_conf.channels; i++) {
+		struct rtp_session_prms_s * c = &g_conf.audio_prms[i];
+		struct wlec_s * w = &g_conf.wlec_prms[i];
+		SU_DEBUG_3(("chan %d enc_dB %d dec_db vad %d %d hpf %d wlec_mode %d wlec_nlp %d wlec_ne_nb %d wlec_fe_nb %d\n",
+			    i, c->enc_dB, c->dec_dB, c->VAD_cfg, c->HPF_is_ON,
+			    w->mode, w->nlp, w->ne_nb, w->fe_nb));
 	}
-	*/
-	/* PSTN parameters *//*
-	for (i=0; i<CHANS_MAX; i++){
-		SU_DEBUG_3(("%d: %d\n", i, g_conf.fxo_PSTN_type[i]));
-	}
-	*/
 
 	if(g_conf.dial_plan){
 		SU_DEBUG_3(("Dial plan :\n"));

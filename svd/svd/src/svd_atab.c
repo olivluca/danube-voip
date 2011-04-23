@@ -279,7 +279,6 @@ void
 svd_clear_call (svd_t * const svd, ab_chan_t * const chan)
 {/*{{{*/
 	svd_chan_t * chan_ctx = chan->ctx;
-	int len;
 	int size;
 DFS
 	
@@ -1132,7 +1131,9 @@ svd_media_tapi_open_rtp (svd_chan_t * const chan_ctx)
 	int i;
 	long ports_count;
 	struct sockaddr_in my_addr;
+#ifndef DONT_BIND_TO_DEVICE
 	struct ifreq ifr;
+#endif
 	int sock_fd;
 	int rtp_binded = 0;
 	int err;
@@ -1206,7 +1207,9 @@ DFE
 int
 svd_media_tapi_rtp_sock_rebinddev (svd_chan_t * const ctx)
 {/*{{{*/
+#ifndef DONT_BIND_TO_DEVICE
 	struct ifreq ifr;
+#endif
 DFS
 #ifndef DONT_BIND_TO_DEVICE
 	/* use account interface */
@@ -1220,7 +1223,9 @@ DFS
 #endif	
 DFE
 	return 0;
+#ifndef DONT_BIND_TO_DEVICE
 __exit_fail:
 DFE
 	return -1;
+#endif
 }/*}}}*/

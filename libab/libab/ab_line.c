@@ -444,7 +444,7 @@ ab_chan_cid_standard( ab_chan_t * const chan, const cid_std_t std )
 	    goto __exit_fail;
 	}
 
-	err = ioctl (chan->rtp_fd, IFX_TAPI_CID_CFG_SET, cidConf);
+	err = ioctl (chan->rtp_fd, IFX_TAPI_CID_CFG_SET, &cidConf);
 	if(err == IFX_ERROR){
 		ab_err_set (AB_ERR_UNKNOWN, "Set Caller Id ioctl error");
 		goto __exit_fail;

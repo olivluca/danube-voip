@@ -5,9 +5,20 @@ What is it?
 -----------
 
 SVD is a simple sip client using the FXS ports on the infineon danube.
-It uses sofia-sip.
+It uses sofia-sip to manage the sip part and a custom written library
+(libab) to manage the ports.
 You can define multiple sip accounts, decide which FXS ports to use for
 outgoing calls and which ports to ring for incoming calls.
+
+Placing a call
+--------------
+To place a call simply dial a number once you hear the dialtone.
+The call will be placed after 4 seconds you keyed in the last digit or
+after you dial # (the # won't be part of the dialled number).
+To determine the account to use to place the call, first the dialplan
+will be checked, and if no entry matches, the call will be placed on
+the sip account with the lowest priority. See below for instructions
+about the dialplan and the configuration of the accounts.
 
 Configuration
 -------------
@@ -26,12 +37,13 @@ Various sections can be defined:
      dialplan entries (see below), as many as you want
 
   * config channel number
-     overrides defaults parameters for one channel (1 or 2).
+     overrides defaults parameters for one channel (number can be 1 or 2).
 
   * config codec name
      overrides default codec parameter. Name must be one of:
         PCMA, G729, G729E, G723, iLBC, G726-16, G726-32, G726-40, telephone-event
      repeat this section for each codec you want to modify
+
 
 options in config main
 ----------------------

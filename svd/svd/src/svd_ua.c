@@ -549,6 +549,7 @@ DFS
 		su_timer_destroy(account->reg_tmr);
 	}
 	nua_shutdown (svd->nua);
+	svd->nua = NULL;
 DFE
 }/*}}}*/
 

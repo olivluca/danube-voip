@@ -296,7 +296,6 @@ DFS
 	if (dplan_index<0) {
 		for (i=0; i<su_vector_len(g_conf.sip_account); i++) {
 			account = su_vector_item(g_conf.sip_account,i);
-#include "svd_cfg.h"
 			pri = account->outgoing_priority[chan_idx];
 			if (account->enabled && account->registered &&
 			  pri > 0 && (pri < account_priority || account_priority == 0)) {
@@ -842,7 +841,7 @@ DFS
 			break;
 	}
 	
-	/* channel not fount, ignore */
+	/* channel not found, ignore */
 	if (chan_ctx->op_handle!=nh) {
 		SU_DEBUG_4(("CALLSTATE without event handle, ignoring\n"));
 		return;

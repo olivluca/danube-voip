@@ -12,18 +12,6 @@
 #include "sofia.h"
 #include "svd.h"
 
-/** @defgroup CFG_M Main configuration.
- *  It contains cfg files names, and functions for manipulations with
- *  main configuration.
- *  @{*/
-#define MAIN_CONF_NAME      "/etc/svd/main.conf"
-#define SIP_CONF_NAME       "/etc/svd/accounts.conf"
-#define DIALPLAN_CONF_NAME  "/etc/svd/dialplan.conf"
-#define CODECS_CONF_NAME    "/etc/svd/codecs.conf"
-#define RTP_CONF_NAME       "/etc/svd/rtp.conf"
-#define WLEC_CONF_NAME      "/etc/svd/wlec.conf"
-/** @}*/
-
 /** @defgroup CFG_DF Default values.
  *  @ingroup CFG_M
  *  Some default values that will be set if they will not find in config file.
@@ -121,7 +109,7 @@ struct sip_account_s {
 #ifndef DONT_BIND_TO_DEVICE
 	char *rtp_interface; /**<interface to use for rtp traffic */
 #endif
-	int outgoing_priority[CHANS_MAX]; /**< priority of this account for each channel (lower number takse precedence */
+	int outgoing_priority[CHANS_MAX]; /**< priority of this account for outgoing calls, per channel (lower number takes precedence, 0 don't use) */
 	unsigned char ring_incoming[CHANS_MAX]; /**< which channels to ring for incoming calls */
 	unsigned char registered; /**< Account correctly registered.*/
 	char * registration_reply; /**<Last registration reply received from registrar-> */

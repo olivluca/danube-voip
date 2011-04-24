@@ -272,7 +272,7 @@ account_add(struct uci_map *map, void *section)
 	if (a->auth_name)
 		s->user_name = strdup(a->auth_name);
 	else
-		s->user_name = strdup(a->name);
+		s->user_name = strdup(a->user);
 	s->user_pass = strdup(a->password);
 	if (a->registrar)
 		asprintf(&s->registrar, "sip:%s", a->registrar);
@@ -284,20 +284,21 @@ account_add(struct uci_map *map, void *section)
 #endif
 	
 	k=0;
-	if (a->codecs) {
+	if (a->codecs && a->codecs->n_items > 0) {
 		for (i=0; i<a->codecs->n_items; i++){
 			codec_type = get_codec_type(a->codecs->item[i].s);
 			if (codec_type != cod_type_NONE) 
 				    s->codecs[k++]=codec_type;
 		}
 		if (k==0) {
-			SU_DEBUG_0(("no valid codecs defined for account %s\n",a->name));
+			SU_DEBUG_0(("no valid codecs defined for account %s\n",s->name));
 			goto __exit_fail;
 		}
 	} else {
 		/* no codecs specified: use all defined codecs */
 		for (i=0; g_conf.cp[i].type != cod_type_NONE; i++)
-			s->codecs[k++]=g_conf.cp[i].type;
+			if (g_conf.cp[i].type != TELEPHONE_EVENT_CODEC)
+				s->codecs[k++]=g_conf.cp[i].type;
 	}
 	  
 	if (a->dtmf) {
@@ -314,7 +315,7 @@ account_add(struct uci_map *map, void *section)
 	if (s->dtmf == dtmf_2883)
 		s->codecs[k++] = TELEPHONE_EVENT_CODEC;
 
-	if (a->outgoing_priority) {
+	if (a->outgoing_priority && a->outgoing_priority->n_items > 0) {
 		for (i=0; i<a->outgoing_priority->n_items && i<g_conf.channels; i++)
 			s->outgoing_priority[i] = a->outgoing_priority->item[i].i;
 	} else {
@@ -325,7 +326,7 @@ account_add(struct uci_map *map, void *section)
 		for (i=0; i<g_conf.channels; i++)
 			s->outgoing_priority[i] = index;;
 	}
-	if (a->ring_incoming) {
+	if (a->ring_incoming && a->ring_incoming->n_items > 0) {
 		for (i=0; i<a->ring_incoming->n_items && i<g_conf.channels; i++)
 			s->ring_incoming[i] = a->ring_incoming->item[i].b;
 	} else {
@@ -414,6 +415,7 @@ struct uci_dialplan {
 	struct ucimap_section_data map;
 	char *prefix;
 	char *replace;
+	bool remove_prefix;
 	char *account;
 };
 
@@ -465,8 +467,12 @@ dialplan_add(struct uci_map *map, void *section)
 	
 	if (a->replace)
 		d->replace = strdup(a->replace);
-	else
-		d->replace = strdup(a->prefix);
+	else {
+		if (a->remove_prefix)
+			d->replace = strdup("");
+		else
+			d->replace = strdup(a->prefix);
+	}
 	d->account = account_index;
 	su_vector_append(g_conf.dial_plan, d);
 	return 0;
@@ -486,6 +492,10 @@ static struct uci_optmap dialplan_uci_map[] =
 		UCIMAP_OPTION(struct uci_dialplan, replace),
 		.type = UCIMAP_STRING,
 		.name = "replace",
+	},{
+		UCIMAP_OPTION(struct uci_dialplan, remove_prefix),
+		.type = UCIMAP_BOOL,
+		.name = "remove_prefix",
 	},{
 		UCIMAP_OPTION(struct uci_dialplan, account),
 		.type = UCIMAP_STRING,

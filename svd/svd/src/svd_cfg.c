@@ -212,11 +212,11 @@ struct uci_account {
 	struct ucimap_section_data map;
 	char *name;
 	bool disabled;
+	char *user;
+	char *domain;
 	char *registrar;
-	char *user_name;
-	char *user_pass;
-	char *user_URI;
-	char *sip_domain;
+	char *auth_name;
+	char *password;
 #ifndef DONT_BIND_TO_DEVICE
 	char *rtp_interface
 #endif
@@ -250,50 +250,91 @@ account_add(struct uci_map *map, void *section)
 	}
 	memset(s, 0, sizeof(*s));
 	
-	if (!a->registrar || !a->user_name || !a->user_pass ||
-	    !a->user_URI || !a->sip_domain || !a->codecs || !a->outgoing_priority ||
+	/* required fields */
+	if (!a->user || !a->domain || !a->password
 #ifndef DONT_BIND_TO_DEVICE
-	    !a->rtp_interface ||
+	    || !a->rtp_interface
 #endif
-	    !a->ring_incoming || !a->dtmf) {
-		SU_DEBUG_0(("settings for account %s incomplete\n",a->name));
+	    ){
+		SU_DEBUG_0(("settings for account %s incomplete:\n",a->name));
+		if (!a->user)
+			SU_DEBUG_0(("\t missing user"));
+		if (!a->domain)
+			SU_DEBUG_0(("\t missing domain"));
+		if (!a->password)
+			SU_DEBUG_0(("\t missing password"));
 		goto __exit_fail;
 	}
 	 
 	s->name = strdup(a->name);
 	free(a->name);
-	s->registrar = strdup(a->registrar);
-	s->user_name = strdup(a->user_name);
-	s->user_pass = strdup(a->user_pass);
-	s->user_URI = strdup(a->user_URI);
-	s->sip_domain = strdup(a->sip_domain);
+	asprintf(&s->user_URI, "sip:%s@%s", a->user, a->domain);
+	if (a->auth_name)
+		s->user_name = strdup(a->auth_name);
+	else
+		s->user_name = strdup(a->name);
+	s->user_pass = strdup(a->password);
+	if (a->registrar)
+		asprintf(&s->registrar, "sip:%s", a->registrar);
+	else
+		asprintf(&s->registrar, "sip:%s", a->domain);
+	s->sip_domain = strdup(a->domain);
 #ifndef DONT_BIND_TO_DEVICE
 	s->rtp_interface = strdup(a->rtp_interface);
 #endif
 	
 	k=0;
-	for (i=0; i<a->codecs->n_items; i++){
-	        codec_type = get_codec_type(a->codecs->item[i].s);
-		if (codec_type != cod_type_NONE) 
-			    s->codecs[k++]=codec_type;
-	}
-	if (k==0) {
-		SU_DEBUG_0(("no valid codecs defined for account %s\n",a->name));
-		goto __exit_fail;
+	if (a->codecs) {
+		for (i=0; i<a->codecs->n_items; i++){
+			codec_type = get_codec_type(a->codecs->item[i].s);
+			if (codec_type != cod_type_NONE) 
+				    s->codecs[k++]=codec_type;
+		}
+		if (k==0) {
+			SU_DEBUG_0(("no valid codecs defined for account %s\n",a->name));
+			goto __exit_fail;
+		}
+	} else {
+		/* no codecs specified: use all defined codecs */
+		for (i=0; g_conf.cp[i].type != cod_type_NONE; i++)
+			s->codecs[k++]=g_conf.cp[i].type;
 	}
 	  
-	s->dtmf=dtmf_off;
-	if (!strcasecmp(a->dtmf,"rfc2883")) {
+	if (a->dtmf) {
+		s->dtmf=dtmf_off;
+		if (!strcasecmp(a->dtmf,"rfc2883")) {
+			s->dtmf=dtmf_2883;
+		} else if (!strcasecmp(a->dtmf,"info")) {
+			s->dtmf=dtmf_info;
+		}
+	} else {
+		/* no dtmf mode specified, use rfc2883 */
 		s->dtmf=dtmf_2883;
-		s->codecs[k++] = TELEPHONE_EVENT_CODEC;
-	} else if (!strcasecmp(a->dtmf,"info")) {
-		s->dtmf=dtmf_info;
 	}
-	for (i=0; i<a->outgoing_priority->n_items && i<g_conf.channels; i++)
-		s->outgoing_priority[i] = a->outgoing_priority->item[i].i;
-	for (i=0; i<a->ring_incoming->n_items && i<g_conf.channels; i++)
-		s->ring_incoming[i] = a->ring_incoming->item[i].b;
+	if (s->dtmf == dtmf_2883)
+		s->codecs[k++] = TELEPHONE_EVENT_CODEC;
+
+	if (a->outgoing_priority) {
+		for (i=0; i<a->outgoing_priority->n_items && i<g_conf.channels; i++)
+			s->outgoing_priority[i] = a->outgoing_priority->item[i].i;
+	} else {
+		/* no outgoing priority specified, use this account for all channels,
+		 * give more priority to accounts defined first
+		 */
+		int index = su_vector_len(g_conf.sip_account) + 1;
+		for (i=0; i<g_conf.channels; i++)
+			s->outgoing_priority[i] = index;;
+	}
+	if (a->ring_incoming) {
+		for (i=0; i<a->ring_incoming->n_items && i<g_conf.channels; i++)
+			s->ring_incoming[i] = a->ring_incoming->item[i].b;
+	} else {
+		/* no ring incoming specified, ring all channels */
+		for (i=0; i<g_conf.channels; i++)
+			s->ring_incoming[i] = 1;
+	}
 	s->enabled = 1;
+	/* no way to check for absence of an option, so use option disabled instead of enabled */
 	if (a->disabled)
 		s->enabled = 0;
 	su_vector_append(g_conf.sip_account, s);
@@ -312,25 +353,25 @@ static struct uci_optmap account_uci_map[] =
 		.type = UCIMAP_BOOL,
 		.name = "disabled",
 	},{
+		UCIMAP_OPTION(struct uci_account, user),
+		.type = UCIMAP_STRING,
+		.name = "user",
+	},{
+		UCIMAP_OPTION(struct uci_account, domain),
+		.type = UCIMAP_STRING,
+		.name = "domain",
+	},{
 		UCIMAP_OPTION(struct uci_account, registrar),
 		.type = UCIMAP_STRING,
 		.name = "registrar",
 	},{
-		UCIMAP_OPTION(struct uci_account, user_name),
+		UCIMAP_OPTION(struct uci_account, auth_name),
 		.type = UCIMAP_STRING,
-		.name = "user_name",
+		.name = "auth_name",
 	},{
-		UCIMAP_OPTION(struct uci_account, user_pass),
+		UCIMAP_OPTION(struct uci_account, password),
 		.type = UCIMAP_STRING,
-		.name = "user_pass",
-	},{
-		UCIMAP_OPTION(struct uci_account, user_URI),
-		.type = UCIMAP_STRING,
-		.name = "uri",
-	},{
-		UCIMAP_OPTION(struct uci_account, sip_domain),
-		.type = UCIMAP_STRING,
-		.name = "domain",
+		.name = "password",
 #ifndef DONT_BIND_TO_DEVICE
 	},{
 		UCIMAP_OPTION(struct uci_account, rtp_interface),
@@ -533,17 +574,17 @@ codec_add(struct uci_map *map, void *section)
 		cod->user_payload = a->payload;
 	
 	if (a->bitpack) {
-		if       ( !strcmp(a->bitpack, CONF_CODEC_BITPACK_RTP)){
+		if       ( !strcasecmp(a->bitpack, CONF_CODEC_BITPACK_RTP)){
 			cod->bpack = bitpack_RTP;
-		} else if( !strcmp(a->bitpack, CONF_CODEC_BITPACK_AAL2)){
+		} else if( !strcasecmp(a->bitpack, CONF_CODEC_BITPACK_AAL2)){
 			cod->bpack = bitpack_AAL2;
 		}
 	}
 	
 	if (a->jb_type) {
-		if       ( !strcmp(a->jb_type, CONF_JB_TYPE_FIXED)){
+		if       ( !strcasecmp(a->jb_type, CONF_JB_TYPE_FIXED)){
 			cod->jb.jb_type = jb_type_FIXED;
-		} else if( !strcmp(a->jb_type, CONF_JB_TYPE_ADAPTIVE)){
+		} else if( !strcasecmp(a->jb_type, CONF_JB_TYPE_ADAPTIVE)){
 			cod->jb.jb_type = jb_type_ADAPTIVE;
 		}
 	}
@@ -672,15 +713,15 @@ channel_add(struct uci_map *map, void *section)
 	if (a->dec_db)
 		c->dec_dB = a->dec_db;
 	if (a->vad) {
-		if( !strcmp(a->vad, CONF_VAD_NOVAD)){
+		if( !strcasecmp(a->vad, CONF_VAD_NOVAD)){
 		c->VAD_cfg = vad_cfg_OFF;
-		} else if( !strcmp(a->vad, CONF_VAD_ON)){
+		} else if( !strcasecmp(a->vad, CONF_VAD_ON)){
 			c->VAD_cfg = vad_cfg_ON;
-		} else if( !strcmp(a->vad, CONF_VAD_G711)){
+		} else if( !strcasecmp(a->vad, CONF_VAD_G711)){
 			c->VAD_cfg = vad_cfg_G711;
-		} else if( !strcmp(a->vad, CONF_VAD_CNG_ONLY)){
+		} else if( !strcasecmp(a->vad, CONF_VAD_CNG_ONLY)){
 			c->VAD_cfg = vad_cfg_CNG_only;
-		} else if( !strcmp(a->vad, CONF_VAD_SC_ONLY)){
+		} else if( !strcasecmp(a->vad, CONF_VAD_SC_ONLY)){
 			c->VAD_cfg = vad_cfg_SC_only;
 		}
 	}
@@ -690,11 +731,11 @@ channel_add(struct uci_map *map, void *section)
 	/* wlec parameters */
 	w = &g_conf.wlec_prms[a->channel];
 	if (a->wlec_type ) {
-		if       ( !strcmp(a->wlec_type, CONF_WLEC_TYPE_OFF)){
+		if       ( !strcasecmp(a->wlec_type, CONF_WLEC_TYPE_OFF)){
 			w->mode = wlec_mode_OFF;
-		} else if( !strcmp(a->wlec_type, CONF_WLEC_TYPE_NE)){
+		} else if( !strcasecmp(a->wlec_type, CONF_WLEC_TYPE_NE)){
 			w->mode = wlec_mode_NE;
-		} else if( !strcmp(a->wlec_type, CONF_WLEC_TYPE_NFE)){
+		} else if( !strcasecmp(a->wlec_type, CONF_WLEC_TYPE_NFE)){
 			w->mode = wlec_mode_NFE;
 		}
 	  

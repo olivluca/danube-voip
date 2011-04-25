@@ -1,0 +1,134 @@
+diff --unified --recursive sofia-sip-1.12.11.orig/libsofia-sip-ua/su/su_os_nw.c sofia-sip-1.12.11/libsofia-sip-ua/su/su_os_nw.c
+--- sofia-sip-1.12.11.orig/libsofia-sip-ua/su/su_os_nw.c	2011-03-11 15:49:19.000000000 +0100
++++ sofia-sip-1.12.11/libsofia-sip-ua/su/su_os_nw.c	2011-04-20 19:57:20.000000000 +0200
+@@ -46,7 +46,7 @@
+ #include "sofia-sip/su_os_nw.h"
+ #include "sofia-sip/su_debug.h"
+ 
+-#if defined(__APPLE_CC__)
++#if defined(__APPLE_CC__) || defined(__linux)
+ # define SU_NW_CHANGE_PTHREAD 1
+ #endif
+ 
+@@ -64,6 +64,14 @@
+ #include <SystemConfiguration/SCSchemaDefinitions.h>
+ #endif /* __APPLE_CC__ */
+ 
++#if defined(__linux)
++#include <string.h>
++#include <netinet/in.h>
++#include <linux/netlink.h>
++#include <linux/rtnetlink.h>
++#include <net/if.h>
++#endif /* __linux */
++
+ struct su_network_changed_s {
+   su_root_t                  *su_root;
+   su_home_t                  *su_home;
+@@ -80,7 +88,7 @@
+   su_network_changed_magic_t *su_network_changed_magic;
+ };
+ 
+-#if defined(__APPLE_CC__)
++#if defined(__APPLE_CC__) || defined(__linux)
+ static void su_nw_changed_msg_recv(su_root_magic_t *rm,
+ 				   su_msg_r msg,
+ 				   su_network_changed_t *snc)
+@@ -95,8 +103,9 @@
+ 
+   return;
+ }
++#endif
+ 
+-
++#if defined(__APPLE_CC__)
+ void nw_changed_cb(SCDynamicStoreRef store,
+ 		   CFArrayRef changedKeys,
+ 		   void *info)
+@@ -242,6 +251,86 @@
+ }
+ #endif
+ 
++#if defined(__linux)
++static void *su_start_nw_os_thread(void *ptr)
++{
++  su_network_changed_t *snc = (su_network_changed_t *) ptr;
++  
++  assert(snc);
++
++  struct sockaddr_nl addr;
++  int sock, len;
++  char buffer[4096];
++  struct nlmsghdr *nlh;
++ 
++  if ((sock = socket(PF_NETLINK, SOCK_RAW, NETLINK_ROUTE)) == -1) {
++      perror("su_start_nw_os_thread: couldn't open NETLINK_ROUTE socket");
++      return NULL;
++  }
++
++  memset(&addr, 0, sizeof(addr));
++  addr.nl_family = AF_NETLINK;
++  addr.nl_groups = RTMGRP_IPV4_IFADDR | RTMGRP_IPV6_IFADDR;
++  if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
++      perror("su_start_nw_os_thread: couldn't bind");
++      return NULL;
++  }
++
++  nlh = (struct nlmsghdr *)buffer;
++  struct timeval tv;
++  int changes;
++  int forever;
++  
++  while(1) {
++    changes = 0;
++    forever = 1;
++    /* first notification, wait forever */
++    tv.tv_sec = 0;
++    tv.tv_usec = 0;
++    setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
++    while ((len = recv(sock, nlh, 4096, 0)) > 0) {
++      while ((NLMSG_OK(nlh, len)) && (nlh->nlmsg_type != NLMSG_DONE)) {
++        if (nlh->nlmsg_type == RTM_NEWADDR || nlh->nlmsg_type == RTM_DELADDR ) {
++          struct ifaddrmsg *ifa = (struct ifaddrmsg *) NLMSG_DATA(nlh);
++	  if (ifa->ifa_family == AF_INET || ifa->ifa_family == AF_INET6)
++	    changes =1;
++        }
++        nlh = NLMSG_NEXT(nlh, len);
++      }
++      if (changes && forever) {
++	/* wait for some more notifications */
++	forever = 0;
++	tv.tv_sec = 2;
++	tv.tv_usec = 0;
++	setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
++      }
++    }
++    if (errno == EAGAIN || errno == EWOULDBLOCK) {
++      su_network_changed_t *snc2;
++      su_msg_r rmsg = SU_MSG_R_INIT;
++
++      if (su_msg_create(rmsg,
++    		    su_root_task(snc->su_root),
++		    su_root_task(snc->su_root),
++		    su_nw_changed_msg_recv,
++		    sizeof *snc) != SU_FAILURE) {
++        snc2 = su_msg_data(rmsg); assert(snc2);
++        snc2->su_root = snc->su_root;
++        snc2->su_home = snc->su_home;
++        snc2->su_os_thread = snc->su_os_thread;
++        snc2->su_network_changed_cb = snc->su_network_changed_cb;
++        snc2->su_network_changed_magic = snc->su_network_changed_magic;
++        if (su_msg_send(rmsg) == SU_FAILURE) {
++          su_msg_destroy(rmsg);
++        }
++      }  
++    } else
++      break;
++  }
++  return 0;
++}
++#endif /* __linux */
++
+ /** Register a callback for the network change event.
+  *
+  * @since New in @VERSION_1_12_2.

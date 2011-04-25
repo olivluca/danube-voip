@@ -1,0 +1,13 @@
+diff --unified --recursive sofia-sip-1.12.11.orig/libsofia-sip-ua/nua/nua_register.c sofia-sip-1.12.11/libsofia-sip-ua/nua/nua_register.c
+--- sofia-sip-1.12.11.orig/libsofia-sip-ua/nua/nua_register.c	2011-04-20 20:02:12.000000000 +0200
++++ sofia-sip-1.12.11/libsofia-sip-ua/nua/nua_register.c	2011-04-20 20:03:28.000000000 +0200
+@@ -1288,6 +1288,9 @@
+ {
+   su_network_changed_t *snc = NULL;
+ 
++  if (nua->nua_nw_changed)
++    return 0;
++  
+   snc = su_root_add_network_changed(nua->nua_home,
+ 				    nua->nua_root,
+ 				    nua_network_changed_cb,

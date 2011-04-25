@@ -1,0 +1,172 @@
+From bcd5a69ecf610bd38023609ddff92ee1475f43c0 Mon Sep 17 00:00:00 2001
+From: Pekka Pessi <Pekka.Pessi@nokia.com>
+Date: Tue, 19 Apr 2011 00:51:27 +0300
+Subject: [PATCH] nua: release cached transport when network change is detected
+
+---
+ libsofia-sip-ua/nua/nua_register.c |   77 ++++++++++++++++++++++-------------
+ 1 files changed, 48 insertions(+), 29 deletions(-)
+
+diff --git a/libsofia-sip-ua/nua/nua_register.c b/libsofia-sip-ua/nua/nua_register.c
+index 984a139..2a3d2ea 100644
+--- a/libsofia-sip-ua/nua/nua_register.c
++++ b/libsofia-sip-ua/nua/nua_register.c
+@@ -94,6 +94,8 @@ int nua_registration_set_contact(nua_handle_t *,
+ 
+ void nua_registration_set_ready(nua_registration_t *nr, int ready);
+ 
++static void nua_registration_release_tport(nua_registration_t *nr);
++
+ /* ====================================================================== */
+ /* REGISTER usage */
+ 
+@@ -221,11 +223,7 @@ static void nua_register_usage_remove(nua_handle_t *nh,
+   nr->nr_compartment = NULL;
+ #endif
+ 
+-  if (nr->nr_error_report_id)
+-    tport_release(nr->nr_tport, nr->nr_error_report_id, NULL, NULL, nr, 0);
+-
+-  if (nr->nr_tport)
+-    tport_unref(nr->nr_tport), nr->nr_tport = NULL;
++  nua_registration_release_tport(nr);
+ 
+   ds->ds_has_register = 0;	/* There can be only one */
+ }
+@@ -704,10 +702,9 @@ static int nua_register_client_init(nua_client_request_t *cr,
+   return 0;
+ }
+ 
+-static
+-int nua_register_client_request(nua_client_request_t *cr,
+-				msg_t *msg, sip_t *sip,
+-				tagi_t const *tags)
++static int nua_register_client_request(nua_client_request_t *cr,
++				       msg_t *msg, sip_t *sip,
++				       tagi_t const *tags)
+ {
+   nua_handle_t *nh = cr->cr_owner;
+   nua_dialog_usage_t *du = cr->cr_usage;
+@@ -967,12 +964,8 @@ static int nua_register_client_response(nua_client_request_t *cr,
+ 
+     /* cache persistant connection for registration */
+     if (tport && tport != nr->nr_tport) {
+-      if (nr->nr_error_report_id) {
+-	if (tport_release(nr->nr_tport, nr->nr_error_report_id, NULL, NULL, nr, 0) < 0)
+-	  SU_DEBUG_1(("nua_register: tport_release() failed\n"));
+-	nr->nr_error_report_id = 0;
+-      }
+-      tport_unref(nr->nr_tport);
++      nua_registration_release_tport(nr);
++
+       nr->nr_tport = tport;
+ 
+       if (tport_is_secondary(tport)) {
+@@ -994,23 +987,30 @@ static int nua_register_client_response(nua_client_request_t *cr,
+ 
+     outbound_stop_keepalive(nr->nr_ob);
+ 
+-    /* release the persistant transport for registration */
+-    if (nr->nr_tport) {
+-      if (nr->nr_error_report_id) {
+-	if (tport_release(nr->nr_tport, nr->nr_error_report_id, NULL, NULL, nr, 0) < 0)
+-	  SU_DEBUG_1(("nua_register: tport_release() failed\n"));
+-	nr->nr_error_report_id = 0;
+-      }
++    nua_registration_release_tport(nr);
+ 
+-      tport_unref(nr->nr_tport), nr->nr_tport = NULL;
+-    }
+     nua_registration_set_ready(nr, 0);
+   }
+ 
+-
+   return nua_base_client_response(cr, status, phrase, sip, NULL);
+ }
+ 
++/* Release the persistant transport for registration. */
++static void nua_registration_release_tport(nua_registration_t *nr)
++{
++  if (nr->nr_tport == NULL)
++    return;
++
++  if (nr->nr_error_report_id) {
++    if (tport_release(nr->nr_tport, nr->nr_error_report_id,
++		      NULL, NULL, nr, 0) < 0)
++      SU_DEBUG_1(("nua_register: tport_release() failed\n"));
++    nr->nr_error_report_id = 0;
++  }
++
++  tport_unref(nr->nr_tport), nr->nr_tport = NULL;
++}
++
+ static
+ void nua_register_connection_closed(tp_stack_t *sip_stack,
+ 				    nua_registration_t *nr,
+@@ -1099,7 +1099,8 @@ static void nua_register_usage_refresh(nua_handle_t *nh,
+   }
+ 
+   /* Report that we have de-registered */
+-  nua_stack_event(nua, nh, NULL, nua_r_register, NUA_ERROR_AT(__FILE__, __LINE__), NULL);
++  nua_stack_event(nua, nh, NULL, nua_r_register,
++		  NUA_ERROR_AT(__FILE__, __LINE__), NULL);
+   nua_dialog_usage_remove(nh, ds, du, NULL, NULL);
+ }
+ 
+@@ -1219,6 +1220,7 @@ nua_stack_init_transport(nua_t *nua, tagi_t const *tags)
+ }
+ 
+ #if 0
++{
+   /* Store network detector param value */
+   if (agent->sa_nw_updates == 0)
+     agent->sa_nw_updates = nw_updates;
+@@ -1227,9 +1229,25 @@ nua_stack_init_transport(nua_t *nua, tagi_t const *tags)
+   unsigned nw_updates = 0;
+ 
+   su_network_changed_t *sa_nw_changed;
+-
++}
+ #endif
+ 
++static void
++nua_stack_close_tports(nua_t *nua)
++{
++  nua_registration_t **nr_list, **nr_next;
++
++  for (nr_list = &nua->nua_registrations;
++       *nr_list;
++       nr_list = nr_next) {
++    nr_next = &(*nr_list)->nr_next;
++
++    nua_registration_release_tport(*nr_list);
++  }
++
++  nta_agent_close_tports(nua->nua_nta);
++}
++
+ static
+ void nua_network_changed_cb(nua_t *nua, su_root_t *root)
+ {
+@@ -1246,7 +1264,7 @@ void nua_network_changed_cb(nua_t *nua, su_root_t *root)
+   case NUA_NW_DETECT_TRY_FULL:
+ 
+     /* 1) Shutdown all tports */
+-    nta_agent_close_tports(nua->nua_nta);
++    nua_stack_close_tports(nua);
+ 
+     /* 2) Create new tports */
+     if (nua_stack_init_transport(nua, nua->nua_args) < 0)
+@@ -1343,7 +1361,8 @@ nua_stack_init_registrations(nua_t *nua)
+     }
+   }
+ 
+-  nta_agent_bind_tport_update(nua->nua_nta, (nta_update_magic_t *)nua, nua_stack_tport_update);
++  nta_agent_bind_tport_update(nua->nua_nta, (nta_update_magic_t *)nua,
++			      nua_stack_tport_update);
+ 
+   return 0;
+ }
+-- 
+1.6.1
+

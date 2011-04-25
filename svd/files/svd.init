@@ -1,0 +1,26 @@
+#!/bin/sh /etc/rc.common
+# (C) 2008 openwrt.org
+
+START=96
+
+[ ! -f /dev/vmmc10 ] && {
+	mknod /dev/vmmc11 c 122 11
+	mknod /dev/vmmc12 c 122 12
+	mknod /dev/vmmc13 c 122 13
+	mknod /dev/vmmc14 c 122 14
+	mknod /dev/vmmc15 c 122 15
+	mknod /dev/vmmc16 c 122 16
+	mknod /dev/vmmc17 c 122 17
+	mknod /dev/vmmc18 c 122 18
+	mknod /dev/vmmc10 c 122 10
+}
+
+start()
+{
+	/usr/sbin/svd
+}
+
+stop()
+{
+	 killall svd > /dev/null 2> /dev/null
+}

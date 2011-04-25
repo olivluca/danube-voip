@@ -34,10 +34,13 @@ endef
 
 define Package/svd/install
 	$(INSTALL_DIR) $(1)/usr/bin
-	$(CP) $(PKG_INSTALL_DIR)/usr/bin/svd $(1)/usr/bin
-	$(CP) $(PKG_INSTALL_DIR)/usr/bin/svd_if $(1)/usr/bin
-	$(INSTALL_DIR) $(1)/etc/svd
-	$(CP) ./files/*.conf $(1)/etc/svd
+	$(INSTALL_DIR) $(1)/usr/sbin
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/svd $(1)/usr/sbin
+	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/svd_if $(1)/usr/bin
+	$(INSTALL_DIR) $(1)/etc/config
+	$(INSTALL_DATA) ./files/svd.default $(1)/etc/config/svd
+	$(INSTALL_DIR) $(1)/etc/init.d
+	$(INSTALL_BIN) ./files/svd.init $(1)/etc/init.d/svd
 endef
 
 $(eval $(call BuildPackage,svd))

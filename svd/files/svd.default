@@ -1,0 +1,11 @@
+config main
+	option log_level 3
+	option rtp_port_first 6000
+	option rtp_port_last 6100
+	option sip_tos 0x10
+	option rtp_tos 0x10
+
+config account example
+	option user "testuser"
+	option domain "test.domain"
+	option password "testpassword"

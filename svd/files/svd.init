@@ -3,7 +3,7 @@
 
 START=96
 
-[ ! -f /dev/vmmc10 ] && {
+[ ! -c /dev/vmmc10 ] && {
 	mknod /dev/vmmc11 c 122 11
 	mknod /dev/vmmc12 c 122 12
 	mknod /dev/vmmc13 c 122 13

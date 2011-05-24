@@ -130,7 +130,7 @@ options in config account
        config account test2
            option user "testuser2"
            option domain "sip2.test.domain"
-           option auth_user "authuser"
+           option auth_name "authuser"
            option registrar "proxy.test.domain"
            option password "testpassword"
            option codecs "g729 pcma"

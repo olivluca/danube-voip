@@ -573,7 +573,8 @@ DFS
 		nua_handle_bind(account->op_reg, account);	
 		if (account->op_reg) {
 			nua_register(account->op_reg, 
-			    NUTAG_REGISTRAR(account->registrar),	     
+			    NUTAG_REGISTRAR(account->registrar),
+			    NUTAG_M_USERNAME(account->name),
 			    TAG_NULL());
 		}
 	}
@@ -643,13 +644,12 @@ svd_i_invite( svd_t * const svd, nua_handle_t * nh, sip_t const *sip)
 	ab_chan_t * chan;
 	svd_chan_t * chan_ctx;
 	sip_account_t * sip_account;
-	sip_to_t const *to = sip->sip_to;
+	char const *contact = sip->sip_request->rq_url->url_user;
 	sip_from_t const * from = sip->sip_from;
 	sip_p_asserted_identity_t const * pai = sip_p_asserted_identity( sip );
 	sip_remote_party_id_t * rpi = sip_remote_party_id( sip );
 	char *cid_display=NULL;
 	url_t *cid_from=NULL;
-	char *user_URI=NULL;
 	char *cid=NULL;
 	char *cname=NULL;
 	char *cname2=NULL;
@@ -657,15 +657,14 @@ svd_i_invite( svd_t * const svd, nua_handle_t * nh, sip_t const *sip)
 	unsigned char found = 0;
 DFS
 	/* remote call */
-	asprintf(&user_URI,"%s:%s@%s", to->a_url->url_scheme, to->a_url->url_user, to->a_url->url_host);
 	sip_account = NULL;
-	SU_DEBUG_0(("INCOMING CALL TO  %s\n", user_URI ));
+	SU_DEBUG_0(("INCOMING CALL TO  %s\n", contact));
 	for (i=0; i<su_vector_len(g_conf.sip_account); i++) {
 		sip_account_t * temp_account = su_vector_item(g_conf.sip_account, i);
 		if( !temp_account->enabled)
 		  continue;
 
-		if ( !strcmp(temp_account->user_URI, user_URI)){
+		if ( !strcmp(temp_account->name, contact)){
 			/* found the account the call is coming from */
 			sip_account = temp_account;
 			break;
@@ -760,8 +759,6 @@ DFS
 	nua_handle_bind (nh, sip_account);
 
 __exit:
-	if (user_URI)
-	  free(user_URI);
 	if (cid)
 	  free(cid);
 	if (cname)

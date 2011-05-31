@@ -310,6 +310,7 @@ DFS
 	
 	account = su_vector_item(g_conf.sip_account, account_index);
 	from = sip_from_make(svd->home, account->user_URI);
+	from->a_display = account->display;
 	if (dplan_index<0) {
 		asprintf(&to_address, "sip:%s@%s", to_str, account->sip_domain);
 	} else {
@@ -566,6 +567,7 @@ DFS
 	if ( !nua_handle_has_registrations (account->op_reg) ) {
 		sip_to_t * fr_to;
 		fr_to = sip_to_make(svd->home, account->user_URI);
+		fr_to->a_display = account->display;
 		account->op_reg = nua_handle( svd->nua, NULL,
 			SIPTAG_TO(fr_to),
 			SIPTAG_FROM(fr_to),

@@ -115,6 +115,8 @@ sip_free(void * elem)
 		free (account->user_URI);
 	if (account->sip_domain)
 		free (account->sip_domain);
+	if (account->display)
+		free (account->display);
 #ifndef DONT_BIND_TO_DEVICE
 	if (account->rtp_interface)
 		free (account->rtp_interface);
@@ -217,6 +219,7 @@ struct uci_account {
 	char *registrar;
 	char *auth_name;
 	char *password;
+	char *display;
 #ifndef DONT_BIND_TO_DEVICE
 	char *rtp_interface
 #endif
@@ -279,6 +282,8 @@ account_add(struct uci_map *map, void *section)
 	else
 		asprintf(&s->registrar, "sip:%s", a->domain);
 	s->sip_domain = strdup(a->domain);
+	if (a->display)
+		s->display = strdup(a->display);
 #ifndef DONT_BIND_TO_DEVICE
 	s->rtp_interface = strdup(a->rtp_interface);
 #endif
@@ -373,6 +378,10 @@ static struct uci_optmap account_uci_map[] =
 		UCIMAP_OPTION(struct uci_account, password),
 		.type = UCIMAP_STRING,
 		.name = "password",
+	},{
+		UCIMAP_OPTION(struct uci_account, display),
+		.type = UCIMAP_STRING,
+		.name = "display",
 #ifndef DONT_BIND_TO_DEVICE
 	},{
 		UCIMAP_OPTION(struct uci_account, rtp_interface),
@@ -1107,11 +1116,13 @@ conf_show( void )
 		SU_DEBUG_3(("\n"));
 		SU_DEBUG_3((	"\tRegistrar   : '%s'\n"
 				"\tUser/Pass   : '%s/%s'\n"
-				"\tUser_URI    : '%s'\n",
+				"\tUser_URI    : '%s'\n"
+				"\tDisplay name: '%s'\n",
 				curr_sip_rec->registrar,
 				curr_sip_rec->user_name,
 				curr_sip_rec->user_pass,
-				curr_sip_rec->user_URI));
+				curr_sip_rec->user_URI,
+				curr_sip_rec->display ? curr_sip_rec->display : "(none)"));
 				
 		SU_DEBUG_3((	"\tRing incoming:\n"));
 		for (j=0; j<g_conf.channels; j++){

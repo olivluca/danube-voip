@@ -84,6 +84,10 @@ options in config account
   * option password "password"
     mandatory, password of the account
 
+  * option display "display_name"
+    optional, sip display name. It will be used as is, if quotes are needed
+    you'll have to write them yourself, e.g. '"display name"'
+
   * option registrar "registrar"
     optional, host name of the registrar, if not defined "domain" will be used
 
@@ -131,6 +135,7 @@ options in config account
            option user "testuser2"
            option domain "sip2.test.domain"
            option auth_name "authuser"
+           option display '"my display name"'
            option registrar "proxy.test.domain"
            option password "testpassword"
            option codecs "g729 pcma"

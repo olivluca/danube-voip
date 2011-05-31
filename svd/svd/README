@@ -94,6 +94,10 @@ options in config account
   * option auth_name "auth_name"
     optional, username for authentication, if not defined "user" will be used
 
+  * option outbound_proxy "proxy"
+    optional, proxy to be used for outgoing calls. If not defined no
+    outbound proxy will be used.
+
   * option codecs "codec1 codec2 codec3 ..."
     optional, list of codecs to use ordered by priority. If not defined, all
     codecs will be used in this order:
@@ -138,6 +142,7 @@ options in config account
            option display '"my display name"'
            option registrar "proxy.test.domain"
            option password "testpassword"
+           option outbound_proxy "outproxy.test.domain"
            option codecs "g729 pcma"
            option ring 'off on'
            option priority '0 7'

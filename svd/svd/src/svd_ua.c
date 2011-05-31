@@ -363,6 +363,7 @@ DFS
 	chan_ctx->account = account;
 	nua_invite( nh,
 			TAG_IF (svd->outbound_ip[0], SOATAG_ADDRESS(svd->outbound_ip)),
+			TAG_IF (account->outbound_proxy, NUTAG_PROXY(account->outbound_proxy)),		    
 			SOATAG_AUDIO_AUX("telephone-event"),
 			SOATAG_USER_SDP_STR(l_sdp_str),
 			SOATAG_RTP_SORT (SOA_RTP_SORT_LOCAL),

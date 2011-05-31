@@ -117,6 +117,8 @@ sip_free(void * elem)
 		free (account->sip_domain);
 	if (account->display)
 		free (account->display);
+	if (account->outbound_proxy)
+		free (account->outbound_proxy);
 #ifndef DONT_BIND_TO_DEVICE
 	if (account->rtp_interface)
 		free (account->rtp_interface);
@@ -220,6 +222,7 @@ struct uci_account {
 	char *auth_name;
 	char *password;
 	char *display;
+	char *outbound_proxy;
 #ifndef DONT_BIND_TO_DEVICE
 	char *rtp_interface
 #endif
@@ -284,6 +287,8 @@ account_add(struct uci_map *map, void *section)
 	s->sip_domain = strdup(a->domain);
 	if (a->display)
 		s->display = strdup(a->display);
+	if (a->outbound_proxy)
+		asprintf(&s->outbound_proxy, "sip:%s", a->outbound_proxy);
 #ifndef DONT_BIND_TO_DEVICE
 	s->rtp_interface = strdup(a->rtp_interface);
 #endif
@@ -382,6 +387,10 @@ static struct uci_optmap account_uci_map[] =
 		UCIMAP_OPTION(struct uci_account, display),
 		.type = UCIMAP_STRING,
 		.name = "display",
+	},{
+		UCIMAP_OPTION(struct uci_account, outbound_proxy),
+		.type = UCIMAP_STRING,
+		.name = "outbound_proxy",
 #ifndef DONT_BIND_TO_DEVICE
 	},{
 		UCIMAP_OPTION(struct uci_account, rtp_interface),
@@ -1114,11 +1123,13 @@ conf_show( void )
 				));
 		}
 		SU_DEBUG_3(("\n"));
-		SU_DEBUG_3((	"\tRegistrar   : '%s'\n"
-				"\tUser/Pass   : '%s/%s'\n"
-				"\tUser_URI    : '%s'\n"
-				"\tDisplay name: '%s'\n",
+		SU_DEBUG_3((	"\tRegistrar     : '%s'\n"
+				"\tOutbound proxy: '%s'\n"
+				"\tUser/Pass     : '%s/%s'\n"
+				"\tUser_URI      : '%s'\n"
+				"\tDisplay name  : '%s'\n",
 				curr_sip_rec->registrar,
+				curr_sip_rec->outbound_proxy ? curr_sip_rec->outbound_proxy : "(none)",
 				curr_sip_rec->user_name,
 				curr_sip_rec->user_pass,
 				curr_sip_rec->user_URI,

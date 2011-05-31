@@ -107,6 +107,7 @@ struct sip_account_s {
 	char *user_URI; /**< SIP URI.*/
 	char *sip_domain; /**< sip domain for outgoing calls.*/
 	char *display; /**< optional display name for outgoing calls.*/
+	char *outbound_proxy; /**< optional sip outbound proxy.*/
 #ifndef DONT_BIND_TO_DEVICE
 	char *rtp_interface; /**<interface to use for rtp traffic */
 #endif

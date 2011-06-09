@@ -649,7 +649,8 @@ svd_i_invite( svd_t * const svd, nua_handle_t * nh, sip_t const *sip)
 	ab_chan_t * chan;
 	svd_chan_t * chan_ctx;
 	sip_account_t * sip_account;
-	char const *contact = sip->sip_request->rq_url->url_user;
+	char *contact=NULL;
+	char *equal;
 	sip_from_t const * from = sip->sip_from;
 	sip_p_asserted_identity_t const * pai = sip_p_asserted_identity( sip );
 	sip_remote_party_id_t * rpi = sip_remote_party_id( sip );
@@ -663,6 +664,10 @@ svd_i_invite( svd_t * const svd, nua_handle_t * nh, sip_t const *sip)
 DFS
 	/* remote call */
 	sip_account = NULL;
+	/* sofia-sip could add a = plus some random string to the contact, remove it */
+	contact = strdup(sip->sip_request->rq_url->url_user);
+	if (equal = strrchr(contact, '='))
+		*equal=0;
 	SU_DEBUG_0(("INCOMING CALL TO  %s\n", contact));
 	for (i=0; i<su_vector_len(g_conf.sip_account); i++) {
 		sip_account_t * temp_account = su_vector_item(g_conf.sip_account, i);
@@ -768,6 +773,8 @@ __exit:
 	  free(cid);
 	if (cname)
 	  free(cname);
+	if (contact)
+	  free(contact);
 DFE
 }/*}}}*/
 

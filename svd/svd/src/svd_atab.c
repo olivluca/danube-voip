@@ -307,6 +307,9 @@ DFS
 		chan_ctx->op_handle = NULL;
 		chan_ctx->account = NULL;
 	}
+	
+	/* SIP ACCOUNT */
+	chan_ctx->account = NULL;
 DFE
 }/*}}}*/
 
@@ -684,7 +687,7 @@ DFS
 			/* remove association with this call if it's not this line answering */
 			if (chan_idx != ctx->chan_idx) {
 			    ctx->op_handle = NULL;
-			    ctx->account = NULL;
+			    svd_clear_call(svd, chan);
 			}
 		    
 		}

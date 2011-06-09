@@ -305,7 +305,6 @@ DFS
 	if(chan_ctx->op_handle){
 		nua_handle_destroy (chan_ctx->op_handle);
 		chan_ctx->op_handle = NULL;
-		chan_ctx->account = NULL;
 	}
 	
 	/* SIP ACCOUNT */

@@ -464,11 +464,11 @@ svd_bye (svd_t * const svd, ab_chan_t * const chan)
 DFS
 	if (!chan) {
 		SU_DEBUG_0(("svd_bye called without chan!\n"));
-		return;
+		goto __exit;
 	}
 	if (!chan->ctx) {
 		SU_DEBUG_0(("svd_bye called without chan->ctx!\n"));
-		return;
+		goto __exit;
 	}
 
 	svd_chan_t * chan_ctx = chan->ctx;
@@ -479,7 +479,9 @@ DFS
 		/* just clear call params */
 		svd_clear_call (svd, chan);
 	}
+__exit:
 DFE
+	return;
 }/*}}}*/
 
 /**
@@ -826,7 +828,7 @@ DFS
 	/* no event handle, ignore */
 	if (!nh) {
 		SU_DEBUG_4(("CALLSTATE without event handle, ignoring\n"));
-		return;
+		goto __exit;
 	}
 	
 	tl_gets( tags, NUTAG_CALLSTATE_REF (ss_state),
@@ -845,7 +847,7 @@ DFS
 	/* channel not found, ignore */
 	if (chan_ctx->op_handle!=nh) {
 		SU_DEBUG_4(("CALLSTATE: no channel bound to event handle, ignoring\n"));
-		return;
+		goto __exit;
 	}
 	
 
@@ -954,7 +956,9 @@ DFS
 			break;
 		}/*}}}*/
 	}
+__exit:
 DFE
+	return;
 }/*}}}*/
 
 /**
@@ -1038,7 +1042,7 @@ DFS
 	/* no channel for this handle, ignore */
 	if (chan_ctx->op_handle != nh) {
 		SU_DEBUG_4(("svd_r_get_params: no channel with this handle, ignoring\n"));
-		return;
+		goto __exit;
 	}
 	
 	tl_gets( tags, SOATAG_LOCAL_SDP_STR_REF(l_sdp_str),
@@ -1084,7 +1088,9 @@ DFS
 		SU_DEBUG_3 (("%s\n",buff));
 		tags = tl_next(tags);
 	}
+__exit:
 DFE
+    return;
 }/*}}}*/
 
 /**
@@ -1235,7 +1241,7 @@ DFS
 	
 	if (chan_ctx->op_handle != nh) {
 		SU_DEBUG_0(("svd_r_invite, no channel with this handle, ignoring!\n"));
-		return;
+		goto __exit;
 	}
 	  
 	account = chan_ctx->account;
@@ -1258,7 +1264,9 @@ DFS
 	if(status == 200){
 	  //FIXME vf was here
 	}
+__exit:	
 DFE
+	return;
 }/*}}}*/
 
 /**

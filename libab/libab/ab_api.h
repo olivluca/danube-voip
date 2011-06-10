@@ -64,6 +64,7 @@ enum bitpack_e {/*{{{*/
 	bitpack_AAL2,
 };/*}}}*/
 enum cid_std_e {/*{{{*/
+	cid_OFF,
 	cid_TELCORDIA,
 	cid_ETSI_FSK,
 	cid_ETSI_DTMF,
@@ -223,6 +224,7 @@ struct ab_chan_s {/*{{{*/
 	unsigned char abs_idx; /**< Channel index on boards (from 0) */
 	ab_dev_t * parent;  /**< device that channel belongs */
 	enum vf_type_e type_if_vf; /**< VF type if it is VF channel (see parent type)*/
+	enum cid_std_e cid_std; /**<Caller id standard */
 	int rtp_fd;         /**< Channel file descriptor */
 	struct ab_chan_status_s status;  /**< Channel status info */
 	struct ab_chan_stat_s statistics; /**< Jitter Buffer and RTCP statistics */

@@ -105,13 +105,13 @@ ab_FXS_line_ring (ab_chan_t * const chan, enum ab_chan_ring_e ring, char * numbe
 			memset(&cidType1, 0, sizeof(cidType1));
 			memset(&message, 0, sizeof(message));
 			int i=0;
-			if (number!=NULL && number[0]!=0) {
+			if (chan->cid_std!=cid_OFF && number!=NULL && number[0]!=0) {
 				message[i].string.elementType = IFX_TAPI_CID_ST_CLI;
 				message[i].string.len = strlen(number);
 				strncpy(message[i].string.element, number, sizeof(message[0].string.element));
 				i++;
 			}
-			if (name!=NULL && name[0]!=0) {
+			if (chan->cid_std!=cid_OFF && name!=NULL && name[0]!=0) {
 				message[i].string.elementType = IFX_TAPI_CID_ST_NAME;
 				message[i].string.len = strlen(name);
 				strncpy(message[i].string.element, name, sizeof(message[0].string.element));
@@ -417,6 +417,10 @@ ab_chan_cid_standard( ab_chan_t * const chan, const cid_std_t std )
 	int err;
 	IFX_TAPI_CID_CFG_t cidConf;
 
+	chan->cid_std = std;
+	if (std == cid_OFF)
+	  goto __exit_success;
+	
 	memset(&cidConf, 0, sizeof(cidConf));
 	switch (std) {
 	  case cid_TELCORDIA:

@@ -482,7 +482,10 @@ int svd_set_cid( ab_chan_t * const chan, const char *cid)
 {
 	cid_std_t standard;
 	
-	if (!strcasecmp(cid, "TELCORDIA")) {
+	if (!strcasecmp(cid, "OFF")) {
+		standard = cid_OFF;
+	}
+	else if (!strcasecmp(cid, "TELCORDIA")) {
 		standard = cid_TELCORDIA;
 	}
 	else if (!strcasecmp(cid, "ETSI_FSK")) {
@@ -506,7 +509,7 @@ int svd_set_cid( ab_chan_t * const chan, const char *cid)
 	        SU_DEBUG_9(("Caller id %s not mapped\n",cid));
 		return -1;
 	}
-	SU_DEBUG_9(("Mapped caller id standard: %s to: %d\n",cid, standard));
+	SU_DEBUG_9(("Channel %d, mapped caller id standard: %s to: %d\n",chan->abs_idx, cid, standard));
 	int err=ab_chan_cid_standard(chan, standard);
 	if (err)
 	  SU_DEBUG_9(("%s\n",ab_g_err_str));

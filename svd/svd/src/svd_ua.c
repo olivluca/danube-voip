@@ -1088,9 +1088,13 @@ DFS
 				} else {
 					SU_DEBUG_0((LOG_FNC_A("ERROR: Too long rm_encoding")));
 				}
-				SU_DEBUG_5(("rm_fmtp: %s\n"
-						,sdp_sess->sdp_media->m_rtpmaps->rm_fmtp));
 				svd_set_te_codec(sdp_sess, account, chan_ctx);
+				SU_DEBUG_5(("svd_r_get_params, parameters for channel %d, coder/payload [%s/%d], fmtp: %s, telephone-event: %d\n",
+						chan_ctx->chan_idx,
+						chan_ctx->sdp_cod_name,
+						chan_ctx->sdp_payload,
+						sdp_sess->sdp_media->m_rtpmaps->rm_fmtp,
+						chan_ctx->te_payload));
 			}
 		}
 		sdp_parser_free (remote_sdp);

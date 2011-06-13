@@ -8,6 +8,7 @@
 #include "svd.h"
 #include "svd_ua.h"
 #include "svd_atab.h"
+#include "svd_led.h"
 #include <signal.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -749,6 +750,8 @@ DFS
 		chan_ctx = chan->ctx;
 		if (sip_account->ring_incoming[i] && !(chan_ctx->op_handle) && !chan_ctx->off_hook) {
 		  ab_FXS_line_ring(chan, ab_chan_ring_RINGING, cid, cname2);
+		  if (g_conf.chan_led[i])
+			  led_blink(g_conf.chan_led[i], LED_FAST_BLINK);
 		  chan_ctx->op_handle = nh;
 		  chan_ctx->account = sip_account;
 		  found = 1;
@@ -1205,6 +1208,22 @@ DFS
 		nua_handle_destroy (nh);
 		account->op_reg = NULL;
 		su_timer_set(account->reg_tmr, reg_timer_cb, account);
+	}
+	/* update voip led */
+	if (g_conf.voip_led) {
+		int registered = 0;
+		int i;
+		for (i=0; i<su_vector_len(g_conf.sip_account); i++) {
+		      sip_account_t * acc=su_vector_item(g_conf.sip_account, i);
+		      if (acc->registered) {
+			      registered = 1;
+			      break;
+		      }
+		}
+		if (registered)
+			led_on(g_conf.voip_led);
+		else
+			led_off(g_conf.voip_led);
 	}
 DFE
 }/*}}}*/

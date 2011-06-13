@@ -63,6 +63,11 @@ options in config main
    * option rtp_tos n
      mandatory - tos for rtp traffic
 
+   * option led name
+     optional - name of the led to use as the main voip led.
+     If configured the led will turn on when there's at least one account successfully
+     registered.
+
    example:
 
 	config main
@@ -71,6 +76,7 @@ options in config main
 	    option rtp_port_last 5600
 	    option sip_tos 0x10
 	    option rtp_tos 0x10
+	    option led "soc:green:voip"
 
 options in config account
 -------------------------
@@ -224,12 +230,21 @@ options in config channel
      defaults to "etsi_fsk"
      "off" disables caller id transmission.
 
+  * option led <string>
+     name of the led used by this channel.
+     If configured, this led will turn on when the phone is off-hook, it
+     will blink slowly if is there a call ongoing and it will blink fast
+     if the phone is ringing.
+
   Example:
 
     config channel 1
        option cid telcordia
+       option led "soc:green:fxs2"
     config channel 2
        option cid ntt
+       option led "soc:green:fxs1"
+
 
 options in config codec
 -----------------------

@@ -140,6 +140,8 @@ struct svd_conf_s {/*{{{*/
 	su_vector_t * dial_plan; /**< Dial plan.*/
 	struct rtp_session_prms_s audio_prms [CHANS_MAX]; /**< AUDIO channel params.*/
 	struct wlec_s       wlec_prms    [CHANS_MAX]; /**< WLEC channel parameters.*/
+	char * voip_led; /** Name of the main voip led */
+	char * chan_led [CHANS_MAX]; /**Name of the led for each channel*/
 	unsigned char sip_tos; /** Type of Service byte for sip-packets.*/
 	unsigned char rtp_tos; /** Type of Service byte for rtp-packets.*/
 } g_conf;/*}}}*/

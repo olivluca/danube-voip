@@ -9,6 +9,7 @@
 #include "svd.h"
 #include "svd_cfg.h"
 #include "svd_log.h"
+#include "svd_led.h"
 
 #include <uci.h>
 #include <ucimap.h>
@@ -152,6 +153,7 @@ struct uci_main {
 	int rtp_port_last;
 	int sip_tos;
 	int rtp_tos;
+	char *led;
 };
 
 static int
@@ -170,6 +172,11 @@ main_add(struct uci_map *map, void *section)
 	g_conf.rtp_port_last = a->rtp_port_last;
 	g_conf.sip_tos = a->sip_tos;
 	g_conf.rtp_tos = a->rtp_tos;
+	if (a->led) {
+		g_conf.voip_led = strdup(a->led);
+		/* turn it off immediately */
+		led_off(a->led);
+	}
 	
 	return 0;
 }
@@ -196,6 +203,10 @@ static struct uci_optmap main_uci_map[] =
 		UCIMAP_OPTION(struct uci_main, rtp_tos),
 		.type = UCIMAP_INT,
 		.name = "rtp_tos",
+	},{
+		UCIMAP_OPTION(struct uci_main, led),
+		.type = UCIMAP_STRING,
+		.name = "led",
 	},
 };
 
@@ -705,6 +716,7 @@ struct uci_channel {
 	int wlec_ne_nb;
 	int wlec_fe_nb;
 	char *cid;
+	char *led;
 };
 
 static int
@@ -795,6 +807,13 @@ channel_add(struct uci_map *map, void *section)
 			SU_DEBUG_0(("Invalid caller id %s\n",a->cid));
 		}
 	}
+	
+	/* led */
+	if (a->led) {
+		g_conf.chan_led[a->channel] = strdup(a->led);
+		/* turn it off immediately */
+		led_off(a->led);
+	}
 		
 	return 0;
 }
@@ -837,6 +856,10 @@ static struct uci_optmap channel_uci_map[] =
 		UCIMAP_OPTION(struct uci_channel, cid),
 		.type = UCIMAP_STRING,
 		.name = "cid",
+	},{
+		UCIMAP_OPTION(struct uci_channel, led),
+		.type = UCIMAP_STRING,
+		.name = "led",
 	},
 };
 
@@ -1093,6 +1116,7 @@ conf_show( void )
 	} else {
 		SU_DEBUG_3(("%d] : ", g_conf.log_level));
 	}
+	SU_DEBUG_3((" led[%s] : ", g_conf.voip_led));
 	SU_DEBUG_3(("ports[%d:%d]\n",
 			g_conf.rtp_port_first,
 			g_conf.rtp_port_last));
@@ -1156,8 +1180,8 @@ conf_show( void )
 	for (i=0; i<g_conf.channels; i++) {
 		struct rtp_session_prms_s * c = &g_conf.audio_prms[i];
 		struct wlec_s * w = &g_conf.wlec_prms[i];
-		SU_DEBUG_3(("chan %d enc_dB %d dec_db %d vad %d hpf %d wlec_mode %d wlec_nlp %d wlec_ne_nb %d wlec_fe_nb %d\n",
-			    i, c->enc_dB, c->dec_dB, c->VAD_cfg, c->HPF_is_ON,
+		SU_DEBUG_3(("chan %d led % s enc_dB %d dec_db %d vad %d hpf %d wlec_mode %d wlec_nlp %d wlec_ne_nb %d wlec_fe_nb %d\n",
+			    i, g_conf.chan_led[i], c->enc_dB, c->dec_dB, c->VAD_cfg, c->HPF_is_ON,
 			    w->mode, w->nlp, w->ne_nb, w->fe_nb));
 	}
 
@@ -1181,11 +1205,25 @@ conf_show( void )
 void
 svd_conf_destroy (void)
 {/*{{{*/
+	int i;
+	
 	if (g_conf.dial_plan)
 	  su_vector_destroy(g_conf.dial_plan);
 	
 	if (g_conf.sip_account)
 	  su_vector_destroy(g_conf.sip_account);
+	
+	if (g_conf.voip_led) {
+	  led_off(g_conf.voip_led);
+	  free(g_conf.voip_led);
+	}
+	
+	for (i=0; i<g_conf.channels; i++) {
+	  if (g_conf.chan_led[i]) {
+	    led_off(g_conf.chan_led[i]);
+	    free(g_conf.chan_led[i]);
+	  }
+	}
 	
 	memset(&g_conf, 0, sizeof(g_conf));
 }/*}}}*/

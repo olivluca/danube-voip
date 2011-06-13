@@ -10,6 +10,7 @@
 #include "ab_api.h"
 #include "svd_ua.h"
 #include "svd_atab.h"
+#include "svd_led.h"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -689,6 +690,8 @@ DFS
 			/* remove association with this call if it's not this line answering */
 			if (chan_idx != ctx->chan_idx) {
 			    ctx->op_handle = NULL;
+			    if (g_conf.chan_led[ctx->chan_idx])
+				led_off(g_conf.chan_led[ctx->chan_idx]);
 			    svd_clear_call(svd, chan);
 			}
 		    
@@ -707,10 +710,14 @@ DFS
 	/* answer on call if it exists */
 	call_answered = svd_answer(svd, ab_chan, SIP_200_OK);
 	if (call_answered){
+		if (g_conf.chan_led[chan_ctx->chan_idx])
+			led_blink(g_conf.chan_led[chan_ctx->chan_idx], LED_SLOW_BLINK);
 		goto __exit_success;
 	}
 
 	/* no call to answer - play dialtone*/
+	if (g_conf.chan_led[chan_ctx->chan_idx])
+		led_on(g_conf.chan_led[chan_ctx->chan_idx]);
 	err = ab_FXS_line_tone (ab_chan, ab_chan_tone_DIAL);
 	if(err){
 		SU_DEBUG_2(("can`t play dialtone on [%02d]\n",ab_chan->abs_idx));
@@ -753,6 +760,10 @@ DFS
 	SU_DEBUG_8(("stop playing tone on [%02d]\n",
 				ab_chan->abs_idx));
 
+	/* turn off led */
+	if (g_conf.chan_led[chan_ctx->chan_idx])
+		led_off(g_conf.chan_led[chan_ctx->chan_idx]);
+	
 	/* change linefeed mode to STANDBY */
 	err = ab_FXS_line_feed (ab_chan, ab_chan_linefeed_STANDBY);
 	if (err){
@@ -959,6 +970,9 @@ dtmf_timer_cb (su_root_magic_t *magic, su_timer_t *t, su_timer_arg_t *arg)
 {/*{{{*/
 	svd_t * svd = magic;
 	svd_chan_t * chan_ctx = arg;
+	/* led shows that a call is ongoing */
+	if (g_conf.chan_led[chan_ctx->chan_idx])
+		led_blink(g_conf.chan_led[chan_ctx->chan_idx], LED_SLOW_BLINK);
 	/* place a call */
 	if (svd_invite_to(svd, chan_ctx->chan_idx, chan_ctx->dial_status.digits))
 		ab_FXS_line_tone (&svd->ab->chans[chan_ctx->chan_idx], ab_chan_tone_BUSY);
@@ -995,6 +1009,9 @@ DFS
 	} else {
 		/* stop the timer */
 		su_timer_reset(chan_ctx->dtmf_tmr);
+		/* led shows that a call is ongoing */
+		if (g_conf.chan_led[chan_ctx->chan_idx])
+			led_blink(g_conf.chan_led[chan_ctx->chan_idx], LED_SLOW_BLINK);
 		/* place a call */
 		if (svd_invite_to(svd, chan_idx, chan_ctx->dial_status.digits))
 			ab_FXS_line_tone (&ab->chans[chan_ctx->chan_idx], ab_chan_tone_BUSY);

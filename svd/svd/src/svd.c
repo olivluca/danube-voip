@@ -41,6 +41,14 @@ static void svd_logger(void *logarg, char const *format, va_list ap);
 /** Set logging function.*/
 static void svd_log_set( int const level, int const debug);
 
+/* svd pointer for termination handler */
+static svd_t * main_svd;
+/* termination handler */
+static void term_handler(int signum)
+{
+  svd_shutdown(main_svd);
+}
+
 /**
  * Main.
  *
@@ -105,6 +113,10 @@ main (int argc, char ** argv)
 		goto __if;
 	}
 
+	/* set termination handler to shutdown svd */
+	main_svd = svd;
+	signal(SIGTERM, term_handler);
+	
 	/* run main cycle */
 	su_root_run (svd->root);
 

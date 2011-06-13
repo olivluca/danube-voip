@@ -4,6 +4,7 @@ svd_SOURCES = \
 svd_cfg.c \
 svd_ua.c \
 svd_atab.c \
+svd_led.c \
 svd_engine_if.c \
 svd_server_if.c \
 svd.c 

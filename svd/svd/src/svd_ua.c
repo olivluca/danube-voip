@@ -798,6 +798,12 @@ DFS
 			      SU_DEBUG_3 (("Can`t mutes ring on [%02d]: %s\n",
 					      chan->abs_idx , ab_g_err_str));
 			}
+			if (g_conf.chan_led[i]) {
+			      if (chan_ctx->off_hook)
+				led_on(g_conf.chan_led[i]);
+			      else
+				led_off(g_conf.chan_led[i]);
+			}
 			chan_ctx->op_handle = NULL;
 			svd_clear_call(svd, chan);
 		}  

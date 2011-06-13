@@ -88,7 +88,6 @@ struct svd_s
 	su_home_t home[1];	/**< Our memory home.*/
 	nua_t * nua;		/**< Pointer to NUA object.*/
 	ab_t * ab;		/**< Pointer to ATA Boards object.*/
-	char outbound_ip [IP_LEN_MAX]; /**< Outbound ip address.*/
 	int ifd; /**< Interface socket file deskriptor. */
 };/*}}}*/
 

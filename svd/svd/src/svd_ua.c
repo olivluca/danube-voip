@@ -362,7 +362,6 @@ DFS
 	
 	chan_ctx->account = account;
 	nua_invite( nh,
-			TAG_IF (svd->outbound_ip[0], SOATAG_ADDRESS(svd->outbound_ip)),
 			TAG_IF (account->outbound_proxy, NUTAG_PROXY(account->outbound_proxy)),		    
 			SOATAG_AUDIO_AUX("telephone-event"),
 			SOATAG_USER_SDP_STR(l_sdp_str),
@@ -433,8 +432,6 @@ DFS
 				SOATAG_AUDIO_AUX("telephone-event"),
 				SOATAG_RTP_SORT (SOA_RTP_SORT_LOCAL),
 				SOATAG_RTP_SELECT (SOA_RTP_SELECT_SINGLE),
-				TAG_IF(svd->outbound_ip[0],
-						SOATAG_ADDRESS(svd->outbound_ip)),
 				SOATAG_USER_SDP_STR (l_sdp_str),
 				TAG_END());
 
@@ -1195,7 +1192,6 @@ DFS
 		for (; m; m = m->m_next){
 			sl_header_log(SU_LOG, 3, "\tContact: %s\n",
 					(sip_header_t*)m);
-			strcpy(svd->outbound_ip, m->m_url->url_host);
 		}
 		account->registered = is_register;
 		if( !is_register){

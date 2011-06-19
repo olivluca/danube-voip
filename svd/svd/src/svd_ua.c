@@ -836,6 +836,11 @@ svd_i_state(int status, char const *phrase, nua_t * nua, svd_t * svd,
 	ab_chan_t * chan;
 	svd_chan_t * chan_ctx;
 DFS
+	tl_gets( tags, NUTAG_CALLSTATE_REF (ss_state),
+			SOATAG_LOCAL_SDP_STR_REF (l_sdp),
+			SOATAG_REMOTE_SDP_STR_REF (r_sdp),
+			TAG_END() );
+
 	SU_DEBUG_4(("CALLSTATE NAME : %s\n", nua_callstate_name(ss_state)));
 
 	/* no event handle, ignore */
@@ -843,18 +848,15 @@ DFS
 		SU_DEBUG_4(("CALLSTATE without event handle, ignoring\n"));
 		goto __exit;
 	}
-	
-	tl_gets( tags, NUTAG_CALLSTATE_REF (ss_state),
-			SOATAG_LOCAL_SDP_STR_REF (l_sdp),
-			SOATAG_REMOTE_SDP_STR_REF (r_sdp),
-			TAG_END() );
 
 	/* find the channel associated to this event handle */		
 	for (i=0; i<g_conf.channels; i++) {
 		chan = &svd->ab->chans[i];
 		chan_ctx = chan->ctx;
-		if (chan_ctx->op_handle == nh)
+		if (chan_ctx->op_handle == nh) {
+			SU_DEBUG_4(("CALLSTATE bound to channel %d\n",i)); 
 			break;
+		}
 	}
 	
 	/* channel not found, ignore */

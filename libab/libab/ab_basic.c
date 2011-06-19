@@ -349,8 +349,8 @@ ab_create( void )
 	dprms->type = dev_type_FXS;
 	dprms->nBaseAddress = 0;
 	dprms->AccessMode = 0;
-	dprms->chans_idx[0] = 0;
-	dprms->chans_idx[1] = 1;
+	dprms->chans_idx[0] = 1;
+	dprms->chans_idx[1] = 0;
 #endif	
 	ab = malloc(sizeof(*ab));
 	if( !ab){

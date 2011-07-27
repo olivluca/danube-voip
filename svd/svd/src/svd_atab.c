@@ -650,7 +650,7 @@ do{
 	}
 	if(evt.more){
 		SU_DEBUG_8 (("Got more then one event in one time: on [%d/%d]\n",
-				evt.data, dev_idx,evt.ch ));
+				dev_idx,evt.ch ));
 	}
 	if (err){
 		goto __exit_fail;

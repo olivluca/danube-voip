@@ -235,7 +235,7 @@ struct uci_account {
 	char *display;
 	char *outbound_proxy;
 #ifndef DONT_BIND_TO_DEVICE
-	char *rtp_interface
+	char *rtp_interface;
 #endif
 	struct ucimap_list *outgoing_priority;
 	struct ucimap_list *ring_incoming;

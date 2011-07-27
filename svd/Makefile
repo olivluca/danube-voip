@@ -22,6 +22,7 @@ endef
 
 TARGET_CFLAGS += -I$(STAGING_DIR)/usr/include/drv_tapi -I$(STAGING_DIR)/usr/include/libab -I$(STAGING_DIR)/usr/include/libconfig
 TARGET_CFLAGS += -DDONT_BIND_TO_DEVICE=1
+TARGET_LDFLAGS += -Wl,--allow-shlib-undefined
 
 define Build/Prepare
 	mkdir -p $(PKG_BUILD_DIR)

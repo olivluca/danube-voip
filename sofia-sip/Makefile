@@ -23,7 +23,7 @@ define Package/sofia-sip
   CATEGORY:=Libraries
   TITLE:=sofia-sip
   URL:=http://sofia-sip.sourceforge.net
-  DEPENDS:=+libpthread
+  DEPENDS:=+libpthread +libopenssl
 endef
 
 define Package/sofia-sip/description

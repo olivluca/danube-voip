@@ -117,7 +117,12 @@ ab_chan_media_rtp_tune( ab_chan_t * const chan, codec_t const * const cod,
 	}
 	/*}}}*/
 	/* PTypes table and [enc,dec]Cfg, correct frame len and set bitpack{{{*/
-	if(cod->type == cod_type_ALAW){
+	if(cod->type == cod_type_G722_64){
+		encCfg.nEncType = IFX_TAPI_COD_TYPE_G722_64;
+		rtpPTConf.nPTup   [IFX_TAPI_COD_TYPE_G722_64] = 
+		rtpPTConf.nPTdown [IFX_TAPI_COD_TYPE_G722_64] = 
+				cod->sdp_selected_payload;
+	} else if(cod->type == cod_type_ALAW){
 		encCfg.nEncType = IFX_TAPI_COD_TYPE_ALAW;
 		rtpPTConf.nPTup   [encCfg.nEncType] = 
 		rtpPTConf.nPTdown [encCfg.nEncType] = 

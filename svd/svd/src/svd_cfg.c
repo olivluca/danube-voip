@@ -45,6 +45,7 @@ static unsigned char g_err_no;
  *  @ingroup CFG_M
  *  Text values that can be in config file.
  *  @{*/
+#define CONF_CODEC_G722 "g722"
 #define CONF_CODEC_G729 "g729"
 #define CONF_CODEC_ALAW "aLaw"
 #define CONF_CODEC_G723 "g723"
@@ -73,7 +74,7 @@ static unsigned char g_err_no;
 #define CONF_WLEC_NLP_ON   "on"
 #define CONF_WLEC_NLP_OFF  "off"
 /*First "real" codec (index 0 in various arrays)*/
-#define CODEC_BASE cod_type_ALAW
+#define CODEC_BASE cod_type_G722_64
 
 /**
  * Ab context for configuration functions
@@ -1244,6 +1245,13 @@ codec_defaults( void )
 	}
 
 	/* Init names and basic parameters */
+	/* G722_64 parameters. */
+	i=cod_type_G722_64-CODEC_BASE;
+	g_conf.cp[i].type = cod_type_G722_64;
+	g_conf.cp[i].sdp_name=strdup("G722");
+	g_conf.cp[i].fmtp_str=empty;
+	g_conf.cp[i].rate = 8000; /* per RFC3551, 16000Hz in reality */
+	
 	/* G711 ALAW parameters. */
 	i=cod_type_ALAW-CODEC_BASE;
 	g_conf.cp[i].type = cod_type_ALAW;
@@ -1333,6 +1341,17 @@ codec_defaults( void )
 	}
 
 	/* Default values for the codecs */
+	g_conf.codecs[cod_type_G722_64].type=cod_type_G722_64;
+	g_conf.codecs[cod_type_G722_64].pkt_size=cod_pkt_size_20;
+	g_conf.codecs[cod_type_G722_64].bpack=bitpack_RTP;
+	g_conf.codecs[cod_type_G722_64].user_payload=9;
+	g_conf.codecs[cod_type_G722_64].jb.jb_type=jb_type_FIXED;
+	g_conf.codecs[cod_type_G722_64].jb.jb_loc_adpt=jb_loc_adpt_OFF;
+	g_conf.codecs[cod_type_G722_64].jb.jb_scaling=1.4*16;
+	g_conf.codecs[cod_type_G722_64].jb.jb_init_sz=120*8;
+	g_conf.codecs[cod_type_G722_64].jb.jb_min_sz=10*8;
+	g_conf.codecs[cod_type_G722_64].jb.jb_max_sz=200*8;
+	
 	g_conf.codecs[cod_type_ALAW].type=cod_type_ALAW;
 	g_conf.codecs[cod_type_ALAW].pkt_size=cod_pkt_size_20;
 	g_conf.codecs[cod_type_ALAW].bpack=bitpack_RTP;

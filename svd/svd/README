@@ -41,7 +41,7 @@ Various sections can be defined:
 
   * config codec name
      overrides default codec parameter. Name must be one of:
-        PCMA, G729, G729E, G723, iLBC, G726-16, G726-32, G726-40, telephone-event
+        G722, PCMA, G729, G729E, G723, iLBC, G726-16, G726-32, G726-40, telephone-event
      repeat this section for each codec you want to modify
 
 
@@ -107,7 +107,7 @@ options in config account
   * option codecs "codec1 codec2 codec3 ..."
     optional, list of codecs to use ordered by priority. If not defined, all
     codecs will be used in this order:
-    PCMA, G729, G729E, G723, iLBC, G726-16, G726-32, G726-40
+    G722, PCMA, G729, G729E, G723, iLBC, G726-16, G726-32, G726-40
    
   * option ring 'off on'
     optional, list of booleans. Decides which channel will ring for incoming

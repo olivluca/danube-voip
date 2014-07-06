@@ -37,6 +37,7 @@ struct jb_prms_s {/*{{{*/
 };/*}}}*/
 enum cod_type_e {/*{{{*/
 	cod_type_NONE,
+	cod_type_G722_64,
 	cod_type_ALAW,
 	cod_type_G729,
 	cod_type_G729E,

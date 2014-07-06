@@ -3,6 +3,7 @@
 #include <string.h>
 #include <assert.h>
 #include <fcntl.h>
+#include <time.h>
 
 #include "ab_internal_v22.h"
 
@@ -101,7 +102,7 @@ ab_FXS_line_ring (ab_chan_t * const chan, enum ab_chan_ring_e ring, char * numbe
 	if (chan->status.ring != ring){
 		if( ring == ab_chan_ring_RINGING ) {
 			IFX_TAPI_CID_MSG_t cidType1;
-			IFX_TAPI_CID_MSG_ELEMENT_t message[2];
+			IFX_TAPI_CID_MSG_ELEMENT_t message[3];
 			memset(&cidType1, 0, sizeof(cidType1));
 			memset(&message, 0, sizeof(message));
 			int i=0;
@@ -117,8 +118,18 @@ ab_FXS_line_ring (ab_chan_t * const chan, enum ab_chan_ring_e ring, char * numbe
 				strncpy(message[i].string.element, name, sizeof(message[0].string.element));
 				i++;
 			}
+			time_t timestamp;
+			struct tm *tm;
+			if ((time(&timestamp) != -1) && ((tm=localtime(&timestamp)) != NULL)) {
+                        	message[i].date.elementType = IFX_TAPI_CID_ST_DATE;
+                        	message[i].date.day = tm->tm_mday;
+                        	message[i].date.month = tm->tm_mon;
+                        	message[i].date.hour = tm->tm_hour;
+                        	message[i].date.mn = tm->tm_min;
+                        	i++;
+			}
 			if (i==0) {
-				/* neither caller id or name, normal ring */
+				/* neither caller id, name or date, normal ring */
 				err = err_set_ioctl(
 					chan, IFX_TAPI_RING_START, 0,
 						  "start ringing (ioctl)");

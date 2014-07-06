@@ -1334,7 +1334,7 @@ codec_defaults( void )
 
 	/* Default values for the codecs */
 	g_conf.codecs[cod_type_ALAW].type=cod_type_ALAW;
-	g_conf.codecs[cod_type_ALAW].pkt_size=cod_pkt_size_60;
+	g_conf.codecs[cod_type_ALAW].pkt_size=cod_pkt_size_20;
 	g_conf.codecs[cod_type_ALAW].bpack=bitpack_RTP;
 	g_conf.codecs[cod_type_ALAW].user_payload=8;
 	g_conf.codecs[cod_type_ALAW].jb.jb_type=jb_type_FIXED;
@@ -1345,7 +1345,7 @@ codec_defaults( void )
 	g_conf.codecs[cod_type_ALAW].jb.jb_max_sz=200*8;
 	
 	g_conf.codecs[cod_type_G729].type=cod_type_G729;
-	g_conf.codecs[cod_type_G729].pkt_size=cod_pkt_size_60;
+	g_conf.codecs[cod_type_G729].pkt_size=cod_pkt_size_10;
 	g_conf.codecs[cod_type_G729].bpack=bitpack_RTP;
 	g_conf.codecs[cod_type_G729].user_payload=18;
 	g_conf.codecs[cod_type_G729].jb.jb_type=jb_type_FIXED;
@@ -1356,7 +1356,7 @@ codec_defaults( void )
 	g_conf.codecs[cod_type_G729].jb.jb_max_sz=200*8;
 	
 	g_conf.codecs[cod_type_G729E].type=cod_type_G729E;
-	g_conf.codecs[cod_type_G729E].pkt_size=cod_pkt_size_60;
+	g_conf.codecs[cod_type_G729E].pkt_size=cod_pkt_size_10;
 	g_conf.codecs[cod_type_G729E].bpack=bitpack_RTP;
 	g_conf.codecs[cod_type_G729E].user_payload=101;
 	g_conf.codecs[cod_type_G729E].jb.jb_type=jb_type_FIXED;
@@ -1378,7 +1378,7 @@ codec_defaults( void )
 	g_conf.codecs[cod_type_ILBC_133].jb.jb_max_sz=200*8;
 	
 	g_conf.codecs[cod_type_G723].type=cod_type_G723;
-	g_conf.codecs[cod_type_G723].pkt_size=cod_pkt_size_60;
+	g_conf.codecs[cod_type_G723].pkt_size=cod_pkt_size_30;
 	g_conf.codecs[cod_type_G723].bpack=bitpack_RTP;
 	g_conf.codecs[cod_type_G723].user_payload=4;
 	g_conf.codecs[cod_type_G723].jb.jb_type=jb_type_FIXED;
@@ -1389,7 +1389,7 @@ codec_defaults( void )
 	g_conf.codecs[cod_type_G723].jb.jb_max_sz=200*8;
 	
 	g_conf.codecs[cod_type_G726_16].type=cod_type_G726_16;
-	g_conf.codecs[cod_type_G726_16].pkt_size=cod_pkt_size_60;
+	g_conf.codecs[cod_type_G726_16].pkt_size=cod_pkt_size_10;
 	g_conf.codecs[cod_type_G726_16].bpack=bitpack_AAL2;
 	g_conf.codecs[cod_type_G726_16].user_payload=102;
 	g_conf.codecs[cod_type_G726_16].jb.jb_type=jb_type_FIXED;
@@ -1400,7 +1400,7 @@ codec_defaults( void )
 	g_conf.codecs[cod_type_G726_16].jb.jb_max_sz=200*8;
 
 	g_conf.codecs[cod_type_G726_24].type=cod_type_G726_24;
-	g_conf.codecs[cod_type_G726_24].pkt_size=cod_pkt_size_60;
+	g_conf.codecs[cod_type_G726_24].pkt_size=cod_pkt_size_10;
 	g_conf.codecs[cod_type_G726_24].bpack=bitpack_AAL2;
 	g_conf.codecs[cod_type_G726_24].user_payload=103;
 	g_conf.codecs[cod_type_G726_24].jb.jb_type=jb_type_FIXED;
@@ -1411,7 +1411,7 @@ codec_defaults( void )
 	g_conf.codecs[cod_type_G726_24].jb.jb_max_sz=200*8;
 
 	g_conf.codecs[cod_type_G726_32].type=cod_type_G726_32;
-	g_conf.codecs[cod_type_G726_32].pkt_size=cod_pkt_size_60;
+	g_conf.codecs[cod_type_G726_32].pkt_size=cod_pkt_size_10;
 	g_conf.codecs[cod_type_G726_32].bpack=bitpack_AAL2;
 	g_conf.codecs[cod_type_G726_32].user_payload=104;
 	g_conf.codecs[cod_type_G726_32].jb.jb_type=jb_type_FIXED;
@@ -1422,7 +1422,7 @@ codec_defaults( void )
 	g_conf.codecs[cod_type_G726_32].jb.jb_max_sz=200*8;
 
 	g_conf.codecs[cod_type_G726_40].type=cod_type_G726_40;
-	g_conf.codecs[cod_type_G726_40].pkt_size=cod_pkt_size_60;
+	g_conf.codecs[cod_type_G726_40].pkt_size=cod_pkt_size_10;
 	g_conf.codecs[cod_type_G726_40].bpack=bitpack_AAL2;
 	g_conf.codecs[cod_type_G726_40].user_payload=105;
 	g_conf.codecs[cod_type_G726_40].jb.jb_type=jb_type_FIXED;

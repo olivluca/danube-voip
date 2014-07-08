@@ -23,7 +23,7 @@ define Package/sofia-sip
   CATEGORY:=Libraries
   TITLE:=sofia-sip
   URL:=http://sofia-sip.sourceforge.net
-  DEPENDS:=+libpthread +libopenssl
+  DEPENDS:=+libpthread
 endef
 
 define Package/sofia-sip/description
@@ -31,6 +31,10 @@ Open source SIP User-Agent library
 endef
 
 TARGET_CFLAGS += $(FPIC)
+
+define Build/Configure
+  $(call Build/Configure/Default,--without-openssl)
+endef
 
 define Build/Compile
 	$(call Build/Compile/Default)

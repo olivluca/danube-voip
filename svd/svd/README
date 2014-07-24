@@ -104,6 +104,10 @@ options in config account
     optional, proxy to be used for outgoing calls. If not defined no
     outbound proxy will be used.
 
+  * option user_agent "user agent string"
+    optional, user agent for this account. If not defined, the default
+    ("svd VoIP agent") will be used.
+
   * option codecs "codec1 codec2 codec3 ..."
     optional, list of codecs to use ordered by priority. If not defined, all
     codecs will be used in this order:

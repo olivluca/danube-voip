@@ -364,6 +364,7 @@ DFS
 	chan_ctx->account = account;
 	nua_invite( nh,
 			TAG_IF (account->outbound_proxy, NUTAG_PROXY(account->outbound_proxy)),		    
+			TAG_IF (account->user_agent, SIPTAG_USER_AGENT_STR(account->user_agent)),		      
 			SOATAG_AUDIO_AUX("telephone-event"),
 			SOATAG_USER_SDP_STR(l_sdp_str),
 			SOATAG_RTP_SORT (SOA_RTP_SORT_LOCAL),
@@ -506,6 +507,7 @@ DFS
 		if ( nua_handle_has_registrations (account->op_reg)){
 			nua_unregister(account->op_reg,
 				SIPTAG_CONTACT_STR("*"),
+				TAG_IF (account->user_agent, SIPTAG_USER_AGENT_STR(account->user_agent)),		      
 				TAG_NULL());
 		} else {
 			/* unregister all previously registered on server */
@@ -523,6 +525,7 @@ DFS
 			        nua_handle_bind(account->op_reg, account);
 				nua_unregister(account->op_reg,
 					SIPTAG_CONTACT_STR("*"),
+					TAG_IF (account->user_agent, SIPTAG_USER_AGENT_STR(account->user_agent)),		      
 					TAG_NULL());
 			}
 			su_free (svd->home, fr_to);
@@ -578,6 +581,7 @@ DFS
 			nua_register(account->op_reg, 
 			    NUTAG_REGISTRAR(account->registrar),
 			    NUTAG_M_USERNAME(account->name),
+			    TAG_IF (account->user_agent, SIPTAG_USER_AGENT_STR(account->user_agent)),		      
 			    TAG_NULL());
 		}
 	}

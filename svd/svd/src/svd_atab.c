@@ -747,6 +747,9 @@ svd_handle_event_FXS_ONHOOK( svd_t * const svd, int const chan_idx )
 DFS
 	chan_ctx->off_hook = 0;
 	
+	/* stop the dial timer */
+	su_timer_reset(chan_ctx->dtmf_tmr);
+
 	/* say BYE on existing connection */
 	svd_bye(svd, ab_chan);
 
@@ -970,14 +973,7 @@ dtmf_timer_cb (su_root_magic_t *magic, su_timer_t *t, su_timer_arg_t *arg)
 {/*{{{*/
 	svd_t * svd = magic;
 	svd_chan_t * chan_ctx = arg;
-	/* led shows that a call is ongoing */
-	if (g_conf.chan_led[chan_ctx->chan_idx])
-		led_blink(g_conf.chan_led[chan_ctx->chan_idx], LED_SLOW_BLINK);
-	/* place a call */
-	if (svd_invite_to(svd, chan_ctx->chan_idx, chan_ctx->dial_status.digits))
-		ab_FXS_line_tone (&svd->ab->chans[chan_ctx->chan_idx], ab_chan_tone_BUSY);
-	  
-
+	svd_handle_digit(svd, chan_ctx->chan_idx, PLACE_CALL_MARKER);
 }/*}}}*/
 
 /**

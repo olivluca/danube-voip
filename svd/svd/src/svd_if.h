@@ -41,6 +41,7 @@ enum msg_type_e {/*{{{*/
 	msg_type_GET_RTCP_STAT, /**< Get RTCP statistics */
 	msg_type_SHUTDOWN, /**< Close all connections and prepare for exit */
 	msg_type_REGISTRATIONS, /**<Get status of sip registrations */
+	msg_type_CHANNELS, /**<Get status of channels */
 	msg_type_COUNT, /**< count of messages */
 };/*}}}*/
 /** Given channel in the message */

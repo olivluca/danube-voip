@@ -206,6 +206,7 @@ svd_if_srv_parse (char const * const str, struct svdif_msg_s * const msg,
 		{"get_rtcp_stat", ch_t_ACTIVE, msg_fmt_JSON},
 		{"shutdown",      ch_t_NONE  , msg_fmt_CLI},
 		{"get_regs",      ch_t_NONE  , msg_fmt_JSON},
+		{"get_chans",     ch_t_NONE  , msg_fmt_JSON},
 	};
 	char pstr[MAX_MSG_SIZE] = {0,};
 	char *command = NULL;
@@ -234,6 +235,7 @@ svd_if_srv_parse (char const * const str, struct svdif_msg_s * const msg,
 	/* get args if necessary */
 	if( (msg->type == msg_type_GET_JB_STAT_TOTAL) ||
 		(msg->type == msg_type_REGISTRATIONS) ||
+		(msg->type == msg_type_CHANNELS) ||
 		(msg->type == msg_type_SHUTDOWN)){
 		/* nothing to do */
 	} else {/* jb/rtcp stat */

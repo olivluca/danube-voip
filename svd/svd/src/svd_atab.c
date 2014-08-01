@@ -283,6 +283,15 @@ svd_clear_call (svd_t * const svd, ab_chan_t * const chan)
 	int size;
 DFS
 	
+	if (chan_ctx->call_established) {
+		SU_DEBUG_2(("Channel %d ending %s call to %s account %s duration %d\n", 
+			   chan_ctx->chan_idx+1,chan_ctx->outgoing_call ? "outgoing" : "incoming",
+	                   chan_ctx->remote_sip,
+			   chan_ctx->account ? chan_ctx->account->name : "?",
+			   time(NULL)-chan_ctx->call_start));
+		chan_ctx->call_established = 0;
+		
+	}
 	/* Collected digits */
 	chan_ctx->dial_status.num_digits = 0;
 	size = sizeof(chan_ctx->dial_status.digits);
@@ -300,6 +309,10 @@ DFS
 	if(chan_ctx->remote_host){
 		su_free (svd->home, chan_ctx->remote_host);
 		chan_ctx->remote_host = NULL;
+	}
+	if(chan_ctx->remote_sip){
+		su_free (svd->home, chan_ctx->remote_sip);
+		chan_ctx->remote_sip = NULL;
 	}
 
 	/* HANDLE */
@@ -445,11 +458,9 @@ svd_prepare_chan_codecs( ab_chan_t * const chan, jb_prms_t ** jpb)
 {/*{{{*/
 	svd_chan_t * ctx = chan->ctx;
 	cod_prms_t const * cp = NULL;
-	sip_account_t * account;
 	
 	/* prepare fcod */
 	ctx->fcod.type = g_conf.fax.codec_type;
-	account = ctx->account;
 	ctx->fcod.sdp_selected_payload = g_conf.fax.external_pt;
 
 	/* prepare vcod */
@@ -591,7 +602,6 @@ svd_atab_handler (svd_t * svd, su_wait_t * w, su_wakeup_arg_t * user_data)
 DFS
 	ab_dev_t * ab_dev = (ab_dev_t *) user_data;
 	ab_dev_event_t evt;
-	svd_chan_t * chan_ctx;
 	unsigned char chan_av;
 	int chan_idx;
 	int dev_idx;
@@ -616,7 +626,6 @@ do{
 		 */
 		chan_idx = dev_idx * svd->ab->chans_per_dev;
 	}
-	chan_ctx = svd->ab->chans[chan_idx].ctx;
 
 	if        (evt.id == ab_dev_event_FXS_OFFHOOK){
 		SU_DEBUG_8 (("Got fxs offhook event: 0x%X on [%d/%d]\n",

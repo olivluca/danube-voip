@@ -37,6 +37,8 @@ static int svd_exec_2af(svd_t * const svd, struct svdif_msg_s * const msg,
 static int svd_exec_shutdown(svd_t * svd, char ** const buff, int * const buff_sz);
 /** Execute 'get_registrations' command.*/
 static int svd_exec_regs(svd_t * svd, char ** const buff, int * const buff_sz);
+/** Execute 'get_channels' command.*/
+static int svd_exec_channels(svd_t * svd, char ** const buff, int * const buff_sz);
 /** Add to string another and resize it if necessary */
 static int svd_addtobuf(char ** const buf, int * const palc, char const * fmt, ...);
 /** Put chan rtcp statistics to buffer */
@@ -208,6 +210,8 @@ svd_exec_msg(svd_t * const svd, char const * const buf,
 		err = svd_exec_shutdown(svd, buff, buff_sz);
 	} else if(msg.type == msg_type_REGISTRATIONS){
 		err = svd_exec_regs(svd, buff, buff_sz);
+	} else if(msg.type == msg_type_CHANNELS){
+		err = svd_exec_channels(svd, buff, buff_sz);
 	}
 	if(err){
 		goto __exit_fail;
@@ -437,6 +441,46 @@ svd_exec_regs(svd_t * svd, char ** const buff, int * const buff_sz)
 			goto __exit_fail;
 		}
 		if (i<accounts-1) {
+			if(svd_addtobuf(buff, buff_sz,",\n")){
+				goto __exit_fail;
+			}
+		}
+	}
+	if(svd_addtobuf(buff, buff_sz,"\n]\n")){
+		goto __exit_fail;
+	}
+	return 0;
+__exit_fail:
+	return -1;
+}/*}}}*/
+
+static int
+svd_exec_channels(svd_t * svd, char ** const buff, int * const buff_sz)
+{/*{{{*/
+	int i;
+	time_t now=time(NULL);
+	
+	if(svd_addtobuf(buff, buff_sz,"[\n")){
+		goto __exit_fail;
+	}
+	for (i=0; i<g_conf.channels; i++) {
+		ab_chan_t * ab_chan = &svd->ab->chans[i];
+		svd_chan_t * chan_ctx = ab_chan->ctx;
+		if(svd_addtobuf(buff, buff_sz, "{\"channel\":\"%i\",", i+1))
+			goto __exit_fail;
+			
+		if(svd_addtobuf(buff, buff_sz, "\"offhook\":\"%d\", \"outgoing\":\"%d\", \"incoming\":\"%d\",",
+		  chan_ctx->off_hook, chan_ctx->op_handle ? chan_ctx->outgoing_call : 0, chan_ctx->op_handle ? !chan_ctx->outgoing_call : 0))
+			goto __exit_fail;
+			
+		if(svd_addtobuf(buff, buff_sz, "\"account\":\"%s\", \"address\":\"%s\",",
+		  chan_ctx->op_handle && chan_ctx->account ? chan_ctx->account->name : "", chan_ctx->op_handle ? (chan_ctx->remote_sip ? chan_ctx->remote_sip : "") : ""))
+			goto __exit_fail;
+		
+		if(svd_addtobuf(buff, buff_sz, "\"duration\";\"%d\"}", chan_ctx->call_established ? now-chan_ctx->call_start : -1))
+			goto __exit_fail;
+		
+		if (i<g_conf.channels-1) {
 			if(svd_addtobuf(buff, buff_sz,",\n")){
 				goto __exit_fail;
 			}

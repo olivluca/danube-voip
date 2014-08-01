@@ -355,6 +355,9 @@ DFS
 		SU_DEBUG_1 ((LOG_FNC_A("can`t create handle")));
 		goto __exit_fail;
 	}
+	
+	chan_ctx->remote_sip = su_strdup(svd->home,to_address);
+	chan_ctx->outgoing_call = 1;
 
 	l_sdp_str = svd_new_sdp_string (chan, account);
 	if ( !l_sdp_str){
@@ -378,6 +381,7 @@ DFE
 __exit_fail:
 	if (nh){
 		nua_handle_destroy(nh);
+		chan_ctx->op_handle = NULL;
 	}
 	if (to){
 		su_free(svd->home, to);
@@ -758,6 +762,8 @@ DFS
 			  led_blink(g_conf.chan_led[i], LED_FAST_BLINK);
 		  chan_ctx->op_handle = nh;
 		  chan_ctx->account = sip_account;
+		  chan_ctx->outgoing_call = 0;
+		  chan_ctx->remote_sip = url_as_string(svd->home, from->a_url);
 		  found = 1;
 		}  
 	}
@@ -941,6 +947,9 @@ DFS
 			if(ab_chan_media_activate (chan)){
 				SU_DEBUG_1(("media_activate error : %s\n", ab_g_err_str));
 			}
+			if (!chan_ctx->call_established)
+				chan_ctx->call_start = time(NULL);
+			chan_ctx->call_established = 1;
 			break;
 		 }/*}}}*/
 

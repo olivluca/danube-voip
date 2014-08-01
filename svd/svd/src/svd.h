@@ -71,6 +71,10 @@ struct svd_chan_s
 	sip_account_t * account; //**<Account used by this call */
 	int remote_port; /**< Remote RTP port.*/
 	char * remote_host; /**< Remote RTP host.*/
+	char * remote_sip; /**< Remote sip address. */
+	int outgoing_call; /**<Current call is outgoing. */
+	int call_established; /**< Other party replied/ we replied. */
+	time_t call_start; /**< To show the duration of the call. */
 
 	int local_wait_idx; /**< Local wait index.*/
 	int remote_wait_idx; /**< Remote wait index.*/

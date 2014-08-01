@@ -22,8 +22,10 @@ about the dialplan and the configuration of the accounts.
 
 Configuration
 -------------
-This program uses uci for configuration, there's not yet a web interface,
-so you'll have to edit the /etc/config/svd file.
+This program uses uci for configuration, there's a web interface available
+in the package luci-svd but you can also manually edit the 
+/etc/config/svd file.
+
 Various sections can be defined:
 
   * config main
@@ -130,6 +132,11 @@ options in config account
 
   * option disabled on
     optional, use it to disable an account without removing it from the configuration.
+
+  * option user_agent "My user agent"
+    optional user agent to use instead of the default (some sip registrars
+    only allow registration coming with a specific user agent, e.g. Jazztel
+    in Spain).
 
   examples:
      

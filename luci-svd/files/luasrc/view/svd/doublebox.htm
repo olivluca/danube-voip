@@ -1,0 +1,44 @@
+<% local v = self:valuelist(section) or {} -%>
+<%+cbi/valueheader%>
+<script xmlns="http://www.w3.org/1999/xhtml" src="<%=resource%>/svd.js" />
+<div>
+<table>
+<tr>
+<th><%=translate("Available")%></th>
+<th></th>
+<th><%=translate("Selected")%></th>
+<th></th>
+</tr>
+<tr>
+<td>
+  <select multiple="multiple" <%=attr("id", cbid .. ".available") .. attr("name", cbid .. ".available") %> >
+        <% for i, key in pairs(self.keylist) do 
+                       if not luci.util.contains(v,key) then -%>
+                        <option<%= attr("value", key) %>><%=striptags(self.vallist[i])%></option>
+        <% end end %>
+  </select>
+</td>
+
+<td>
+  <input type="button" value=" &gt;&gt; " <%= attr("onclick","DbMove('" .. cbid .. ".available','" .. cbid .. ".selected','" .. cbid .. "')") %>/><br />
+  <input type="button" value=" &lt;&lt; " <%= attr("onclick","DbMove('" .. cbid .. ".selected','" .. cbid .. ".available','" .. cbid .. "')") %>/>
+</td>
+
+<td>
+  <select multiple="multiple" <%=attr("id", cbid .. ".selected") .. attr("name", cbid .. ".selected") %> >
+        <% for i=1,#v do %>
+                        <option<%=attr("value", v[i])%>><%=self:valueofkey(v[i])%></option>
+        <% end %>
+  </select>
+  <input type="hidden" <%=attr("id", cbid) .. attr("name", cbid) .. attr("value",self:cfgvalue(section))%> />
+</td>
+
+<td>
+  <input type="button" class="cbi-button cbi-button-up"    <%= attr("onclick","DbMoveUpDown(-1,'" .. cbid .. ".selected','" .. cbid .. "')") .. attr("alt",translate("Move Up")) .. attr("title",translate("Move Up")) %>/><br />
+  <input type="button" class="cbi_button cbi-button-down"  <%= attr("onclick","DbMoveUpDown(1,'" .. cbid .. ".selected','" .. cbid .. "')") .. attr("alt",translate("Move Down"))  .. attr("title",translate("Move Down"))%>/>
+</td>
+
+</tr>
+</table>
+</div>
+<%+cbi/valuefooter%>

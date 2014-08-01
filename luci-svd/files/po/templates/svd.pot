@@ -1,0 +1,319 @@
+msgid ""
+msgstr "Content-Type: text/plain; charset=UTF-8"
+
+msgid "(only if replace is unset)"
+msgstr ""
+
+msgid "-- Please choose --"
+msgstr ""
+
+msgid "-- custom --"
+msgstr ""
+
+msgid "--remove--"
+msgstr ""
+
+msgid ""
+"A disabled account won't be registered and won't be used for outgoing calls."
+msgstr ""
+
+msgid "Account"
+msgstr ""
+
+msgid "Accounts"
+msgstr ""
+
+msgid "Auth name"
+msgstr ""
+
+msgid "Available"
+msgstr ""
+
+msgid "Call"
+msgstr ""
+
+msgid "Caller id"
+msgstr ""
+
+msgid "Channel"
+msgstr ""
+
+msgid "Channels"
+msgstr ""
+
+msgid "Codecs"
+msgstr ""
+
+msgid "Collecting data..."
+msgstr ""
+
+msgid "Current Voip State"
+msgstr ""
+
+msgid "Dec db"
+msgstr ""
+
+msgid "Dec db (default 0)"
+msgstr ""
+
+msgid "Dialplan"
+msgstr ""
+
+msgid "Disable account"
+msgstr ""
+
+msgid "Display Name"
+msgstr ""
+
+msgid "Domain used to build the sip address."
+msgstr ""
+
+msgid "Dtmf type"
+msgstr ""
+
+msgid "Duration"
+msgstr ""
+
+msgid "Echo cancellation type (default off)"
+msgstr ""
+
+msgid "Enabled"
+msgstr ""
+
+msgid "Enc db"
+msgstr ""
+
+msgid "Enc db (default 0)"
+msgstr ""
+
+msgid "First rtp port"
+msgstr ""
+
+msgid "From 0 (quiet) to 9 (very verbose)."
+msgstr ""
+
+msgid "Here you can configure each channel options."
+msgstr ""
+
+msgid "Here you can configure how to route outgoing calls"
+msgstr ""
+
+msgid "Here you can configure the general options."
+msgstr ""
+
+msgid "Here you can configure the sip accounts. At least one must be defined."
+msgstr ""
+
+msgid "High pass filter"
+msgstr ""
+
+msgid ""
+"Host name to use as sip outbound proxy. If not defined, no proxy will be "
+"used."
+msgstr ""
+
+msgid ""
+"Host name where to register the account. If not defined it will be the same "
+"as 'Sip domain'."
+msgstr ""
+
+msgid "How to send dtmf during a call. If not defined it will be rfc2883"
+msgstr ""
+
+msgid "Hpf"
+msgstr ""
+
+msgid "Last message"
+msgstr ""
+
+msgid "Last rtp port"
+msgstr ""
+
+msgid "Led"
+msgstr ""
+
+msgid "Log level"
+msgstr ""
+
+msgid "Main"
+msgstr ""
+
+msgid "Move Down"
+msgstr ""
+
+msgid "Move Up"
+msgstr ""
+
+msgid "Name of the led associated to this channel."
+msgstr ""
+
+msgid ""
+"Name of the led to activate when at least one account has been registered."
+msgstr ""
+
+msgid ""
+"Name to use to authenticate with the server. If not defined it will be the "
+"same as 'User name'."
+msgstr ""
+
+msgid "Near and far end"
+msgstr ""
+
+msgid "Near end"
+msgstr ""
+
+msgid "Off hook"
+msgstr ""
+
+msgid "Optional display name."
+msgstr ""
+
+msgid ""
+"Optional user agent to be used instead of the default. Some sip server only "
+"accept registration made with a predefined user agent."
+msgstr ""
+
+msgid "Outbound proxy"
+msgstr ""
+
+msgid "Outgoing priority"
+msgstr ""
+
+msgid "Password"
+msgstr ""
+
+msgid "Prefix"
+msgstr ""
+
+msgid "Registered"
+msgstr ""
+
+msgid "Registrar"
+msgstr ""
+
+msgid "Remove prefix"
+msgstr ""
+
+msgid "Replace with"
+msgstr ""
+
+msgid "Reveal/hide password"
+msgstr ""
+
+msgid "Ring on incoming call"
+msgstr ""
+
+msgid "Sc only"
+msgstr ""
+
+msgid "Select the account to use"
+msgstr ""
+
+msgid "Select the channels that will ring when a call comes from this account."
+msgstr ""
+
+msgid ""
+"Select the codecs to be used with this account and their priority. If not "
+"defined, all codecs will be available."
+msgstr ""
+
+msgid "Selected"
+msgstr ""
+
+msgid "Sip domain"
+msgstr ""
+
+msgid "Status"
+msgstr ""
+
+msgid "The caller id protocol (default etsi fsk)"
+msgstr ""
+
+msgid "This is the last rtp port voip will try to use."
+msgstr ""
+
+msgid "To-From"
+msgstr ""
+
+msgid "Tos for rtp traffic"
+msgstr ""
+
+msgid "Tos for sip traffic"
+msgstr ""
+
+msgid "Uri"
+msgstr ""
+
+msgid "User agent"
+msgstr ""
+
+msgid "User name"
+msgstr ""
+
+msgid "User to build the sip address."
+msgstr ""
+
+msgid "Vad"
+msgstr ""
+
+msgid "Voice activity detector (default off)"
+msgstr ""
+
+msgid "Voip"
+msgstr ""
+
+msgid "Voip led"
+msgstr ""
+
+msgid "Voip will try to bind rtp ports starting from this one."
+msgstr ""
+
+msgid ""
+"When an outgoing call is made, if no dialplan entry matches the lowest "
+"priority account will be used. Zero means the account won't be used."
+msgstr ""
+
+msgid "Wlec far end window"
+msgstr ""
+
+msgid "Wlec near end window"
+msgstr ""
+
+msgid "Wlec nlp"
+msgstr ""
+
+msgid "Wlec non linear processing"
+msgstr ""
+
+msgid "Wlec type"
+msgstr ""
+
+msgid "channel %d"
+msgstr ""
+
+msgid "comfort noise generation only"
+msgstr ""
+
+msgid "default 4"
+msgstr ""
+
+msgid "disabled"
+msgstr ""
+
+msgid "g711/comfort noise without spectral information"
+msgstr ""
+
+msgid "incoming"
+msgstr ""
+
+msgid "last rtp port must be >= first rtp port"
+msgstr ""
+
+msgid "of the dialled number"
+msgstr ""
+
+msgid "on/comfort noise and spectral information"
+msgstr ""
+
+msgid "outgoing"
+msgstr ""

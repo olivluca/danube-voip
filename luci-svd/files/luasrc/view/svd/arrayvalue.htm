@@ -1,0 +1,54 @@
+<% local v = self:valuelist(section) or {} -%>
+<%+cbi/valueheader%>
+<script xmlns="http://www.w3.org/1999/xhtml" src="<%=resource%>/svd.js" />
+<table>
+<tr>
+<%for i=1, #v do %>
+<th><%=self:getcaption(i)%></th>
+<%end%>
+</tr>
+<tr>
+<%for i=1, #v do %>
+ <td>
+	<input type="<%=self.password and 'password" class="cbi-input-password' or 'text" class="cbi-input-text' %>" onchange="av_update('<%=cbid%>',<%=#v%>);cbi_d_update(this.id)"<%=
+		attr("name", cbid..i) .. attr("id", cbid..i) .. attr("value", v[i] or self.default) ..
+		ifattr(self.size, "size") .. ifattr(self.placeholder, "placeholder")
+	%> />
+	<% if self.password then %><img src="<%=resource%>/cbi/reload.gif" style="vertical-align:middle" title="<%:Reveal/hide password%>" onclick="var e = document.getElementById('<%=cbid .. i%>'); e.type = (e.type=='password') ? 'text' : 'password';" /><% end %>
+	<% if #self.keylist > 0 or self.datatype then -%>
+	<script type="text/javascript">//<![CDATA[
+		<% if #self.keylist > 0 then -%>
+		cbi_combobox_init('<%=cbid .. i%>', {
+		<%-
+			for i, k in ipairs(self.keylist) do
+		-%>
+			<%-=string.format("%q", k) .. ":" .. string.format("%q", self.vallist[i])-%>
+			<%-if i<#self.keylist then-%>,<%-end-%>
+		<%-
+			end
+		-%>
+		}, '<%- if not self.rmempty and not self.optional then -%>
+			<%-: -- Please choose -- -%>
+			<%- elseif self.placeholder then -%>
+			<%-= pcdata(self.placeholder) -%>
+		<%- end -%>', '
+		<%- if self.combobox_manual then -%>
+			<%-=self.combobox_manual-%>
+		<%- else -%>
+			<%-: -- custom -- -%>
+		<%- end -%>');
+		<%- end %>
+		<% if self.datatype then -%>
+		cbi_validate_field('<%=cbid .. i%>', <%=tostring(true)%>, '<%=self.datatype:gsub("'", "\\'")%>');
+		<%- end %>
+	//]]></script>
+	<% end -%>
+   </td>	
+<% end %>
+  </tr>
+  </table>
+	<input type="hidden"
+	<%=attr("name", cbid) .. attr("id", cbid) .. attr("value", self:cfgvalue(section))%>
+	/>
+
+<%+cbi/valuefooter%>

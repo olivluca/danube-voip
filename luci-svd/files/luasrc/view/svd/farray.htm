@@ -1,0 +1,30 @@
+<% local v = self:valuelist(section) or {} -%>
+<%+cbi/valueheader%>
+<script xmlns="http://www.w3.org/1999/xhtml" src="<%=resource%>/svd.js" />
+	<input type="hidden"
+	<%=attr("name", cbid) .. attr("id", cbid) .. attr("value", self:cfgvalue(section))%>
+	/>
+	
+<table>
+<tr>
+<%for i=1, #v do %>
+<th><%=self:getcaption(i)%></th>
+<%end%>
+</tr>
+<tr>
+<%for i=1, #v do %>
+ <td>
+	
+	<input class="cbi-input-checkbox" onclick="fa_update('<%=cbid%>',<%=i%>, '<%=self.enabled%>', '<%=self.disabled%>')" 
+	                                 onchange="fa_update('<%=cbid%>',<%=i%>, '<%=self.enabled%>', '<%=self.disabled%>')"  type="checkbox"<%=
+		attr("id", cbid .. i) .. attr("name", cbid .. i) .. attr("value", self.enabled or 1) ..
+		ifattr(v[i] == self.enabled, "checked", "checked")
+	%> />
+   </td>	
+<% end %>
+  </tr>
+  </table>
+<script xmlns="http://www.w3.org/1999/xhtml"><![CDATA[
+fa_update('<%=cbid%>',<%=#v%>, '<%=self.enabled%>', '<%=self.disabled%>');
+]]></script>
+<%+cbi/valuefooter%>

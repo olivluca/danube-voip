@@ -1,0 +1,351 @@
+# Luca Olivetti <luca@ventoso.org>, 2014.
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"PO-Revision-Date: 2014-08-01 21:53+0200\n"
+"Last-Translator: Luca Olivetti <luca@ventoso.org>\n"
+"Language-Team: Spanish <>\n"
+"Language: es\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Lokalize 1.5\n"
+
+msgid "(only if replace is unset)"
+msgstr "(solo con remplazar vacío) "
+
+msgid "-- Please choose --"
+msgstr "-- Elija por favor --"
+
+msgid "-- custom --"
+msgstr "-- personalizado --"
+
+msgid "--remove--"
+msgstr "-- eliminar --"
+
+msgid ""
+"A disabled account won't be registered and won't be used for outgoing calls."
+msgstr ""
+"Una cuenta desactivada no se registra y no se usa para llamadas salientes."
+
+msgid "Account"
+msgstr "Cuenta"
+
+msgid "Accounts"
+msgstr "Cuentas"
+
+msgid "Auth name"
+msgstr "Nombre autorización"
+
+msgid "Available"
+msgstr "Disponibles"
+
+msgid "Call"
+msgstr "Llamada"
+
+msgid "Caller id"
+msgstr "Identificador de llamada"
+
+msgid "Channel"
+msgstr "Canal"
+
+msgid "Channels"
+msgstr "Canales"
+
+msgid "Codecs"
+msgstr "Codecs"
+
+msgid "Collecting data..."
+msgstr "Recogiendo información..."
+
+msgid "Current Voip State"
+msgstr "Estado actual voip"
+
+msgid "Dec db"
+msgstr "Dec db"
+
+msgid "Dec db (default 0)"
+msgstr "Dec db (por defecto 0)"
+
+msgid "Dialplan"
+msgstr "Reglas de marcado"
+
+msgid "Disable account"
+msgstr "Desactiva cuenta"
+
+msgid "Display Name"
+msgstr "Nombre visualización"
+
+msgid "Domain used to build the sip address."
+msgstr "Dominio que se usa para preparar la dirección sip."
+
+msgid "Dtmf type"
+msgstr "Modo envío tonos dtmf"
+
+msgid "Duration"
+msgstr "Duración"
+
+msgid "Echo cancellation type (default off)"
+msgstr "Cancelación de eco"
+
+msgid "Enabled"
+msgstr "Habilitada"
+
+msgid "Enc db"
+msgstr "Enc db"
+
+msgid "Enc db (default 0)"
+msgstr "Enc db (por defecto 0)"
+
+msgid "First rtp port"
+msgstr "Primer puerto rtp"
+
+msgid "From 0 (quiet) to 9 (very verbose)."
+msgstr "Desde 0 (silencioso) a 9 (muy detallado)"
+
+msgid "Here you can configure each channel options."
+msgstr "Aquí se configuran las opciones de cada canal."
+
+msgid "Here you can configure how to route outgoing calls"
+msgstr "Aquí se configuran las cuentas para las llamadas salientes."
+
+msgid "Here you can configure the general options."
+msgstr "Aquí se configuran las opciones generales."
+
+msgid "Here you can configure the sip accounts. At least one must be defined."
+msgstr "Aquí se configuran las cuentas sip. Por lo menos se debe definir una."
+
+msgid "High pass filter"
+msgstr "Filtro pasa alto"
+
+msgid ""
+"Host name to use as sip outbound proxy. If not defined, no proxy will be "
+"used."
+msgstr ""
+"Nombre de host a usar como proxy sip de salida. Si no se define no se usará "
+"ningún proxy."
+
+msgid ""
+"Host name where to register the account. If not defined it will be the same "
+"as 'Sip domain'."
+msgstr ""
+"Nombre de host donde registrar la cuenta. Si no se define se usará 'Dominio "
+"Sip'."
+
+msgid "How to send dtmf during a call. If not defined it will be rfc2883"
+msgstr ""
+"Modo de envío tonos durante una llamada. Si no se define se usará rfc2883."
+
+msgid "Hpf"
+msgstr "Hpf"
+
+msgid "Last message"
+msgstr "Ultimo mensaje"
+
+msgid "Last rtp port"
+msgstr "Ultimo puerto rtp"
+
+msgid "Led"
+msgstr "Led"
+
+msgid "Log level"
+msgstr "Nivel de registro"
+
+msgid "Main"
+msgstr "Principal"
+
+msgid "Move Down"
+msgstr "Mover Abajo"
+
+msgid "Move Up"
+msgstr "Mover Arriba"
+
+msgid "Name of the led associated to this channel."
+msgstr "Nombre del led asociado al canal."
+
+msgid ""
+"Name of the led to activate when at least one account has been registered."
+msgstr ""
+"Nombre del led que se activará cuando se haya registrado por lo menos una "
+"cuenta sip."
+
+msgid ""
+"Name to use to authenticate with the server. If not defined it will be the "
+"same as 'User name'."
+msgstr ""
+"Nombre para autentificar con el servidor. Si no se define se usará 'Nombre "
+"de Usuario'."
+
+msgid "Near and far end"
+msgstr "Local y remoto"
+
+msgid "Near end"
+msgstr "Local"
+
+msgid "Off hook"
+msgstr "Descolgado"
+
+msgid "Optional display name."
+msgstr "Nombre de visualización opcional."
+
+msgid ""
+"Optional user agent to be used instead of the default. Some sip server only "
+"accept registration made with a predefined user agent."
+msgstr ""
+"User-agent a usar en lugar del valor por defecto. Algunos servidores sip "
+"solo aceptan registrar con un user-agent especifico."
+
+msgid "Outbound proxy"
+msgstr "Proxy de salida"
+
+msgid "Outgoing priority"
+msgstr "Prioridad de salida"
+
+msgid "Password"
+msgstr "Contraseña"
+
+msgid "Prefix"
+msgstr "Prefijo"
+
+msgid "Registered"
+msgstr "Registrada"
+
+msgid "Registrar"
+msgstr "Registrador"
+
+msgid "Remove prefix"
+msgstr "Quitar prefijo"
+
+msgid "Replace with"
+msgstr "Remplazar con"
+
+msgid "Reveal/hide password"
+msgstr "Muestra/esconde contraseña"
+
+msgid "Ring on incoming call"
+msgstr "Timbre con llamada entrante"
+
+msgid "Sc only"
+msgstr "Solo sc"
+
+msgid "Select the account to use"
+msgstr "Seleccione la cuenta"
+
+msgid "Select the channels that will ring when a call comes from this account."
+msgstr ""
+"Seleccione los canales que sonarán el timbre cuando llegue una llamada desde "
+"esta cuenta."
+
+msgid ""
+"Select the codecs to be used with this account and their priority. If not "
+"defined, all codecs will be available."
+msgstr ""
+"Seleccione los codecs y sus prioridades para esta cuenta. Si no se define, "
+"se usarán todos los codecs."
+
+msgid "Selected"
+msgstr "Seleccionados"
+
+msgid "Sip domain"
+msgstr "Dominio Sip"
+
+msgid "Status"
+msgstr "Estado"
+
+msgid "The caller id protocol (default etsi fsk)"
+msgstr "Protocolo para el identificador de llamada (por defecto etsi fsk)"
+
+msgid "This is the last rtp port voip will try to use."
+msgstr "Este es el ultimo puerto rtp que voip intentará usar."
+
+msgid "To-From"
+msgstr "A-De"
+
+msgid "Tos for rtp traffic"
+msgstr "Tos para trafico rtp"
+
+msgid "Tos for sip traffic"
+msgstr "Tos para trafico sip"
+
+msgid "Uri"
+msgstr "Uri"
+
+msgid "User agent"
+msgstr "User agent"
+
+msgid "User name"
+msgstr "Nombre de usuario"
+
+msgid "User to build the sip address."
+msgstr "Usuario para preparar la dirección sip."
+
+msgid "Vad"
+msgstr "Vad"
+
+msgid "Voice activity detector (default off)"
+msgstr "Detector de actividad vocal (por defecto desactivado)"
+
+msgid "Voip"
+msgstr "Voip"
+
+msgid "Voip led"
+msgstr "Led voip"
+
+msgid "Voip will try to bind rtp ports starting from this one."
+msgstr "Voip intentará usar puertos rtp a partir de este"
+
+msgid ""
+"When an outgoing call is made, if no dialplan entry matches the lowest "
+"priority account will be used. Zero means the account won't be used."
+msgstr ""
+"Cuando se hace una llamada, si no se cumple ninguna regla de marcado se "
+"usará la cuenta con prioridad más baja. Con prioridad 0 la cuenta no se "
+"usará nunca."
+
+msgid "Wlec far end window"
+msgstr "Ventana remota wlec"
+
+msgid "Wlec near end window"
+msgstr "Ventana local wlec"
+
+msgid "Wlec nlp"
+msgstr "Wlec nlp"
+
+msgid "Wlec non linear processing"
+msgstr "Procesado no lineal wlec"
+
+msgid "Wlec type"
+msgstr "Tipo wlec"
+
+msgid "channel %d"
+msgstr "canal %d"
+
+msgid "comfort noise generation only"
+msgstr "ruido confortable"
+
+msgid "default 4"
+msgstr "por defecto 4"
+
+msgid "disabled"
+msgstr "desactivado"
+
+msgid "g711/comfort noise without spectral information"
+msgstr "g711/ruido confortable sin información espectral"
+
+msgid "incoming"
+msgstr "entrante"
+
+msgid "last rtp port must be >= first rtp port"
+msgstr "ultimo puerto rtp debe ser >= primer puerto rtp"
+
+msgid "of the dialled number"
+msgstr "del numero marcado"
+
+msgid "on/comfort noise and spectral information"
+msgstr "activado/ruido confortable e información espectral"
+
+msgid "outgoing"
+msgstr "saliente"
+
+

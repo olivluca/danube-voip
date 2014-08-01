@@ -477,7 +477,7 @@ svd_exec_channels(svd_t * svd, char ** const buff, int * const buff_sz)
 		  chan_ctx->op_handle && chan_ctx->account ? chan_ctx->account->name : "", chan_ctx->op_handle ? (chan_ctx->remote_sip ? chan_ctx->remote_sip : "") : ""))
 			goto __exit_fail;
 		
-		if(svd_addtobuf(buff, buff_sz, "\"duration\";\"%d\"}", chan_ctx->call_established ? now-chan_ctx->call_start : -1))
+		if(svd_addtobuf(buff, buff_sz, "\"duration\":\"%d\"}", chan_ctx->call_established ? now-chan_ctx->call_start : -1))
 			goto __exit_fail;
 		
 		if (i<g_conf.channels-1) {

@@ -65,6 +65,8 @@ define Host/Compile
 	+$(MAKE) $(HOST_JOBS) -C $(HOST_BUILD_DIR) CC="$(HOSTCC)" compile
 endef
 
+define Host/Install
+endef
 
 $(eval $(call HostBuild))
 $(eval $(call BuildPackage,luci-svd))

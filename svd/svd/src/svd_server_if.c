@@ -432,8 +432,8 @@ svd_exec_regs(svd_t * svd, char ** const buff, int * const buff_sz)
 	accounts=su_vector_len(g_conf.sip_account);
 	for (i=0; i<accounts; i++) {
 		account = su_vector_item(g_conf.sip_account, i);
-		if(svd_addtobuf(buff, buff_sz, "{\"account\":\"%d\", \"uri\":\"%s\", \"registered\":\"%d\", \"last_message\":\"%s\"}",
-		  i, account->user_URI, account->registered, account->registration_reply)) {
+		if(svd_addtobuf(buff, buff_sz, "{\"account\":\"%s\", \"enabled\":\"%d\", \"uri\":\"%s\", \"registered\":\"%d\", \"last_message\":\"%s\"}",
+		  account->name, account->enabled, account->user_URI, account->registered, account->registration_reply ? account->registration_reply : "" )) {
 			goto __exit_fail;
 		}
 		if (i<accounts-1) {

@@ -164,7 +164,7 @@ pri.rmempty=true;
 pri.size=5
 pri.datatype='or(max(1000), "")'
 for i=1,2 do
-  pri:caption(translate("channel %d",i))
+  pri:caption(translatef("channel %d",i))
 end
 function pri:validate(value)
  return value

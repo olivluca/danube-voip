@@ -1,8 +1,4 @@
-<span id="svd_call_incoming" style="visibility:hidden;"><%:incoming%></span>
-<span id="svd_call_outgoing" style="visibility:hidden;"><%:outgoing%></span>
 <script type="text/javascript">//<![CDATA[
-var nincoming=document.getElementById('svd_call_incoming').innerHTML;
-var noutgoing=document.getElementById('svd_call_outgoing').innerHTML;
 function cb(v) {
  var s='<input type="checkbox" disabled="disabled" ';
  if (v==1)
@@ -20,9 +16,9 @@ function fmtduration(duration) {
 }
 function callname(incoming,outgoing) {
   if (parseInt(incoming)==1)
-    return nincoming;
+    return "<%:incoming%>";
   if (parseInt(outgoing)==1)
-    return noutgoing;
+    return "<%:outgoing%>";
   return "";    
 }
 XHR.poll(5, '<%=luci.dispatcher.build_url("admin", "svd", "account_status")%>', null,
@@ -38,7 +34,7 @@ XHR.poll(5, '<%=luci.dispatcher.build_url("admin", "svd", "account_status")%>', 
                         for (i=0; i<st.length; i++) 
                         {  
                           var tr = tb.insertRow(-1);
-                          tr.className = 'cbi-section-table-row cbi-rowstyle-1';
+                          tr.className = 'cbi-section-table-row cbi-rowstyle-' + ((i % 2) + 1);
 
                           tr.insertCell(-1).innerHTML = st[i].account;
                           tr.insertCell(-1).innerHTML = cb(st[i].enabled);
@@ -62,7 +58,7 @@ XHR.poll(5, '<%=luci.dispatcher.build_url("admin", "svd", "channels_status")%>',
                         for (i=0; i<st.length; i++) 
                         {  
                           var tr = tb.insertRow(-1);
-                          tr.className = 'cbi-section-table-row cbi-rowstyle-1';
+                          tr.className = 'cbi-section-table-row cbi-rowstyle-' + ((i % 2) + 1);
 
                           tr.insertCell(-1).innerHTML = st[i].channel;
                           tr.insertCell(-1).innerHTML = cb(st[i].offhook);

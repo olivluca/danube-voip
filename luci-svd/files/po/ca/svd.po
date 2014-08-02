@@ -142,10 +142,10 @@ msgid "Hpf"
 msgstr "Hpf"
 
 msgid "Last message"
-msgstr "Ultimo missatge"
+msgstr "Darrer missatge"
 
 msgid "Last rtp port"
-msgstr "Ultimo port rtp"
+msgstr "Darrer port rtp"
 
 msgid "Led"
 msgstr "Led"
@@ -256,7 +256,7 @@ msgid "The caller id protocol (default etsi fsk)"
 msgstr "El protocol del identificador de trucada (per defecte etsi fsk)"
 
 msgid "This is the last rtp port voip will try to use."
-msgstr "Aquest es el últim port rtp que voip intentarà usar."
+msgstr "Aquest es el darrer port rtp que voip intentarà usar."
 
 msgid "To-From"
 msgstr "A-De"
@@ -335,7 +335,7 @@ msgid "incoming"
 msgstr "entrant"
 
 msgid "last rtp port must be >= first rtp port"
-msgstr "L'ultimo port rtp ha de ser >= primer port rtp"
+msgstr "El darrer port rtp ha de ser >= primer port rtp"
 
 msgid "of the dialled number"
 msgstr "del numero marcat"

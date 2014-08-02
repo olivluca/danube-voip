@@ -1,0 +1,349 @@
+# Luca Olivetti <luca@ventoso.org>, 2014.
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Last-Translator: Luca Olivetti <luca@ventoso.org>\n"
+"PO-Revision-Date: 2014-08-02 16:46+0200\n"
+"Project-Id-Version: \n"
+"Language-Team: Catalan <>\n"
+"Language: ca\n"
+"Content-Transfer-Encoding: 8bit\n"
+"MIME-Version: 1.0\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Lokalize 1.5\n"
+
+msgid "(only if replace is unset)"
+msgstr "(només amb substitueix buit)"
+
+msgid "-- Please choose --"
+msgstr "--Faci la seva selecció--"
+
+msgid "-- custom --"
+msgstr "--personalitzat--"
+
+msgid "--remove--"
+msgstr "--elimina--"
+
+msgid ""
+"A disabled account won't be registered and won't be used for outgoing calls."
+msgstr ""
+"Un compte desactivat no es registrarà i no s'usarà per trucades sortint."
+
+msgid "Account"
+msgstr "Compta"
+
+msgid "Accounts"
+msgstr "Comptes"
+
+msgid "Auth name"
+msgstr "Nom d'autorització "
+
+msgid "Available"
+msgstr "Disponibles "
+
+msgid "Call"
+msgstr "Trucada"
+
+msgid "Caller id"
+msgstr "Identificador de trucada"
+
+msgid "Channel"
+msgstr "Canal"
+
+msgid "Channels"
+msgstr "Canals"
+
+msgid "Codecs"
+msgstr "Codecs"
+
+msgid "Collecting data..."
+msgstr "Recollint dades..."
+
+msgid "Current Voip State"
+msgstr "Estat actual Voip"
+
+msgid "Dec db"
+msgstr "Dec db"
+
+msgid "Dec db (default 0)"
+msgstr "Dec db (per defecte 0)"
+
+msgid "Dialplan"
+msgstr "Regles de marcat"
+
+msgid "Disable account"
+msgstr "Desactiva compta"
+
+msgid "Display Name"
+msgstr "Nom de visualització"
+
+msgid "Domain used to build the sip address."
+msgstr "Domini per preparar la direcció sip."
+
+msgid "Dtmf type"
+msgstr "Tipus enviament dtmf"
+
+msgid "Duration"
+msgstr "Durada"
+
+msgid "Echo cancellation type (default off)"
+msgstr "Cancel·lació d'eco (per defecte desactivat)"
+
+msgid "Enabled"
+msgstr "Activada"
+
+msgid "Enc db"
+msgstr "Enc db"
+
+msgid "Enc db (default 0)"
+msgstr "Enc db (per defecte 0)"
+
+msgid "First rtp port"
+msgstr "Primer port rtp"
+
+msgid "From 0 (quiet) to 9 (very verbose)."
+msgstr "Des de 0 (silenciós) fins a 9 (molt detallat). "
+
+msgid "Here you can configure each channel options."
+msgstr "Aquí es configuren les opcions de cada canal."
+
+msgid "Here you can configure how to route outgoing calls"
+msgstr "Aquí es configura com enviar les trucades sortints"
+
+msgid "Here you can configure the general options."
+msgstr "Aquí es configuren les opcions generals."
+
+msgid "Here you can configure the sip accounts. At least one must be defined."
+msgstr "Aquí es configuren les comptes sip. Al menys s'ha de definir una."
+
+msgid "High pass filter"
+msgstr "Filtre passa alt."
+
+msgid ""
+"Host name to use as sip outbound proxy. If not defined, no proxy will be "
+"used."
+msgstr ""
+"Nom d'ordinador a usar com proxy sip de sortida. Si no es defineix no s'usarà "
+"proxy."
+
+msgid ""
+"Host name where to register the account. If not defined it will be the same "
+"as 'Sip domain'."
+msgstr ""
+"Nom d'ordinador on registrar la compta. Si no es defineix serà el mateix que "
+"'Domini Sip'."
+
+msgid "How to send dtmf during a call. If not defined it will be rfc2883"
+msgstr ""
+"Com s'envien els tons dtmf durant una trucada. Si no es defineix serà "
+"rfc2883.  "
+
+msgid "Hpf"
+msgstr "Hpf"
+
+msgid "Last message"
+msgstr "Ultimo missatge"
+
+msgid "Last rtp port"
+msgstr "Ultimo port rtp"
+
+msgid "Led"
+msgstr "Led"
+
+msgid "Log level"
+msgstr "Nivell de registre"
+
+msgid "Main"
+msgstr "Principal"
+
+msgid "Move Down"
+msgstr "Mou avall"
+
+msgid "Move Up"
+msgstr "Mou amunt"
+
+msgid "Name of the led associated to this channel."
+msgstr "Nom del led associat amb aquest canal."
+
+msgid ""
+"Name of the led to activate when at least one account has been registered."
+msgstr "Nom del led que s'activarà quan s'hagi registrat al menys una compta."
+
+msgid ""
+"Name to use to authenticate with the server. If not defined it will be the "
+"same as 'User name'."
+msgstr ""
+"Nom que s'usarà per a autenticar amb el servidor. Si no es defineix serà el "
+"mateix que \"Nom d'usuari\"."
+
+msgid "Near and far end"
+msgstr "Local i remot"
+
+msgid "Near end"
+msgstr "Local"
+
+msgid "Off hook"
+msgstr "Despenjat"
+
+msgid "Optional display name."
+msgstr "Nom de visualització opcional."
+
+msgid ""
+"Optional user agent to be used instead of the default. Some sip server only "
+"accept registration made with a predefined user agent."
+msgstr ""
+"User agent opcional que s'usarà en lloc del per defecte. Alguns servidors sip "
+"només accepten registrar amb un User agent especifico."
+
+msgid "Outbound proxy"
+msgstr "Proxy de sortida"
+
+msgid "Outgoing priority"
+msgstr "Prioritat de sortida"
+
+msgid "Password"
+msgstr "Contrasenya"
+
+msgid "Prefix"
+msgstr "Prefixe"
+
+msgid "Registered"
+msgstr "Registrada"
+
+msgid "Registrar"
+msgstr "Registrador"
+
+msgid "Remove prefix"
+msgstr "Elimina prefixe"
+
+msgid "Replace with"
+msgstr "Substitueix amb"
+
+msgid "Reveal/hide password"
+msgstr "Ensenya/amaga la contrasenya"
+
+msgid "Ring on incoming call"
+msgstr "Timbre amb trucada entrant"
+
+msgid "Sc only"
+msgstr "Només Sc"
+
+msgid "Select the account to use"
+msgstr "Seleccioni la compta que s'usarà per fer la trucada"
+
+msgid "Select the channels that will ring when a call comes from this account."
+msgstr ""
+"Seleccioni els canals que tocaran el timbre quan arribi una trucada des de "
+"aquesta compta."
+
+msgid ""
+"Select the codecs to be used with this account and their priority. If not "
+"defined, all codecs will be available."
+msgstr ""
+"Seleccioni els codecs que s'usaran amb aquesta compta i la seva prioritat. Si "
+"no es defineix s'usaran tots els codecs."
+
+msgid "Selected"
+msgstr "Seleccionats"
+
+msgid "Sip domain"
+msgstr "Domini Sip"
+
+msgid "Status"
+msgstr "Estat"
+
+msgid "The caller id protocol (default etsi fsk)"
+msgstr "El protocol del identificador de trucada (per defecte etsi fsk)"
+
+msgid "This is the last rtp port voip will try to use."
+msgstr "Aquest es el últim port rtp que voip intentarà usar."
+
+msgid "To-From"
+msgstr "A-De"
+
+msgid "Tos for rtp traffic"
+msgstr "Tos per a trafico rtp"
+
+msgid "Tos for sip traffic"
+msgstr "Tos per a trafico sip"
+
+msgid "Uri"
+msgstr "Uri"
+
+msgid "User agent"
+msgstr "User agent"
+
+msgid "User name"
+msgstr "Nom d'usuari"
+
+msgid "User to build the sip address."
+msgstr "Usuari per preparar la direcció sip."
+
+msgid "Vad"
+msgstr "Vad"
+
+msgid "Voice activity detector (default off)"
+msgstr "Detector d'activitat vocal (per defecte desactivat)"
+
+msgid "Voip"
+msgstr "Voip"
+
+msgid "Voip led"
+msgstr "Led voip"
+
+msgid "Voip will try to bind rtp ports starting from this one."
+msgstr "Voip intentarà usar ports rtp a partir d'aquest."
+
+msgid ""
+"When an outgoing call is made, if no dialplan entry matches the lowest "
+"priority account will be used. Zero means the account won't be used."
+msgstr ""
+"Quan es fa una trucada, si no coincideix cap regla de marcat s'usarà la "
+"compta amb la prioritat més baixa. Una compta amb prioritat zero no s'usarà.  "
+
+msgid "Wlec far end window"
+msgstr "Finestra wlec remota"
+
+msgid "Wlec near end window"
+msgstr "Finestra wlec local"
+
+msgid "Wlec nlp"
+msgstr "Wlec nlp"
+
+msgid "Wlec non linear processing"
+msgstr "Processament no lineal wlec"
+
+msgid "Wlec type"
+msgstr "Tipus wlec"
+
+msgid "channel %d"
+msgstr "canal %d"
+
+msgid "comfort noise generation only"
+msgstr "només generació de rumor confortable"
+
+msgid "default 4"
+msgstr "per defecte 4"
+
+msgid "disabled"
+msgstr "desactivat"
+
+msgid "g711/comfort noise without spectral information"
+msgstr "g711/rumor confortable sense informació espectral"
+
+msgid "incoming"
+msgstr "entrant"
+
+msgid "last rtp port must be >= first rtp port"
+msgstr "L'ultimo port rtp ha de ser >= primer port rtp"
+
+msgid "of the dialled number"
+msgstr "del numero marcat"
+
+msgid "on/comfort noise and spectral information"
+msgstr "activat/rumor confortable i informació espectral"
+
+msgid "outgoing"
+msgstr "sortint"
+
+

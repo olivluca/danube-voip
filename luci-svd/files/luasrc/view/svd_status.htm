@@ -21,10 +21,12 @@ function callname(incoming,outgoing) {
     return "<%:outgoing%>";
   return "";    
 }
-XHR.poll(5, '<%=luci.dispatcher.build_url("admin", "svd", "account_status")%>', null,
-        function(x, st)
+XHR.poll(5, '<%=luci.dispatcher.build_url("admin", "svd", "status")%>', null,
+        function(x, repl)
         {
                 var tb = document.getElementById('svd_accounts_status_table');
+                var st = repl.regs;
+                var chans = st.chans;
                 if (st && tb)
                 {
                         var i;
@@ -43,12 +45,8 @@ XHR.poll(5, '<%=luci.dispatcher.build_url("admin", "svd", "account_status")%>', 
                           tr.insertCell(-1).innerHTML = st[i].last_message;
                         }  
                 }
-        }
-);
-XHR.poll(5, '<%=luci.dispatcher.build_url("admin", "svd", "channels_status")%>', null,
-        function(x, st)
-        {
-                var tb = document.getElementById('svd_channels_status_table');
+                st = repl.chans;
+                tb = document.getElementById('svd_channels_status_table');
                 if (st && tb)
                 {
                         var i;

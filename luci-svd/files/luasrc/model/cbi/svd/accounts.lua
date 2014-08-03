@@ -123,7 +123,7 @@ auth_name=s:option(Value,"auth_name",translate("Auth name"), translate("Name to 
 auth_name.optional=true
 auth_name.rmempty=true
 
-display_name=s:option(Value,"display_name", translate("Display Name"), translate("Optional display name."))
+display_name=s:option(Value,"display", translate("Display Name"), translate("Optional display name."))
 display_name.optional=true
 display_name.rmempty=true
 

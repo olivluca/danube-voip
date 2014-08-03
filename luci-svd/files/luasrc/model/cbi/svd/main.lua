@@ -18,7 +18,7 @@ s=m:section(TypedSection,"main", translate("Main"))
 s.addremove = false
 s.anonymous = true
 
-loglevel=s:option(ListValue,"log", translate("Log level"), translate("From 0 (quiet) to 9 (very verbose)."))
+loglevel=s:option(ListValue,"log_level", translate("Log level"), translate("From 0 (quiet) to 9 (very verbose)."))
 loglevel.optional=true
 loglevel.rmempty=true
 for i=0,9 do

@@ -15,8 +15,8 @@
 <%for i=1, #v do %>
  <td>
 	
-	<input class="cbi-input-checkbox" onclick="fa_update('<%=cbid%>',<%=i%>, '<%=self.enabled%>', '<%=self.disabled%>')" 
-	                                 onchange="fa_update('<%=cbid%>',<%=i%>, '<%=self.enabled%>', '<%=self.disabled%>')"  type="checkbox"<%=
+	<input class="cbi-input-checkbox" onclick="fa_update('<%=cbid%>',<%=#v%>, '<%=self.enabled%>', '<%=self.disabled%>')" 
+	                                 onchange="fa_update('<%=cbid%>',<%=#v%>, '<%=self.enabled%>', '<%=self.disabled%>')"  type="checkbox"<%=
 		attr("id", cbid .. i) .. attr("name", cbid .. i) .. attr("value", self.enabled or 1) ..
 		ifattr(v[i] == self.enabled, "checked", "checked")
 	%> />

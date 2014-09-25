@@ -280,6 +280,12 @@ DFS
 	 * */
 	//tos = g_conf.sip_tos & IPTOS_TOS_MASK;
 	tos = g_conf.sip_tos & 0xFF;
+	char *local_ip=NULL;
+	if (g_conf.local_ip) { 
+		asprintf(&local_ip, "sip:%s", g_conf.local_ip);
+		SU_DEBUG_5(("using NUTAG_URL %s\n",local_ip));
+	}	
+	
 	svd->nua = nua_create (svd->root, svd_nua_callback, svd,
 			SIPTAG_USER_AGENT_STR ("svd VoIP agent"),
 			SOATAG_AF (SOA_AF_IP4_IP6),
@@ -288,12 +294,16 @@ DFS
 			NUTAG_AUTOALERT (1),
 			NUTAG_ENABLEMESSAGE (1),
 			NUTAG_ENABLEINVITE (1),
-			NUTAG_DETECT_NETWORK_UPDATES (NUA_NW_DETECT_TRY_FULL), 
+			TAG_IF (!local_ip, NUTAG_DETECT_NETWORK_UPDATES (NUA_NW_DETECT_TRY_FULL)), 
+			TAG_IF (local_ip, NUTAG_URL(local_ip)),
+			//TAG_IF (g_conf.local_ip, SIPTAG_VIA_STR(g_conf.local_ip)),
+			//TAG_IF (g_conf.local_ip, SOATAG_ADDRESS(g_conf.local_ip)),
 			TAG_NULL () );
 	if (!svd->nua) {
 		SU_DEBUG_0 (("Network is not initialized\n"));
 		goto __exit_fail;
 	}
+	
 
 	nua_set_params(svd->nua,
 		      NUTAG_OUTBOUND ("gruuize no-outbound validate "

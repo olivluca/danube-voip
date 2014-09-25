@@ -1,14 +1,14 @@
 # Luca Olivetti <luca@ventoso.org>, 2014.
 msgid ""
 msgstr ""
-"Content-Type: text/plain; charset=UTF-8\n"
-"Last-Translator: Luca Olivetti <luca@ventoso.org>\n"
-"PO-Revision-Date: 2014-08-02 15:25+0200\n"
 "Project-Id-Version: \n"
+"PO-Revision-Date: 2014-09-07 16:18+0200\n"
+"Last-Translator: Luca Olivetti <luca@ventoso.org>\n"
 "Language-Team: Italian <>\n"
 "Language: it\n"
-"Content-Transfer-Encoding: 8bit\n"
 "MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Lokalize 1.5\n"
 
@@ -140,6 +140,15 @@ msgstr ""
 msgid "Hpf"
 msgstr "Hpf"
 
+msgid ""
+"If you have more than one network interface and the automatic selection "
+"doesn't work, you can specify here the address of the interface that should "
+"be used."
+msgstr ""
+"Se ci sono varie interfacce di rete e la rilevazione automatica non "
+"funzionasse, qui si può specificare l'indirizzo dell'interfaccia che si vuole "
+"usare."
+
 msgid "Last message"
 msgstr "Ultimo messaggio"
 
@@ -148,6 +157,9 @@ msgstr "Ultimo port rtp"
 
 msgid "Led"
 msgstr "Led"
+
+msgid "Local ip address"
+msgstr "Indirizzo ip locale"
 
 msgid "Log level"
 msgstr "Livello log"
@@ -192,8 +204,8 @@ msgid ""
 "Optional user agent to be used instead of the default. Some sip server only "
 "accept registration made with a predefined user agent."
 msgstr ""
-"User agent opzionale da usare invece di quello per difetto. Alcuni server sip "
-"solo accettano registrazioni da un user agent specifico."
+"User agent opzionale da usare invece di quello per difetto. Alcuni server "
+"sip solo accettano registrazioni da un user agent specifico."
 
 msgid "Outbound proxy"
 msgstr "Proxy in uscita"
@@ -345,5 +357,4 @@ msgstr "attivato/rumore confortevole e informazione spettrale"
 
 msgid "outgoing"
 msgstr "uscente"
-
 

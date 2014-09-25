@@ -1,14 +1,14 @@
 # Luca Olivetti <luca@ventoso.org>, 2014.
 msgid ""
 msgstr ""
-"Content-Type: text/plain; charset=UTF-8\n"
-"Last-Translator: Luca Olivetti <luca@ventoso.org>\n"
-"PO-Revision-Date: 2014-08-02 16:46+0200\n"
 "Project-Id-Version: \n"
+"PO-Revision-Date: 2014-09-07 16:14+0200\n"
+"Last-Translator: Luca Olivetti <luca@ventoso.org>\n"
 "Language-Team: Catalan <>\n"
 "Language: ca\n"
-"Content-Transfer-Encoding: 8bit\n"
 "MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Lokalize 1.5\n"
 
@@ -123,8 +123,8 @@ msgid ""
 "Host name to use as sip outbound proxy. If not defined, no proxy will be "
 "used."
 msgstr ""
-"Nom d'ordinador a usar com proxy sip de sortida. Si no es defineix no s'usarà "
-"proxy."
+"Nom d'ordinador a usar com proxy sip de sortida. Si no es defineix no "
+"s'usarà proxy."
 
 msgid ""
 "Host name where to register the account. If not defined it will be the same "
@@ -141,6 +141,15 @@ msgstr ""
 msgid "Hpf"
 msgstr "Hpf"
 
+msgid ""
+"If you have more than one network interface and the automatic selection "
+"doesn't work, you can specify here the address of the interface that should "
+"be used."
+msgstr ""
+"En cas de tenir més de una interfície de xarxa i la detecció automàtica no "
+"funcioni, aquí és pot especificar la direcció de la interfície de xarxa a "
+"usar."
+
 msgid "Last message"
 msgstr "Darrer missatge"
 
@@ -149,6 +158,9 @@ msgstr "Darrer port rtp"
 
 msgid "Led"
 msgstr "Led"
+
+msgid "Local ip address"
+msgstr "Direcció ip local"
 
 msgid "Log level"
 msgstr "Nivell de registre"
@@ -192,8 +204,8 @@ msgid ""
 "Optional user agent to be used instead of the default. Some sip server only "
 "accept registration made with a predefined user agent."
 msgstr ""
-"User agent opcional que s'usarà en lloc del per defecte. Alguns servidors sip "
-"només accepten registrar amb un User agent especifico."
+"User agent opcional que s'usarà en lloc del per defecte. Alguns servidors "
+"sip només accepten registrar amb un User agent especifico."
 
 msgid "Outbound proxy"
 msgstr "Proxy de sortida"
@@ -240,12 +252,13 @@ msgid ""
 "Select the codecs to be used with this account and their priority. If not "
 "defined, all codecs will be available."
 msgstr ""
-"Seleccioni els codecs que s'usaran amb aquesta compta i la seva prioritat. Si "
-"no es defineix s'usaran tots els codecs."
+"Seleccioni els codecs que s'usaran amb aquesta compta i la seva prioritat. "
+"Si no es defineix s'usaran tots els codecs."
 
 msgid "Selected"
 msgstr "Seleccionats"
 
+#, fuzzy
 msgid "Sip domain"
 msgstr "Domini Sip"
 
@@ -299,7 +312,8 @@ msgid ""
 "priority account will be used. Zero means the account won't be used."
 msgstr ""
 "Quan es fa una trucada, si no coincideix cap regla de marcat s'usarà la "
-"compta amb la prioritat més baixa. Una compta amb prioritat zero no s'usarà.  "
+"compta amb la prioritat més baixa. Una compta amb prioritat zero no "
+"s'usarà.  "
 
 msgid "Wlec far end window"
 msgstr "Finestra wlec remota"
@@ -345,5 +359,4 @@ msgstr "activat/rumor confortable i informació espectral"
 
 msgid "outgoing"
 msgstr "sortint"
-
 

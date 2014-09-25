@@ -24,6 +24,7 @@
 #include <sofia-sip/sip_extra.h>
 #include <sofia-sip/stun_tag.h>
 #include <sofia-sip/tport_tag.h>
+#include <sofia-sip/url.h>
 
 #endif /* __SOFIA_H__ */
 

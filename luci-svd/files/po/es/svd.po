@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"PO-Revision-Date: 2014-08-01 21:53+0200\n"
+"PO-Revision-Date: 2014-09-07 16:16+0200\n"
 "Last-Translator: Luca Olivetti <luca@ventoso.org>\n"
 "Language-Team: Spanish <>\n"
 "Language: es\n"
@@ -140,6 +140,14 @@ msgstr ""
 msgid "Hpf"
 msgstr "Hpf"
 
+msgid ""
+"If you have more than one network interface and the automatic selection "
+"doesn't work, you can specify here the address of the interface that should "
+"be used."
+msgstr ""
+"En caso de tener más de una interfaz de red y la detección automática no "
+"funcione, aquí se puede especificar la dirección ip de la interfaz a usar."
+
 msgid "Last message"
 msgstr "Ultimo mensaje"
 
@@ -148,6 +156,9 @@ msgstr "Ultimo puerto rtp"
 
 msgid "Led"
 msgstr "Led"
+
+msgid "Local ip address"
+msgstr "Dirección ip local"
 
 msgid "Log level"
 msgstr "Nivel de registro"
@@ -347,5 +358,4 @@ msgstr "activado/ruido confortable e información espectral"
 
 msgid "outgoing"
 msgstr "saliente"
-
 

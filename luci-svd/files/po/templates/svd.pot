@@ -123,6 +123,12 @@ msgstr ""
 msgid "Hpf"
 msgstr ""
 
+msgid ""
+"If you have more than one network interface and the automatic selection "
+"doesn't work, you can specify here the address of the interface that should "
+"be used."
+msgstr ""
+
 msgid "Last message"
 msgstr ""
 
@@ -130,6 +136,9 @@ msgid "Last rtp port"
 msgstr ""
 
 msgid "Led"
+msgstr ""
+
+msgid "Local ip address"
 msgstr ""
 
 msgid "Log level"

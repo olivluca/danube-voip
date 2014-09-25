@@ -70,6 +70,13 @@ options in config main
      If configured the led will turn on when there's at least one account successfully
      registered.
 
+   * option local_ip
+     optional - in case there are multiple network interfaces, sofia sip
+     doesn't always select the correct one for outgoing messages. In that
+     case you can specify the ip address of the interface to use. WARNING
+     since this is a global setting, there is no way to use different
+     interfaces for different accounts.
+
    example:
 
 	config main

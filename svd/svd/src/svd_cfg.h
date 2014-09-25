@@ -130,7 +130,7 @@ struct fax_s {
 /** Routine main configuration struct.*/
 struct svd_conf_s {/*{{{*/
 	int channels; /**<Number of configured channels (from svd_chans_init). */
-	char * self_number; /**< Pointer to corresponding rt.rec[].id or NULL.*/
+	char * local_ip; /**< local ip for the nua stack or NULL.*/
 	char log_level; /**< If log_level = -1 - do not log anything.*/
 	struct fax_s fax;/**< Fax parameters.*/ /* FIXME */
 	unsigned long rtp_port_first; /**< Min ports range bound for RTP.*/

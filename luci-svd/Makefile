@@ -20,9 +20,10 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-svd
-PKG_RELEASE:=1.4
+PKG_RELEASE:=1.5
 
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
+PKG_BUILD_DEPENDS:=luci-svd/host
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/host-build.mk

@@ -65,4 +65,9 @@ led:value("",translate("--remove--"))
 led.optional=true
 led.rmempty=true
 
+local_ip=s:option(Value,"local_ip",translate("Local ip address"), translate("If you have more than one network interface and the automatic selection doesn't work, you can specify here the address of the interface that should be used."))
+local_ip.optional=true
+local_ip.rmmempty=true
+local_ip.datatype="ipaddr"
+
 return m

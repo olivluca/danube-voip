@@ -157,6 +157,7 @@ struct uci_main {
 	int sip_tos;
 	int rtp_tos;
 	char *led;
+	char *local_ip;
 };
 
 static int
@@ -180,6 +181,8 @@ main_add(struct uci_map *map, void *section)
 		/* turn it off immediately */
 		led_off(a->led);
 	}
+	if (a->local_ip)
+		g_conf.local_ip = strdup(a->local_ip);
 	
 	return 0;
 }
@@ -210,6 +213,10 @@ static struct uci_optmap main_uci_map[] =
 		UCIMAP_OPTION(struct uci_main, led),
 		.type = UCIMAP_STRING,
 		.name = "led",
+	},{
+		UCIMAP_OPTION(struct uci_main, local_ip),
+		.type = UCIMAP_STRING,
+		.name = "local_ip",
 	},
 };
 
@@ -1126,6 +1133,13 @@ conf_show( void )
 	} else {
 		SU_DEBUG_3(("%d] : ", g_conf.log_level));
 	}
+	SU_DEBUG_3(("local_ip["));
+
+	if( g_conf.local_ip ){
+		SU_DEBUG_3(("%s] : ", g_conf.local_ip));
+	} else {
+		SU_DEBUG_3(("auto] : "));
+	}
 	SU_DEBUG_3((" led[%s] : ", g_conf.voip_led));
 	SU_DEBUG_3(("ports[%d:%d]\n",
 			g_conf.rtp_port_first,
@@ -1229,6 +1243,8 @@ svd_conf_destroy (void)
 	  led_off(g_conf.voip_led);
 	  free(g_conf.voip_led);
 	}
+	if (g_conf.local_ip)
+	  free(g_conf.local_ip);
 	
 	for (i=0; i<g_conf.channels; i++) {
 	  if (g_conf.chan_led[i]) {

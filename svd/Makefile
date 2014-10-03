@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=svd
 PKG_VERSION:=1.8
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 PKG_BUILD_DEPENDS:=libab
 
 PKG_FIXUP:=libtool
@@ -18,6 +18,10 @@ define Package/svd
   TITLE:=svd
   SUBMENU:=Telephony
   DEPENDS:=+sofia-sip +libuci +kmod-ltq-tapi +kmod-ltq-vmmc @TARGET_lantiq
+endef
+
+define Package/svd/conffiles
+/etc/config/svd
 endef
 
 TARGET_CFLAGS += -I$(STAGING_DIR)/usr/include/drv_tapi -I$(STAGING_DIR)/usr/include/libab -I$(STAGING_DIR)/usr/include/libconfig

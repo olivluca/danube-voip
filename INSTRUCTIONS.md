@@ -1,0 +1,382 @@
+# What is it? #
+
+---
+
+SVD is a simple sip client using the FXS ports on the infineon danube.
+It uses sofia-sip to manage the sip part and a custom written library
+(libab) to manage the ports.
+You can define multiple sip accounts, decide which FXS ports to use for
+outgoing calls and which ports to ring for incoming calls.
+
+# Placing a call #
+
+---
+
+To place a call simply dial a number once you hear the dialtone.
+The call will be placed after 4 seconds you keyed in the last digit or
+after you dial # (the # won't be part of the dialled number).
+To determine the account to use to place the call, first the dialplan
+will be checked, and if no entry matches, the call will be placed on
+the sip account with the lowest priority. See below for instructions
+about the dialplan and the configuration of the accounts.
+
+# Configuration #
+
+---
+
+This program uses uci for configuration, **there's a web interface available in the package luci-svd** but you can also manually edit the /etc/config/svd file.
+Various sections can be defined:
+
+  * config main
+> > general parameters
+
+  * config account name
+> > parameters for a sip account, you can define as many sections as
+> > accounts you want to use, each with a different name
+
+  * config dialplan
+> > dialplan entries (see below), as many as you want
+
+  * config channel number
+> > overrides defaults parameters for one channel (number can be 1 or 2).
+
+  * config codec name
+> > overrides default codec parameter. Name must be one of:
+> > > G722, PCMA, G729, G729E, G723, iLBC, G726-16, G726-32, G726-40, telephone-event
+
+> > repeat this section for each codec you want to modify
+
+
+## options in config main ##
+
+---
+
+
+  * option log\_level n
+> > optional - changes the logging level between 0 (quiet) and 9 (verbose)
+
+  * option rtp\_port\_first n
+> > mandatory - number of the first port to use for rtp
+
+  * option rtp\_port\_last n
+> > mandatory - number of the last port to use for rtp
+
+  * option sip\_tos n
+> > mandatory -tos for sip traffic
+
+  * option rtp\_tos n
+> > mandatory - tos for rtp traffic
+
+  * option led name
+> > optional - name of the led to use as the main voip led.
+> > If configured the led will turn on when there's at least one account successfully registered.
+
+
+> example:
+```
+	config main
+	    option log_level 5
+	    option rtp_port_first 5500
+	    option rtp_port_last 5600
+	    option sip_tos 0x10
+	    option rtp_tos 0x10
+            option led "voice"
+```
+
+## options in config account ##
+
+---
+
+
+  * option user "username"
+> > mandatory, username of the account
+
+  * option domain "domain"
+> > mandatory, domain of the account
+
+  * option password "password"
+> > mandatory, password of the account
+
+  * option display "display\_name"
+> > optional, sip display name. It will be used as is, if quotes are needed
+> > you'll have to write them yourself, e.g. '"display name"'
+
+  * option registrar "registrar"
+> > optional, host name of the registrar, if not defined "domain" will be used
+
+  * option auth\_name "auth\_name"
+> > optional, username for authentication, if not defined "user" will be used
+
+  * option outbound\_proxy "proxy"
+> > optional, proxy to be used for outgoing calls. If not defined no
+> > outbound proxy will be used.
+
+  * option codecs "codec1 codec2 codec3 ..."
+> > optional, list of codecs to use ordered by priority. If not defined, all
+> > codecs will be used in this order:
+> > PCMA, G729, G729E, G723, iLBC, G726-16, G726-32, G726-40
+
+  * option ring 'off on'
+> > optional, list of booleans. Decides which channel will ring for incoming
+> > calls to this account. If not defined, all channels will ring.
+
+  * option priority '0 1'
+> > optional, list of integers (one integer for each channel).
+> > When a number is dialled on a channel, first the dialplan will be tried to
+> > decide the account to use. If no dialplan entry matches, the lowest priority
+> > correctly registered account will be used. An account with 0 priority will not be used.
+
+  * option dtmf type
+> > optional, how to send dtmf on this account.
+> > type can be "rfc2883", "info" or "off".
+> > if not defined, "rfc2833" will be used.
+
+  * option disabled on
+> > optional, use it to disable an account without removing it from the configuration.
+
+  * option user\_agent "My user agent"
+> > optional user agent to use instead of the default (some sip registrars
+> > only allow registration coming with a specific user agent, e.g. Jazztel
+> > in Spain).
+
+
+> examples:
+
+> minimal configuration
+
+```
+       config account test1
+           option user "testuser"
+           option domain "sip.test.domain"
+           option password "testpassword"
+```
+
+> this account will ring every channel and it will be used by every channel
+> for outgoing calls.
+
+> more complete configuration
+
+```
+       config account test2
+           option user "testuser2"
+           option domain "sip2.test.domain"
+           option auth_name "authuser"
+           option display '"my display name"'
+           option registrar "proxy.test.domain"
+           option password "testpassword"
+           option outbound_proxy "outproxy.test.domain"
+           option codecs "g729 pcma"
+           option ring 'off on'
+           option priority '0 7'
+           option dtmf info
+```
+
+> this account will only ring the second channel and it will only be used
+> for outgoing calls by the second channel, provided there's no other channel
+> with a priority lower than 7.
+
+
+## options in config dialplan ##
+
+---
+
+
+  * option prefix "1234"
+> > mandatory, prefix of the dialled number that matches this entry
+
+  * option replace "abcd"
+> > optional, the matched prefix will be replaced by this string
+
+  * option remove\_prefix on
+> > optional, if set to true, the prefix will be removed before calling.
+> > It will have no effect if "option replace" is present.
+
+  * option account name
+> > mandatory, name of the account to use
+
+
+
+> Example:
+
+```
+    config dialplan
+      option prefix "00"
+      option account "test1"
+
+   config dialplan
+      option prefix "777"
+      option replace "an_user"
+      option account "test2"
+```
+
+> when a number starting with 00 is dialled, account "test1" will be used
+> > (e.g. 001234  will call 001234@sip.test.domain)
+
+> when a number starting with 777 is dialled, account "test2" will be used,
+> replacing "777" with "an\_user"
+> > (e.g. 777 will call an\_user@sip2.test.domain)
+
+## options in config channel ##
+
+---
+
+
+  * option enc\_db 
+
+&lt;integer&gt;
+
+
+> > default: 0
+
+  * option dec\_db 
+
+&lt;integer&gt;
+
+
+> > default: 0
+
+  * option vad 
+
+&lt;string&gt;
+
+
+> > can be one of "off", "on", "g711", "cng\_only", "sc\_only"
+> > default: "off"
+
+  * option hpf 
+
+&lt;boolean&gt;
+
+
+> > high pass filter, on or off
+> > default: "off"
+
+  * option wlec\_type 
+
+&lt;string&gt;
+
+
+> > can be one of "off", "ne", "nfe"
+> > default: "ne"
+
+  * option wlec\_nlp 
+
+&lt;boolean&gt;
+
+
+> > can be "on" or "off"
+> > default: "off"
+
+  * option wlec\_ne\_nb 
+
+&lt;integer&gt;
+
+
+> > default: 4
+
+  * option wlec\_fe\_nb 
+
+&lt;integer&gt;
+
+
+> > default: 4
+
+  * option cid 
+
+&lt;string&gt;
+
+
+> > sets the caller id standard, can be one of:
+> > > "off", "telcordia", "etsi\_fsk", "etsi\_dtmf", "sin", "ntt", "kpn\_dtmf", "kpn\_dtmf\_fsk"
+
+> > defaults to "etsi\_fsk", "off" disables caller id transmission.
+
+  * option led 
+
+&lt;string&gt;
+
+
+> > name of the led used by this channel.
+> > If configured, this led will turn on when the phone is off-hook, it
+> > will blink slowly if is there a call ongoing and it will blink fast
+> > if the phone is ringing.
+
+
+> Example:
+
+```
+    config channel 1
+       option cid telcordia
+       option led "fxs2"
+    config channel 2
+       option cid ntt
+       option led "fxs1"
+```
+
+## options in config codec ##
+
+---
+
+
+  * option packet\_size 
+
+&lt;string&gt;
+
+
+> > can be 2.5, 5, 5.5, 10, 11, 20, 30, 40, 50, 60
+
+  * option payload 
+
+&lt;integer&gt;
+
+
+> > payload type to use for rtp
+
+  * option bitpack 
+
+&lt;string&gt;
+
+
+> > can be rtp or aal2
+
+  * option jb\_type 
+
+&lt;string&gt;
+
+
+> > jitter buffer, can be fixed or adaptive
+
+  * option scaling 
+
+&lt;string&gt;
+
+
+> > actually a float
+
+  * option local\_adaptation 
+
+&lt;boolean&gt;
+
+
+> > can be on or off
+
+  * option jb\_init\_sz 
+
+&lt;integer&gt;
+
+
+> > initial size for the jitter buffer
+
+  * option jb\_min\_sz 
+
+&lt;integer&gt;
+
+
+> > minimum size for the jitter buffer
+
+  * option jb\_max\_sz 
+
+&lt;integer&gt;
+
+
+> > maximum size for the jitter buffer

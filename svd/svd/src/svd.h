@@ -40,7 +40,7 @@ typedef struct sip_account_s sip_account_t;
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <sys/unistd.h>
+#include <unistd.h>
 #include <errno.h>
 #include <pthread.h>
 

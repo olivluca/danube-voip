@@ -19,16 +19,16 @@
 
 include $(TOPDIR)/rules.mk
 
-PKG_NAME:=luci-svd
+PKG_NAME:=luci-app-svd
 PKG_RELEASE:=1.5
 
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
-PKG_BUILD_DEPENDS:=luci-svd/host
+PKG_BUILD_DEPENDS:=luci-app-svd/host
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/host-build.mk
 
-define Package/luci-svd
+define Package/luci-app-svd
   SECTION:=luci
   CATEGORY:=LuCI
   SUBMENU:=3. Applications
@@ -37,7 +37,7 @@ define Package/luci-svd
   MAINTAINER:= Luca Olivetti <luca@ventoso.org>
 endef
 
-define Package/luci-svd/description
+define Package/luci-app-svd/description
 	svd (voip) web module for LuCi web interface
 endef
 
@@ -50,7 +50,7 @@ endef
 define Build/Compile
 endef
 
-define Package/luci-svd/install
+define Package/luci-app-svd/install
 	${INSTALL_DIR} ${1}/usr/lib/lua/luci
 	$(CP) ./files/luasrc/* $(1)/usr/lib/lua/luci/
 	${INSTALL_DIR} ${1}/www
@@ -70,4 +70,4 @@ define Host/Install
 endef
 
 $(eval $(call HostBuild))
-$(eval $(call BuildPackage,luci-svd))
+$(eval $(call BuildPackage,luci-app-svd))

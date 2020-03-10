@@ -1,7 +1,7 @@
 include standalone.mk
 
-TPL_LDFLAGS    = -I/usr/include/lua5.1
-TPL_CFLAGS     =
+TPL_LDFLAGS    =
+TPL_CFLAGS     = -I/usr/include/lua5.1
 TPL_SO         = parser.so
 TPL_PO2LMO     = po2lmo
 TPL_PO2LMO_OBJ = po2lmo.o

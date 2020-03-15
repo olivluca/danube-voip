@@ -20,7 +20,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-svd
-PKG_RELEASE:=1.5
+PKG_RELEASE:=1.5.1
 
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
 PKG_BUILD_DEPENDS:=luci-app-svd/host
@@ -33,7 +33,7 @@ define Package/luci-app-svd
   CATEGORY:=LuCI
   SUBMENU:=3. Applications
   TITLE:= Svd (voip) configuration and status module
-  DEPENDS:=+luci-lib-nixio +luci-mod-admin-full +svd
+  DEPENDS:=+luci-compat +luci-lib-nixio +luci-mod-admin-full +svd
   MAINTAINER:= Luca Olivetti <luca@ventoso.org>
 endef
 

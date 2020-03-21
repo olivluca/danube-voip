@@ -297,7 +297,7 @@ DFS
 			TAG_IF (!local_ip, NUTAG_DETECT_NETWORK_UPDATES (NUA_NW_DETECT_TRY_FULL)), 
 			TAG_IF (local_ip, NUTAG_URL(local_ip)),
 			//TAG_IF (g_conf.local_ip, SIPTAG_VIA_STR(g_conf.local_ip)),
-			//TAG_IF (g_conf.local_ip, SOATAG_ADDRESS(g_conf.local_ip)),
+			TAG_IF (g_conf.local_ip, SOATAG_ADDRESS(g_conf.local_ip)),
 			TAG_NULL () );
 	if (!svd->nua) {
 		SU_DEBUG_0 (("Network is not initialized\n"));

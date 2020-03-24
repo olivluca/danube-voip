@@ -49,38 +49,37 @@ static int
 ab_FXS_line_just_play_it (ab_chan_t * const chan, enum ab_chan_tone_e const tone)
 {/*{{{*/
 	int err = 0;
+	char const *err_msg;
+	int index;
+
 	switch(tone){
 		case ab_chan_tone_MUTE: {
-			err = err_set_ioctl( chan, IFX_TAPI_TONE_LOCAL_PLAY, 0,
-					"stop playing tone (ioctl)");
-			if( !err){
-				chan->status.tone = ab_chan_tone_MUTE;
-			}
+			index = 0;
+			err_msg = "stop playing tone (ioctl)";
 			break;
 		}
 		case ab_chan_tone_DIAL: {
-			err = err_set_ioctl(chan, IFX_TAPI_TONE_LOCAL_PLAY, TAPI_TONE_LOCALE_DIAL_CODE,
-					"playing dialtone (ioctl)");
-			if( !err){
-				chan->status.tone = ab_chan_tone_DIAL;
-			}
+			index = TAPI_TONE_LOCALE_DIAL_CODE;
+			err_msg = "playing dialtone (ioctl)";
 			break;
 		}
 		case ab_chan_tone_BUSY: {
-			err = err_set_ioctl(chan, IFX_TAPI_TONE_LOCAL_PLAY, TAPI_TONE_LOCALE_BUSY_CODE,
-					"playing busy (ioctl)");
-			if( !err){
-				chan->status.tone = ab_chan_tone_BUSY;
-			}
+			index = TAPI_TONE_LOCALE_BUSY_CODE;
+			err_msg = "playing busy (ioctl)";
 			break;
 		}
 		case ab_chan_tone_RINGBACK: {
-			err = err_set_ioctl(chan, IFX_TAPI_TONE_LOCAL_PLAY, TAPI_TONE_LOCALE_RINGING_CODE,
-					"playing ringback (ioctl)");
-			if( !err){
-				chan->status.tone = ab_chan_tone_RINGBACK;
-			}
+			index = TAPI_TONE_LOCALE_RINGING_CODE;
+			err_msg = "playing ringback (ioctl)";
 			break;
+		}
+		default:
+			index = -1;
+	}
+	if (index>=0) {
+		err = err_set_ioctl(chan, IFX_TAPI_TONE_LOCAL_PLAY, index, err_msg);
+		if( !err){
+			chan->status.tone = tone;
 		}
 	}
 	return err;
@@ -412,7 +411,7 @@ ab_FXS_set_tone(ab_chan_t *const chan, enum ab_chan_tone_e tone, const char* pla
 		}
 		case ab_chan_tone_RINGBACK: {
 			index = TAPI_TONE_LOCALE_RINGING_CODE;
-			err_msg = "busy";
+			err_msg = "ringing";
 			break;
 		}
 		default: { //it shouldn't happen

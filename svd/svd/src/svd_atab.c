@@ -911,6 +911,14 @@ DFS
 		memset (chan_ctx, 0, sizeof(*chan_ctx));
 		chan_ctx->chan_idx = i;
 
+		/* setup tones */
+		if (g_conf.dial_tone)
+			ab_FXS_set_tone(curr_chan, ab_chan_tone_DIAL, g_conf.dial_tone);
+		if (g_conf.busy_tone)
+			ab_FXS_set_tone(curr_chan, ab_chan_tone_BUSY, g_conf.busy_tone);
+		if (g_conf.ringing_tone)
+			ab_FXS_set_tone(curr_chan, ab_chan_tone_RINGBACK, g_conf.ringing_tone);
+
 	 	/* SDP */
 		chan_ctx->rtp_sfd = -1;
 		chan_ctx->remote_host = NULL;

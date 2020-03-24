@@ -158,6 +158,9 @@ struct uci_main {
 	int rtp_tos;
 	char *led;
 	char *local_ip;
+	char *dial_tone;
+	char *ring_tone;
+	char *busy_tone;
 };
 
 static int
@@ -183,7 +186,12 @@ main_add(struct uci_map *map, void *section)
 	}
 	if (a->local_ip)
 		g_conf.local_ip = strdup(a->local_ip);
-	
+	if (a->dial_tone)
+		g_conf.dial_tone = strdup(a->dial_tone);
+	if (a->ring_tone)
+		g_conf.dial_tone = strdup(a->ring_tone);
+	if (a->busy_tone)
+		g_conf.busy_tone = strdup(a->busy_tone);
 	return 0;
 }
 
@@ -217,6 +225,18 @@ static struct uci_optmap main_uci_map[] =
 		UCIMAP_OPTION(struct uci_main, local_ip),
 		.type = UCIMAP_STRING,
 		.name = "local_ip",
+	},{
+		UCIMAP_OPTION(struct uci_main, dial_tone),
+		.type = UCIMAP_STRING,
+		.name = "dial_tone",
+	},{
+		UCIMAP_OPTION(struct uci_main, ring_tone),
+		.type = UCIMAP_STRING,
+		.name = "ring_tone",
+	},{
+		UCIMAP_OPTION(struct uci_main, busy_tone),
+		.type = UCIMAP_STRING,
+		.name = "busy_tone",
 	},
 };
 

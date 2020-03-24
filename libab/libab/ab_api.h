@@ -318,6 +318,8 @@ void ab_destroy (ab_t ** ab);
   @{ */ /*{{{*/
 /** Play ring or mute it */
 int ab_FXS_line_ring( ab_chan_t * const chan, enum ab_chan_ring_e ring, char * number, char * name );
+/** Setup tone from asterisk playlist string */
+int ab_FXS_set_tone( ab_chan_t * const chan, enum ab_chan_tone_e tone, const char * playlst);
 /** Play tone or mute it */
 int ab_FXS_line_tone( ab_chan_t * const chan, enum ab_chan_tone_e tone );
 /** Change linefeed mode */

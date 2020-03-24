@@ -145,6 +145,9 @@ struct svd_conf_s {/*{{{*/
 	char * chan_led [CHANS_MAX]; /**Name of the led for each channel*/
 	unsigned char sip_tos; /** Type of Service byte for sip-packets.*/
 	unsigned char rtp_tos; /** Type of Service byte for rtp-packets.*/
+	char * dial_tone; /* Custom dial tone (asterisk style string). */
+	char * ringing_tone; /* Custom ringing tone (asterisk style string). */
+	char * busy_tone; /* Custom busy tone (asterisk style string). */
 } g_conf;/*}}}*/
 
 /** @} */

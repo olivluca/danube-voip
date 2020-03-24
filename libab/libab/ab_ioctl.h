@@ -36,5 +36,12 @@ typedef struct ab_board_params_s {
 	ab_dev_params_t devices [DEVS_PER_BOARD_MAX];
 } ab_board_params_t;
 
+
+/* Tapi custom tones 32 to 256 */
+#define TAPI_TONE_LOCALE_DIAL_CODE		32
+#define TAPI_TONE_LOCALE_RINGING_CODE		33
+#define TAPI_TONE_LOCALE_BUSY_CODE		34
+#define TAPI_TONE_LOCALE_CONGESTION_CODE	35
+
 #endif /* __AB_IOCTL_H__ */
 

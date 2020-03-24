@@ -316,6 +316,15 @@ static int tapi_dev_stop(ab_t *ab)
    return status;
 }
 
+static int
+ab_chan_default_tones( ab_chan_t * const chan )
+{/*{{{*/
+	ab_FXS_set_tone(chan, ab_chan_tone_DIAL, "425/200,0/200,425/600,0/1000");
+	ab_FXS_set_tone(chan, ab_chan_tone_BUSY, "425/500,0/500");
+	ab_FXS_set_tone(chan, ab_chan_tone_RINGBACK, "425/1000,0/4000");
+	return AB_ERR_NO_ERR;
+}/*}}}*/
+
 /**
 	Create the ab_t object. 
 \return
@@ -435,6 +444,10 @@ ab_create( void )
 
 		/* set channel status to initial proper values */
 		ab_chan_status_init (curr_chan);
+
+		/* setup default tones */
+		if (ab_chan_default_tones(curr_chan) != AB_ERR_NO_ERR)
+			goto __free_and_exit_fail;
 	}
 	
 	if (tapi_dev_start(ab) != AB_ERR_NO_ERR) {

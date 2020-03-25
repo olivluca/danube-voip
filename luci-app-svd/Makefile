@@ -1,4 +1,4 @@
-#    Copyright (C) 2014 Luca Olivetti
+#    Copyright (C) 2014-2020 Luca Olivetti
 #
 #    This program is free software; you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -20,7 +20,8 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-svd
-PKG_RELEASE:=1.5.1
+PKG_VERSION:=1.9
+PKG_RELEASE:=1
 
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
 PKG_BUILD_DEPENDS:=luci-app-svd/host
@@ -55,7 +56,7 @@ define Package/luci-app-svd/install
 	$(CP) ./files/luasrc/* $(1)/usr/lib/lua/luci/
 	${INSTALL_DIR} ${1}/www
 	$(CP) ./files/htdocs/* ${1}/www/
-	./files/i18n-po2lua.pl ${HOST_BUILD_DIR}/po2lmo ./files/po ${1}/usr/lib/lua/luci/i18n
+	./files/i18n-po2lua.pl po2lmo ./files/po ${1}/usr/lib/lua/luci/i18n
 endef
 
 define Host/Prepare

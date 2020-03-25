@@ -8,6 +8,7 @@
 #include "svd.h"
 #include "svd_if.h"
 #include "svd_cfg.h"
+#include "svd_ua.h"
 
 #include <stddef.h>
 #include <stdlib.h>

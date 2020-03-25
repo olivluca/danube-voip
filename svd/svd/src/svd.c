@@ -22,6 +22,7 @@
 #include <signal.h>
 #include <netinet/ip.h>
 #include <errno.h>
+#include <sys/stat.h>
 /*}}}*/
 
 /** Name of the daemon (using in logs).*/

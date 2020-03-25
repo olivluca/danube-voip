@@ -1,8 +1,8 @@
-# Luca Olivetti <luca@ventoso.org>, 2014.
+# Luca Olivetti <luca@ventoso.org>, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"PO-Revision-Date: 2014-09-07 16:14+0200\n"
+"PO-Revision-Date: 2020-03-25 17:30+0100\n"
 "Last-Translator: Luca Olivetti <luca@ventoso.org>\n"
 "Language-Team: Catalan <>\n"
 "Language: ca\n"
@@ -12,113 +12,179 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Lokalize 1.5\n"
 
+#: luasrc/model/cbi/svd/dialplan.lua:20
 msgid "(only if replace is unset)"
 msgstr "(només amb substitueix buit)"
 
+#: luasrc/view/svd/arrayvalue.htm:31
 msgid "-- Please choose --"
 msgstr "--Faci la seva selecció--"
 
+#: luasrc/view/svd/arrayvalue.htm:38
 msgid "-- custom --"
 msgstr "--personalitzat--"
 
+#: luasrc/model/cbi/svd/accounts.lua:152 luasrc/model/cbi/svd/channels.lua:42
+#: luasrc/model/cbi/svd/channels.lua:54 luasrc/model/cbi/svd/channels.lua:86
+#: luasrc/model/cbi/svd/channels.lua:92 luasrc/model/cbi/svd/main.lua:29
+#: luasrc/model/cbi/svd/main.lua:66
 msgid "--remove--"
 msgstr "--elimina--"
 
+#: luasrc/model/cbi/svd/accounts.lua:111
 msgid ""
 "A disabled account won't be registered and won't be used for outgoing calls."
 msgstr ""
 "Un compte desactivat no es registrarà i no s'usarà per trucades sortint."
 
+#: luasrc/model/cbi/svd/dialplan.lua:21 luasrc/view/svd_status.htm:77
+#: luasrc/view/svd_status.htm:93
 msgid "Account"
 msgstr "Compta"
 
+#: luasrc/model/cbi/svd/accounts.lua:103 luasrc/model/cbi/svd/accounts.lua:108
+#: luasrc/view/svd_status.htm:74 luasrc/controller/svd/svd.lua:12
 msgid "Accounts"
 msgstr "Comptes"
 
+#: luasrc/model/cbi/svd/accounts.lua:122
 msgid "Auth name"
 msgstr "Nom d'autorització "
 
+#: luasrc/view/svd/doublebox.htm:7
 msgid "Available"
 msgstr "Disponibles "
 
+#: luasrc/view/svd_status.htm:92
 msgid "Call"
 msgstr "Trucada"
 
+#: luasrc/model/cbi/svd/channels.lua:75
 msgid "Caller id"
 msgstr "Identificador de trucada"
 
+#: luasrc/view/svd_status.htm:90
 msgid "Channel"
 msgstr "Canal"
 
+#: luasrc/model/cbi/svd/channels.lua:1 luasrc/view/svd_status.htm:87
+#: luasrc/controller/svd/svd.lua:11
 msgid "Channels"
 msgstr "Canals"
 
+#: luasrc/model/cbi/svd/accounts.lua:176
 msgid "Codecs"
 msgstr "Codecs"
 
+#: luasrc/view/svd_status.htm:84 luasrc/view/svd_status.htm:98
 msgid "Collecting data..."
 msgstr "Recollint dades..."
 
+#: luasrc/view/svd_status.htm:73
 msgid "Current Voip State"
 msgstr "Estat actual Voip"
 
+#: luasrc/model/cbi/svd/main.lua:83
+msgid "Custom busy tone"
+msgstr "To d'ocupat personalitzat"
+
+#: luasrc/model/cbi/svd/main.lua:75
+msgid "Custom dial tone"
+msgstr "To d'invitació a marcar personalitzat"
+
+#: luasrc/model/cbi/svd/main.lua:79
+msgid "Custom ring tone"
+msgstr "To de trucada personalitzat"
+
+#: luasrc/model/cbi/svd/channels.lua:29
 msgid "Dec db"
 msgstr "Dec db"
 
+#: luasrc/model/cbi/svd/channels.lua:29
 msgid "Dec db (default 0)"
 msgstr "Dec db (per defecte 0)"
 
+#: luasrc/model/cbi/svd/main.lua:83
+msgid "Definition of a custom busy tone in asterisk format,"
+msgstr "Definició d'un to d'ocupat personalitzat en format asterisk,"
+
+#: luasrc/model/cbi/svd/main.lua:75
+msgid "Definition of a custom dial tone in asterisk format,"
+msgstr "Definició d'un to d'invitació a marcar personalitzat en format asterisk,"
+
+#: luasrc/model/cbi/svd/main.lua:79
+msgid "Definition of a custom ring tone in asterisk format,"
+msgstr "Definició d'un to de trucada personalitzat en format asterisk,"
+
+#: luasrc/controller/svd/svd.lua:13 luasrc/model/cbi/svd/dialplan.lua:4
 msgid "Dialplan"
 msgstr "Regles de marcat"
 
+#: luasrc/model/cbi/svd/accounts.lua:111
 msgid "Disable account"
 msgstr "Desactiva compta"
 
+#: luasrc/model/cbi/svd/accounts.lua:126
 msgid "Display Name"
 msgstr "Nom de visualització"
 
+#: luasrc/model/cbi/svd/accounts.lua:133
 msgid "Domain used to build the sip address."
 msgstr "Domini per preparar la direcció sip."
 
+#: luasrc/model/cbi/svd/accounts.lua:146
 msgid "Dtmf type"
 msgstr "Tipus enviament dtmf"
 
+#: luasrc/view/svd_status.htm:95
 msgid "Duration"
 msgstr "Durada"
 
+#: luasrc/model/cbi/svd/channels.lua:48
 msgid "Echo cancellation type (default off)"
 msgstr "Cancel·lació d'eco (per defecte desactivat)"
 
+#: luasrc/view/svd_status.htm:78
 msgid "Enabled"
 msgstr "Activada"
 
+#: luasrc/model/cbi/svd/channels.lua:24
 msgid "Enc db"
 msgstr "Enc db"
 
+#: luasrc/model/cbi/svd/channels.lua:24
 msgid "Enc db (default 0)"
 msgstr "Enc db (per defecte 0)"
 
+#: luasrc/model/cbi/svd/main.lua:31
 msgid "First rtp port"
 msgstr "Primer port rtp"
 
+#: luasrc/model/cbi/svd/main.lua:23
 msgid "From 0 (quiet) to 9 (very verbose)."
 msgstr "Des de 0 (silenciós) fins a 9 (molt detallat). "
 
+#: luasrc/model/cbi/svd/channels.lua:1
 msgid "Here you can configure each channel options."
 msgstr "Aquí es configuren les opcions de cada canal."
 
+#: luasrc/model/cbi/svd/dialplan.lua:4
 msgid "Here you can configure how to route outgoing calls"
 msgstr "Aquí es configura com enviar les trucades sortints"
 
+#: luasrc/model/cbi/svd/main.lua:1
 msgid "Here you can configure the general options."
 msgstr "Aquí es configuren les opcions generals."
 
+#: luasrc/model/cbi/svd/accounts.lua:103
 msgid "Here you can configure the sip accounts. At least one must be defined."
 msgstr "Aquí es configuren les comptes sip. Al menys s'ha de definir una."
 
+#: luasrc/model/cbi/svd/channels.lua:44
 msgid "High pass filter"
 msgstr "Filtre passa alt."
 
+#: luasrc/model/cbi/svd/accounts.lua:142
 msgid ""
 "Host name to use as sip outbound proxy. If not defined, no proxy will be "
 "used."
@@ -126,6 +192,7 @@ msgstr ""
 "Nom d'ordinador a usar com proxy sip de sortida. Si no es defineix no "
 "s'usarà proxy."
 
+#: luasrc/model/cbi/svd/accounts.lua:138
 msgid ""
 "Host name where to register the account. If not defined it will be the same "
 "as 'Sip domain'."
@@ -133,14 +200,17 @@ msgstr ""
 "Nom d'ordinador on registrar la compta. Si no es defineix serà el mateix que "
 "'Domini Sip'."
 
+#: luasrc/model/cbi/svd/accounts.lua:146
 msgid "How to send dtmf during a call. If not defined it will be rfc2883"
 msgstr ""
 "Com s'envien els tons dtmf durant una trucada. Si no es defineix serà "
 "rfc2883.  "
 
+#: luasrc/model/cbi/svd/channels.lua:44
 msgid "Hpf"
 msgstr "Hpf"
 
+#: luasrc/model/cbi/svd/main.lua:70
 msgid ""
 "If you have more than one network interface and the automatic selection "
 "doesn't work, you can specify here the address of the interface that should "
@@ -150,37 +220,49 @@ msgstr ""
 "funcioni, aquí és pot especificar la direcció de la interfície de xarxa a "
 "usar."
 
+#: luasrc/view/svd_status.htm:81
 msgid "Last message"
 msgstr "Darrer missatge"
 
+#: luasrc/model/cbi/svd/main.lua:36
 msgid "Last rtp port"
 msgstr "Darrer port rtp"
 
+#: luasrc/model/cbi/svd/channels.lua:88
 msgid "Led"
 msgstr "Led"
 
+#: luasrc/model/cbi/svd/main.lua:70
 msgid "Local ip address"
 msgstr "Direcció ip local"
 
+#: luasrc/model/cbi/svd/main.lua:23
 msgid "Log level"
 msgstr "Nivell de registre"
 
+#: luasrc/controller/svd/svd.lua:10 luasrc/model/cbi/svd/main.lua:1
+#: luasrc/model/cbi/svd/main.lua:19
 msgid "Main"
 msgstr "Principal"
 
+#: luasrc/view/svd/doublebox.htm:38
 msgid "Move Down"
 msgstr "Mou avall"
 
+#: luasrc/view/svd/doublebox.htm:37
 msgid "Move Up"
 msgstr "Mou amunt"
 
+#: luasrc/model/cbi/svd/channels.lua:88
 msgid "Name of the led associated to this channel."
 msgstr "Nom del led associat amb aquest canal."
 
+#: luasrc/model/cbi/svd/main.lua:62
 msgid ""
 "Name of the led to activate when at least one account has been registered."
 msgstr "Nom del led que s'activarà quan s'hagi registrat al menys una compta."
 
+#: luasrc/model/cbi/svd/accounts.lua:122
 msgid ""
 "Name to use to authenticate with the server. If not defined it will be the "
 "same as 'User name'."
@@ -188,18 +270,23 @@ msgstr ""
 "Nom que s'usarà per a autenticar amb el servidor. Si no es defineix serà el "
 "mateix que \"Nom d'usuari\"."
 
+#: luasrc/model/cbi/svd/channels.lua:53
 msgid "Near and far end"
 msgstr "Local i remot"
 
+#: luasrc/model/cbi/svd/channels.lua:52
 msgid "Near end"
 msgstr "Local"
 
+#: luasrc/view/svd_status.htm:91
 msgid "Off hook"
 msgstr "Despenjat"
 
+#: luasrc/model/cbi/svd/accounts.lua:126
 msgid "Optional display name."
 msgstr "Nom de visualització opcional."
 
+#: luasrc/model/cbi/svd/accounts.lua:189
 msgid ""
 "Optional user agent to be used instead of the default. Some sip server only "
 "accept registration made with a predefined user agent."
@@ -207,47 +294,61 @@ msgstr ""
 "User agent opcional que s'usarà en lloc del per defecte. Alguns servidors "
 "sip només accepten registrar amb un User agent especifico."
 
+#: luasrc/model/cbi/svd/accounts.lua:142
 msgid "Outbound proxy"
 msgstr "Proxy de sortida"
 
+#: luasrc/model/cbi/svd/accounts.lua:161
 msgid "Outgoing priority"
 msgstr "Prioritat de sortida"
 
+#: luasrc/model/cbi/svd/accounts.lua:130
 msgid "Password"
 msgstr "Contrasenya"
 
+#: luasrc/model/cbi/svd/dialplan.lua:15
 msgid "Prefix"
 msgstr "Prefixe"
 
+#: luasrc/view/svd_status.htm:80
 msgid "Registered"
 msgstr "Registrada"
 
+#: luasrc/model/cbi/svd/accounts.lua:138
 msgid "Registrar"
 msgstr "Registrador"
 
+#: luasrc/model/cbi/svd/dialplan.lua:20
 msgid "Remove prefix"
 msgstr "Elimina prefixe"
 
+#: luasrc/model/cbi/svd/dialplan.lua:19
 msgid "Replace with"
 msgstr "Substitueix amb"
 
+#: luasrc/view/svd/arrayvalue.htm:17
 msgid "Reveal/hide password"
 msgstr "Ensenya/amaga la contrasenya"
 
+#: luasrc/model/cbi/svd/accounts.lua:154
 msgid "Ring on incoming call"
 msgstr "Timbre amb trucada entrant"
 
+#: luasrc/model/cbi/svd/channels.lua:41
 msgid "Sc only"
 msgstr "Només Sc"
 
+#: luasrc/model/cbi/svd/dialplan.lua:21
 msgid "Select the account to use"
 msgstr "Seleccioni la compta que s'usarà per fer la trucada"
 
+#: luasrc/model/cbi/svd/accounts.lua:154
 msgid "Select the channels that will ring when a call comes from this account."
 msgstr ""
 "Seleccioni els canals que tocaran el timbre quan arribi una trucada des de "
 "aquesta compta."
 
+#: luasrc/model/cbi/svd/accounts.lua:176
 msgid ""
 "Select the codecs to be used with this account and their priority. If not "
 "defined, all codecs will be available."
@@ -255,58 +356,76 @@ msgstr ""
 "Seleccioni els codecs que s'usaran amb aquesta compta i la seva prioritat. "
 "Si no es defineix s'usaran tots els codecs."
 
+#: luasrc/view/svd/doublebox.htm:9
 msgid "Selected"
 msgstr "Seleccionats"
 
+#: luasrc/model/cbi/svd/accounts.lua:133
 #, fuzzy
 msgid "Sip domain"
 msgstr "Domini Sip"
 
+#: luasrc/controller/svd/svd.lua:9
 msgid "Status"
 msgstr "Estat"
 
+#: luasrc/model/cbi/svd/channels.lua:75
 msgid "The caller id protocol (default etsi fsk)"
 msgstr "El protocol del identificador de trucada (per defecte etsi fsk)"
 
+#: luasrc/model/cbi/svd/main.lua:36
 msgid "This is the last rtp port voip will try to use."
 msgstr "Aquest es el darrer port rtp que voip intentarà usar."
 
+#: luasrc/view/svd_status.htm:94
 msgid "To-From"
 msgstr "A-De"
 
+#: luasrc/model/cbi/svd/main.lua:57
 msgid "Tos for rtp traffic"
 msgstr "Tos per a trafico rtp"
 
+#: luasrc/model/cbi/svd/main.lua:52
 msgid "Tos for sip traffic"
 msgstr "Tos per a trafico sip"
 
+#: luasrc/view/svd_status.htm:79
 msgid "Uri"
 msgstr "Uri"
 
+#: luasrc/model/cbi/svd/accounts.lua:189
 msgid "User agent"
 msgstr "User agent"
 
+#: luasrc/model/cbi/svd/accounts.lua:117
 msgid "User name"
 msgstr "Nom d'usuari"
 
+#: luasrc/model/cbi/svd/accounts.lua:117
 msgid "User to build the sip address."
 msgstr "Usuari per preparar la direcció sip."
 
+#: luasrc/model/cbi/svd/channels.lua:34
 msgid "Vad"
 msgstr "Vad"
 
+#: luasrc/model/cbi/svd/channels.lua:34
 msgid "Voice activity detector (default off)"
 msgstr "Detector d'activitat vocal (per defecte desactivat)"
 
+#: luasrc/controller/svd/svd.lua:6
 msgid "Voip"
 msgstr "Voip"
 
+#: luasrc/model/cbi/svd/main.lua:62
 msgid "Voip led"
 msgstr "Led voip"
 
+#: luasrc/model/cbi/svd/main.lua:31
 msgid "Voip will try to bind rtp ports starting from this one."
 msgstr "Voip intentarà usar ports rtp a partir d'aquest."
 
+#: luasrc/model/cbi/svd/accounts.lua:161
 msgid ""
 "When an outgoing call is made, if no dialplan entry matches the lowest "
 "priority account will be used. Zero means the account won't be used."
@@ -315,48 +434,68 @@ msgstr ""
 "compta amb la prioritat més baixa. Una compta amb prioritat zero no "
 "s'usarà.  "
 
+#: luasrc/model/cbi/svd/channels.lua:69
 msgid "Wlec far end window"
 msgstr "Finestra wlec remota"
 
+#: luasrc/model/cbi/svd/channels.lua:62
 msgid "Wlec near end window"
 msgstr "Finestra wlec local"
 
+#: luasrc/model/cbi/svd/channels.lua:56
 msgid "Wlec nlp"
 msgstr "Wlec nlp"
 
+#: luasrc/model/cbi/svd/channels.lua:56
 msgid "Wlec non linear processing"
 msgstr "Processament no lineal wlec"
 
+#: luasrc/model/cbi/svd/channels.lua:48
 msgid "Wlec type"
 msgstr "Tipus wlec"
 
+#: luasrc/model/cbi/svd/accounts.lua:167 luasrc/model/cbi/svd/channels.lua:20
+#: luasrc/model/cbi/svd/accounts.lua:158
 msgid "channel %d"
 msgstr "canal %d"
 
+#: luasrc/model/cbi/svd/channels.lua:40
 msgid "comfort noise generation only"
 msgstr "només generació de rumor confortable"
 
+#: luasrc/model/cbi/svd/channels.lua:62 luasrc/model/cbi/svd/channels.lua:69
 msgid "default 4"
 msgstr "per defecte 4"
 
+#: luasrc/model/cbi/svd/channels.lua:37 luasrc/model/cbi/svd/channels.lua:51
+#: luasrc/model/cbi/svd/channels.lua:78 luasrc/model/cbi/svd/accounts.lua:151
 msgid "disabled"
 msgstr "desactivat"
 
+#: luasrc/model/cbi/svd/channels.lua:39
 msgid "g711/comfort noise without spectral information"
 msgstr "g711/rumor confortable sense informació espectral"
 
+#: luasrc/view/svd_status.htm:19
 msgid "incoming"
 msgstr "entrant"
 
+#: luasrc/model/cbi/svd/main.lua:46
 msgid "last rtp port must be >= first rtp port"
 msgstr "El darrer port rtp ha de ser >= primer port rtp"
 
+#: luasrc/model/cbi/svd/dialplan.lua:15
 msgid "of the dialled number"
 msgstr "del numero marcat"
 
+#: luasrc/model/cbi/svd/channels.lua:38
 msgid "on/comfort noise and spectral information"
 msgstr "activat/rumor confortable i informació espectral"
 
+#: luasrc/view/svd_status.htm:21
 msgid "outgoing"
 msgstr "sortint"
 
+#: luasrc/model/cbi/svd/main.lua:9
+msgid "see here"
+msgstr "miri aquí"

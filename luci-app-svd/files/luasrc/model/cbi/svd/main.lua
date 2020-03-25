@@ -6,6 +6,8 @@ local leds = {}
 local fs   = require "nixio.fs"
 local util = require "nixio.util"
 
+local asturl = "<a href=\"https://github.com/asterisk/asterisk/blob/master/configs/samples/indications.conf.sample\" target=\"-blank\" >" .. translate("see here") .. "</a>."
+
 if fs.access(sysfs_path) then
   leds = util.consume((fs.dir(sysfs_path)))
 end
@@ -67,7 +69,19 @@ led.rmempty=true
 
 local_ip=s:option(Value,"local_ip",translate("Local ip address"), translate("If you have more than one network interface and the automatic selection doesn't work, you can specify here the address of the interface that should be used."))
 local_ip.optional=true
-local_ip.rmmempty=true
+local_ip.rmempty=true
 local_ip.datatype="ipaddr"
+
+dial_tone=s:option(Value,"dial_tone",translate("Custom dial tone"), translate("Definition of a custom dial tone in asterisk format, ") .. asturl)
+dial_tone.optional=true
+dial_tone.rmempty=true
+
+ring_tone=s:option(Value,"ring_tone",translate("Custom ring tone"), translate("Definition of a custom ring tone in asterisk format, ") .. asturl)
+ring_tone.optional=true
+ring_tone.rmempty=true
+
+busy_tone=s:option(Value,"busy_tone",translate("Custom busy tone"), translate("Definition of a custom busy tone in asterisk format, ") .. asturl)
+busy_tone.optional=true
+busy_tone.rmempty=true
 
 return m

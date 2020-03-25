@@ -10,6 +10,7 @@
 #include "svd_cfg.h"
 #include "svd_log.h"
 #include "svd_led.h"
+#include "svd_atab.h"
 
 #include <uci.h>
 #include <ucimap.h>
@@ -189,7 +190,7 @@ main_add(struct uci_map *map, void *section)
 	if (a->dial_tone)
 		g_conf.dial_tone = strdup(a->dial_tone);
 	if (a->ring_tone)
-		g_conf.dial_tone = strdup(a->ring_tone);
+		g_conf.ring_tone = strdup(a->ring_tone);
 	if (a->busy_tone)
 		g_conf.busy_tone = strdup(a->busy_tone);
 	return 0;
@@ -1160,6 +1161,28 @@ conf_show( void )
 	} else {
 		SU_DEBUG_3(("auto] : "));
 	}
+
+	SU_DEBUG_3(("dial_tone["));
+	if( g_conf.dial_tone ){
+		SU_DEBUG_3(("%s] : ", g_conf.dial_tone));
+	} else {
+		SU_DEBUG_3(("] : "));
+	}
+
+	SU_DEBUG_3(("ring_tone["));
+	if( g_conf.ring_tone ){
+		SU_DEBUG_3(("%s] : ", g_conf.ring_tone));
+	} else {
+		SU_DEBUG_3(("] : "));
+	}
+
+	SU_DEBUG_3(("busy_tone["));
+	if( g_conf.busy_tone ){
+		SU_DEBUG_3(("%s] : ", g_conf.busy_tone));
+	} else {
+		SU_DEBUG_3(("] : "));
+	}
+
 	SU_DEBUG_3((" led[%s] : ", g_conf.voip_led));
 	SU_DEBUG_3(("ports[%d:%d]\n",
 			g_conf.rtp_port_first,

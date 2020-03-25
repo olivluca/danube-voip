@@ -916,8 +916,8 @@ DFS
 			ab_FXS_set_tone(curr_chan, ab_chan_tone_DIAL, g_conf.dial_tone);
 		if (g_conf.busy_tone)
 			ab_FXS_set_tone(curr_chan, ab_chan_tone_BUSY, g_conf.busy_tone);
-		if (g_conf.ringing_tone)
-			ab_FXS_set_tone(curr_chan, ab_chan_tone_RINGBACK, g_conf.ringing_tone);
+		if (g_conf.ring_tone)
+			ab_FXS_set_tone(curr_chan, ab_chan_tone_RINGBACK, g_conf.ring_tone);
 
 	 	/* SDP */
 		chan_ctx->rtp_sfd = -1;

@@ -1,0 +1,6 @@
+#!/bin/bash
+
+pushd $( dirname "${BASH_SOURCE[0]}" )
+../../../luci/build/i18n-scan.pl luasrc > po/templates/svd.pot
+../../../luci/build/i18n-update.pl po
+popd

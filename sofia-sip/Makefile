@@ -9,7 +9,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sofia-sip
 PKG_VERSION:=1.12.11
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 PKG_SOURCE:=sofia-sip-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=@SF/$(PKG_NAME)

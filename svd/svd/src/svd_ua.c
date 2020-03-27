@@ -674,7 +674,6 @@ DFS
 	contact = strdup(sip->sip_request->rq_url->url_user);
 	if (equal = strrchr(contact, '='))
 		*equal=0;
-	SU_DEBUG_0(("INCOMING CALL TO  %s\n", contact));
 	for (i=0; i<su_vector_len(g_conf.sip_account); i++) {
 		sip_account_t * temp_account = su_vector_item(g_conf.sip_account, i);
 		if( !temp_account->enabled)
@@ -686,13 +685,7 @@ DFS
 			break;
 		}
 	}
-	
-	if (!sip_account) {
-		nua_respond(nh, SIP_500_INTERNAL_SERVER_ERROR, TAG_END());
-		nua_handle_destroy(nh);
-		goto __exit;
-	}
-	
+
 	if (pai) {
 	  SU_DEBUG_9(("Call with p-asserted-identity %s  %s:%s@%s\n",
 		      pai->paid_display, pai->paid_url->url_scheme, pai->paid_url->url_user,
@@ -710,7 +703,7 @@ DFS
 	  cid_display = (char *)from->a_display;
 	  cid_from = (url_t *)from->a_url;
 	}
-	     
+
 	/* use remote user as caller id, but check if it's numeric */
 	if (cid_from) {
 		cid = strdup(cid_from->url_user);
@@ -731,7 +724,7 @@ DFS
 		if (cl>0 && cname2[cl-1] == 34)
 			cname2[cl-1] = 0;
 	}
-	
+
 	if (!cname2 || cname2[0] == 0) {
 		if (cname)
 			free(cname);
@@ -739,20 +732,25 @@ DFS
 		asprintf(&cname,"%s@%s", cid_from->url_user, cid_from->url_host);
 		cname2 = cname;
 	}
-	
-	
+
 	/* same name as number, only send the number */
 	if (cid && cid[0] && cname2 && !strncmp(cname2, cid, strlen(cid)))
 		cname2 = NULL;
-	
+
 	/* without a number some phones won't ring, provide a dummy number */
 	if ((!cid || cid[0] == 0) && cname2 && cname2[0] != 0) {
 		if (cid) 
 		      free(cid);
 		cid = strdup("0");
 	}
-	
-	SU_DEBUG_9(("===========> Using cid %s, caller name %s\n",cid, cname2));
+	SU_DEBUG_0(("INCOMING CALL TO %s, caller id %s, caller name %s\n", contact, cid, cname2));
+
+	if (!sip_account) {
+		nua_respond(nh, SIP_500_INTERNAL_SERVER_ERROR, TAG_END());
+		nua_handle_destroy(nh);
+		goto __exit;
+	}
+
 	for (i=0; i<g_conf.channels; i++) {
 		chan = &svd->ab->chans[i];
 		chan_ctx = chan->ctx;
@@ -767,7 +765,7 @@ DFS
 		  found = 1;
 		}  
 	}
-	
+
 	/* no channel available */
 	if( !found) {
 		/* user is busy */

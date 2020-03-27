@@ -85,6 +85,18 @@ ab_FXS_line_just_play_it (ab_chan_t * const chan, enum ab_chan_tone_e const tone
 	return err;
 }/*}}}*/
 
+// utility function to safely copy a string into an IFX_TAPI_CID_MSG_ELEMENT_t
+static int cid_string(IFX_TAPI_CID_SERVICE_TYPE_t st, IFX_TAPI_CID_MSG_ELEMENT_t * message, int index, char * string)
+{
+	message[index].string.elementType = st;
+	message[index].string.len = strlen(string);
+	if (message[index].string.len > IFX_TAPI_CID_MSG_LEN_MAX)
+		message[index].string.len = IFX_TAPI_CID_MSG_LEN_MAX;
+	strncpy((char *)message[index].string.element, string, IFX_TAPI_CID_MSG_LEN_MAX);
+	message[index].string.element[IFX_TAPI_CID_MSG_LEN_MAX-1] = '\0';
+	return index+1;
+}
+
 /**
 	Ring or mute on given channel
 \param chan - channel to ring
@@ -105,27 +117,19 @@ ab_FXS_line_ring (ab_chan_t * const chan, enum ab_chan_ring_e ring, char * numbe
 			memset(&cidType1, 0, sizeof(cidType1));
 			memset(&message, 0, sizeof(message));
 			int i=0;
-			if (chan->cid_std!=cid_OFF && number!=NULL && number[0]!=0) {
-				message[i].string.elementType = IFX_TAPI_CID_ST_CLI;
-				message[i].string.len = strlen(number);
-				strncpy(message[i].string.element, number, sizeof(message[0].string.element));
-				i++;
-			}
-			if (chan->cid_std!=cid_OFF && name!=NULL && name[0]!=0) {
-				message[i].string.elementType = IFX_TAPI_CID_ST_NAME;
-				message[i].string.len = strlen(name);
-				strncpy(message[i].string.element, name, sizeof(message[0].string.element));
-				i++;
-			}
+			if (chan->cid_std!=cid_OFF && number!=NULL && number[0]!=0)
+				i=cid_string(IFX_TAPI_CID_ST_CLI, message, i, number);
+			if (chan->cid_std!=cid_OFF && name!=NULL && name[0]!=0)
+				i=cid_string(IFX_TAPI_CID_ST_NAME, message, i, name);
 			time_t timestamp;
 			struct tm *tm;
 			if ((time(&timestamp) != -1) && ((tm=localtime(&timestamp)) != NULL)) {
-                        	message[i].date.elementType = IFX_TAPI_CID_ST_DATE;
-                        	message[i].date.day = tm->tm_mday;
-                        	message[i].date.month = tm->tm_mon;
-                        	message[i].date.hour = tm->tm_hour;
-                        	message[i].date.mn = tm->tm_min;
-                        	i++;
+				message[i].date.elementType = IFX_TAPI_CID_ST_DATE;
+				message[i].date.day = tm->tm_mday;
+				message[i].date.month = tm->tm_mon + 1;
+				message[i].date.hour = tm->tm_hour;
+				message[i].date.mn = tm->tm_min;
+				i++;
 			}
 			if (i==0) {
 				/* neither caller id, name or date, normal ring */

@@ -105,15 +105,18 @@ msgstr "Dec db (per difetto 0)"
 
 #: luasrc/model/cbi/svd/main.lua:83
 msgid "Definition of a custom busy tone in asterisk format,"
-msgstr "Definizione di un segnale di occupato personalizzato in formato asterisk,"
+msgstr ""
+"Definizione di un segnale di occupato personalizzato in formato asterisk,"
 
 #: luasrc/model/cbi/svd/main.lua:75
 msgid "Definition of a custom dial tone in asterisk format,"
-msgstr "Definizione di un segnale di libero personalizzato in formato asterisk,"
+msgstr ""
+"Definizione di un segnale di libero personalizzato in formato asterisk,"
 
 #: luasrc/model/cbi/svd/main.lua:79
 msgid "Definition of a custom ring tone in asterisk format,"
-msgstr "Definizione di un segnale di chiamando personalizzato in formato asterisk,"
+msgstr ""
+"Definizione di un segnale di chiamando personalizzato in formato asterisk,"
 
 #: luasrc/controller/svd/svd.lua:13 luasrc/model/cbi/svd/dialplan.lua:4
 msgid "Dialplan"
@@ -219,6 +222,10 @@ msgstr ""
 "funzionasse, qui si può specificare l'indirizzo dell'interfaccia che si "
 "vuole usare."
 
+#: luasrc/model/cbi/svd/main.lua:87
+msgid "International prefix for caller id"
+msgstr "Prefisso internazionale per l'identificatore di chiamata"
+
 #: luasrc/view/svd_status.htm:81
 msgid "Last message"
 msgstr "Ultimo messaggio"
@@ -321,6 +328,10 @@ msgstr "Registratore"
 #: luasrc/model/cbi/svd/dialplan.lua:20
 msgid "Remove prefix"
 msgstr "Eliminare prefisso"
+
+#: luasrc/model/cbi/svd/main.lua:87
+msgid "Replace leading + in received caller id with this prefix"
+msgstr "Sostituisce il + nell'identificatore di chiamata ricevuto con questo prefisso"
 
 #: luasrc/model/cbi/svd/dialplan.lua:19
 msgid "Replace with"

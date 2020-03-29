@@ -2,7 +2,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"PO-Revision-Date: 2020-03-25 17:30+0100\n"
+"PO-Revision-Date: 2020-03-29 15:00+0200\n"
 "Last-Translator: Luca Olivetti <luca@ventoso.org>\n"
 "Language-Team: Spanish <>\n"
 "Language: es\n"
@@ -106,7 +106,8 @@ msgstr "Dec db (por defecto 0)"
 
 #: luasrc/model/cbi/svd/main.lua:83
 msgid "Definition of a custom busy tone in asterisk format,"
-msgstr "Definición de un todo de linea ocupada personalizado en formato asterisk,"
+msgstr ""
+"Definición de un todo de linea ocupada personalizado en formato asterisk,"
 
 #: luasrc/model/cbi/svd/main.lua:75
 msgid "Definition of a custom dial tone in asterisk format,"
@@ -218,6 +219,10 @@ msgstr ""
 "En caso de tener más de una interfaz de red y la detección automática no "
 "funcione, aquí se puede especificar la dirección ip de la interfaz a usar."
 
+#: luasrc/model/cbi/svd/main.lua:87
+msgid "International prefix for caller id"
+msgstr "Prefijo internacional para el identificador de llamada"
+
 #: luasrc/view/svd_status.htm:81
 msgid "Last message"
 msgstr "Ultimo mensaje"
@@ -321,6 +326,10 @@ msgstr "Registrador"
 #: luasrc/model/cbi/svd/dialplan.lua:20
 msgid "Remove prefix"
 msgstr "Quitar prefijo"
+
+#: luasrc/model/cbi/svd/main.lua:87
+msgid "Replace leading + in received caller id with this prefix"
+msgstr "Remplaza el + en el identificador de llamada recibido con este prefijo"
 
 #: luasrc/model/cbi/svd/dialplan.lua:19
 msgid "Replace with"

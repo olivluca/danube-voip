@@ -743,6 +743,14 @@ DFS
 		      free(cid);
 		cid = strdup("0");
 	}
+	if (cid  && cid[0]=='+' && g_conf.cid_intnl_prefix) {
+		int prefixlen = strlen(g_conf.cid_intnl_prefix);
+		char * ccid = (char *) malloc(strlen(cid)+prefixlen); //no need to add one for the termination since we're removin the +
+		strcpy(ccid,g_conf.cid_intnl_prefix);
+		strcpy(ccid+prefixlen, cid+1);
+		free(cid);
+		cid=ccid;
+	}
 	SU_DEBUG_0(("INCOMING CALL TO %s, caller id %s, caller name %s\n", contact, cid, cname2));
 
 	if (!sip_account) {

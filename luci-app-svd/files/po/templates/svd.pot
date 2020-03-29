@@ -199,6 +199,10 @@ msgid ""
 "be used."
 msgstr ""
 
+#: luasrc/model/cbi/svd/main.lua:87
+msgid "International prefix for caller id"
+msgstr ""
+
 #: luasrc/view/svd_status.htm:81
 msgid "Last message"
 msgstr ""
@@ -295,6 +299,10 @@ msgstr ""
 
 #: luasrc/model/cbi/svd/dialplan.lua:20
 msgid "Remove prefix"
+msgstr ""
+
+#: luasrc/model/cbi/svd/main.lua:87
+msgid "Replace leading + in received caller id with this prefix"
 msgstr ""
 
 #: luasrc/model/cbi/svd/dialplan.lua:19

@@ -162,6 +162,7 @@ struct uci_main {
 	char *dial_tone;
 	char *ring_tone;
 	char *busy_tone;
+	char *cid_intnl_prefix;
 };
 
 static int
@@ -193,6 +194,8 @@ main_add(struct uci_map *map, void *section)
 		g_conf.ring_tone = strdup(a->ring_tone);
 	if (a->busy_tone)
 		g_conf.busy_tone = strdup(a->busy_tone);
+	if (a->cid_intnl_prefix)
+		g_conf.cid_intnl_prefix = strdup(a->cid_intnl_prefix);
 	return 0;
 }
 
@@ -238,6 +241,10 @@ static struct uci_optmap main_uci_map[] =
 		UCIMAP_OPTION(struct uci_main, busy_tone),
 		.type = UCIMAP_STRING,
 		.name = "busy_tone",
+	},{
+		UCIMAP_OPTION(struct uci_main, cid_intnl_prefix),
+		.type = UCIMAP_STRING,
+		.name = "cid_intnl_prefix",
 	},
 };
 
@@ -1179,6 +1186,13 @@ conf_show( void )
 	SU_DEBUG_3(("busy_tone["));
 	if( g_conf.busy_tone ){
 		SU_DEBUG_3(("%s] : ", g_conf.busy_tone));
+	} else {
+		SU_DEBUG_3(("] : "));
+	}
+
+	SU_DEBUG_3(("cid_intnl_prefix["));
+	if( g_conf.cid_intnl_prefix ){
+		SU_DEBUG_3(("%s] : ", g_conf.cid_intnl_prefix));
 	} else {
 		SU_DEBUG_3(("] : "));
 	}

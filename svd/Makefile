@@ -1,8 +1,8 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=svd
-PKG_VERSION:=1.9
-PKG_RELEASE:=2
+PKG_VERSION:=1.10
+PKG_RELEASE:=1
 PKG_BUILD_DEPENDS:=libab
 
 PKG_FIXUP:=libtool

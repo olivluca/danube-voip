@@ -110,7 +110,8 @@ msgstr "Definició d'un to d'ocupat personalitzat en format asterisk,"
 
 #: luasrc/model/cbi/svd/main.lua:75
 msgid "Definition of a custom dial tone in asterisk format,"
-msgstr "Definició d'un to d'invitació a marcar personalitzat en format asterisk,"
+msgstr ""
+"Definició d'un to d'invitació a marcar personalitzat en format asterisk,"
 
 #: luasrc/model/cbi/svd/main.lua:79
 msgid "Definition of a custom ring tone in asterisk format,"
@@ -220,6 +221,10 @@ msgstr ""
 "funcioni, aquí és pot especificar la direcció de la interfície de xarxa a "
 "usar."
 
+#: luasrc/model/cbi/svd/main.lua:87
+msgid "International prefix for caller id"
+msgstr "Prefix internacional per a l'identificador de trucada"
+
 #: luasrc/view/svd_status.htm:81
 msgid "Last message"
 msgstr "Darrer missatge"
@@ -321,6 +326,10 @@ msgstr "Registrador"
 #: luasrc/model/cbi/svd/dialplan.lua:20
 msgid "Remove prefix"
 msgstr "Elimina prefixe"
+
+#: luasrc/model/cbi/svd/main.lua:87
+msgid "Replace leading + in received caller id with this prefix"
+msgstr "Reemplaça el + a l'identificador de trucada rebut amb aquest prefix"
 
 #: luasrc/model/cbi/svd/dialplan.lua:19
 msgid "Replace with"

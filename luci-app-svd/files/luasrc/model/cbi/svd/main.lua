@@ -84,4 +84,8 @@ busy_tone=s:option(Value,"busy_tone",translate("Custom busy tone"), translate("D
 busy_tone.optional=true
 busy_tone.rmempty=true
 
+cid_intnl_prefix=s:option(Value,"cid_intnl_prefix",translate("International prefix for caller id"), translate("Replace leading + in received caller id with this prefix"))
+cid_intnl_prefix=true
+cid_intnl_prefix=true
+
 return m

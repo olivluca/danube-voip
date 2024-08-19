@@ -28,8 +28,12 @@
 /** Name of the daemon (using in logs).*/
 #define DAEMON_NAME "svd"
 
+//globals
 unsigned int g_f_cnt= 0;
 unsigned int g_f_offset = 0;
+_startup_options g_so;
+svd_conf_s g_conf;
+
 
 /** Switch to daemon mode.*/
 static int 	svd_daemonize(void);

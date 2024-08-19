@@ -39,12 +39,13 @@ COMMAND LINE KEYS:
   -V, --version		show version and exit
 */
 
-/** Sturtup keys set. */
-struct _startup_options {
+/** Startup keys set. */
+typedef struct _startup_options {
 	unsigned char help; /**< Show help and exit. */
 	unsigned char version; /**< Show version and exit. */
 	char debug_level; /**< Logging level in debug mode. */
-} g_so;
+} _startup_options;
+extern _startup_options g_so;
 
 /** Getting parameters from startup keys. */
 int  startup_init( int argc, char ** argv );
@@ -128,7 +129,7 @@ struct fax_s {
 };
 
 /** Routine main configuration struct.*/
-struct svd_conf_s {/*{{{*/
+typedef struct {/*{{{*/
 	int channels; /**<Number of configured channels (from svd_chans_init). */
 	char * local_ip; /**< local ip for the nua stack or NULL.*/
 	char log_level; /**< If log_level = -1 - do not log anything.*/
@@ -149,7 +150,9 @@ struct svd_conf_s {/*{{{*/
 	char * ring_tone; /* Custom ringing tone (asterisk style string). */
 	char * busy_tone; /* Custom busy tone (asterisk style string). */
 	char * cid_intnl_prefix; /* Replace + with this string in caller id */
-} g_conf;/*}}}*/
+}  svd_conf_s;
+extern svd_conf_s g_conf;/*}}}*/
+
 
 /** @} */
 

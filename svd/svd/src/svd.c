@@ -29,7 +29,6 @@
 #define DAEMON_NAME "svd"
 
 //globals
-unsigned int g_f_cnt= 0;
 unsigned int g_f_offset = 0;
 _startup_options g_so;
 svd_conf_s g_conf;
@@ -372,14 +371,19 @@ DFE
 static void
 svd_logger(void *logarg, char const *format, va_list ap)
 {/*{{{*/
+  int i;
 	if( (int)logarg == -1){
 		/* do not log anything */
 		return;
 	} else if ( (int)logarg ) {
 		/* debug is on - log to stderr */
+		for (i=0; i<g_f_offset; i++)
+		  fprintf(stderr,"  ");
 		vfprintf(stderr, format, ap);
 	} else {
 		/* debug is off - standart log */
+		for (i=0; i<g_f_offset; i++)
+		  syslog(LOG_INFO, "  ");
 		vsyslog (LOG_INFO, format, ap);
 	}
 }/*}}}*/

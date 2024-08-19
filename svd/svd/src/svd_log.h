@@ -38,9 +38,7 @@
 /** Function start marker.*/
 #define DFS												\
 	do {												\
-		for(g_f_cnt=0; g_f_cnt<g_f_offset; g_f_cnt++)	\
-			SU_DEBUG_9(("  " VA_NONE));							\
-		SU_DEBUG_9(("vvvv %s() vvvv\n", __func__));		\
+		SU_DEBUG_9(("vvvvvvvv\n" VA_NONE));		\
 		g_f_offset++; 									\
 	}while(0);
 
@@ -48,13 +46,9 @@
 #define DFE												\
 	do {												\
 		g_f_offset--; 									\
-		for(g_f_cnt=0; g_f_cnt<g_f_offset; g_f_cnt++)	\
-			SU_DEBUG_9(("  " VA_NONE));							\
-		SU_DEBUG_9(("^^^^ %s() ^^^^\n", __func__));		\
+		SU_DEBUG_9(("^^^^^^^^\n" VA_NONE));		\
 	}while(0);
 
-/** Function start/end offset counter.*/
-extern unsigned int g_f_cnt;
 /** Function start/end offset current value.*/
 extern unsigned int g_f_offset;
 /** @}*/

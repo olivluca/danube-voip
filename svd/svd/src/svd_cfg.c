@@ -1153,56 +1153,55 @@ conf_show( void )
 	int j;
 
 	SU_DEBUG_3(("=========================\n" VA_NONE));
-	SU_DEBUG_3(("channels %d : ", g_conf.channels));
-	SU_DEBUG_3(("log[" VA_NONE));
+	SU_DEBUG_3(("channels %d\n", g_conf.channels));
 
 	if( g_conf.log_level == -1 ){
-		SU_DEBUG_3(("no] : " VA_NONE));
+		SU_DEBUG_3(("log[no]\n" VA_NONE));
 	} else {
-		SU_DEBUG_3(("%d] : ", g_conf.log_level));
+		SU_DEBUG_3(("log[%d]\n", g_conf.log_level));
 	}
-	SU_DEBUG_3(("local_ip[" VA_NONE));
 
 	if( g_conf.local_ip ){
-		SU_DEBUG_3(("%s] : ", g_conf.local_ip));
+		SU_DEBUG_3(("local_ip[%s]\n", g_conf.local_ip));
 	} else {
-		SU_DEBUG_3(("auto] : " VA_NONE));
+		SU_DEBUG_3(("local_ip[auto]\n" VA_NONE));
 	}
 
-	SU_DEBUG_3(("dial_tone[" VA_NONE));
 	if( g_conf.dial_tone ){
-		SU_DEBUG_3(("%s] : ", g_conf.dial_tone));
+		SU_DEBUG_3(("dial_tone[%s]\n", g_conf.dial_tone));
 	} else {
-		SU_DEBUG_3(("] : " VA_NONE));
+		SU_DEBUG_3(("dial_tone[]\n" VA_NONE));
 	}
 
-	SU_DEBUG_3(("ring_tone[" VA_NONE));
 	if( g_conf.ring_tone ){
-		SU_DEBUG_3(("%s] : ", g_conf.ring_tone));
+		SU_DEBUG_3(("ring_tone[%s]\n", g_conf.ring_tone));
 	} else {
-		SU_DEBUG_3(("] : " VA_NONE));
+		SU_DEBUG_3(("ring_tone[]\n" VA_NONE));
 	}
 
-	SU_DEBUG_3(("busy_tone[" VA_NONE));
 	if( g_conf.busy_tone ){
-		SU_DEBUG_3(("%s] : ", g_conf.busy_tone));
+		SU_DEBUG_3(("busy_tone[%s]\n", g_conf.busy_tone));
 	} else {
-		SU_DEBUG_3(("] : " VA_NONE));
+		SU_DEBUG_3(("busy_tone[]\n" VA_NONE));
 	}
 
-	SU_DEBUG_3(("cid_intnl_prefix[" VA_NONE));
 	if( g_conf.cid_intnl_prefix ){
-		SU_DEBUG_3(("%s] : ", g_conf.cid_intnl_prefix));
+		SU_DEBUG_3(("cid_intnl_prefix[%s]\n", g_conf.cid_intnl_prefix));
 	} else {
-		SU_DEBUG_3(("] : " VA_NONE));
+		SU_DEBUG_3(("cid_intnl_prefix[]\n" VA_NONE));
 	}
 
-	SU_DEBUG_3((" led[%s] : ", g_conf.voip_led));
+	SU_DEBUG_3(("led[%s]\n", g_conf.voip_led));
 	SU_DEBUG_3(("ports[%ld:%ld]\n",
 			g_conf.rtp_port_first,
 			g_conf.rtp_port_last));
 
+        SU_DEBUG_3(("===== CODECS =====\n" VA_NONE));
+ ///////// the program crashes with BUS ERROR depending on the fprintf, 
+ ///////// even if they don't change anything. I suspect it's an alignment problem.
+ //fprintf(stderr,"______ before codecs MAS_SIZE %d pointer %p\n",COD_MAS_SIZE,&g_conf.codecs[1]);
 	for (i=i; i<COD_MAS_SIZE; i++) if (g_conf.codecs[i].type!=cod_type_NONE) {
+ //fprintf(stderr,"______ codec %d\n",i);
 		SU_DEBUG_3(("t:%s/bp%d/sz%d/pt:0x%X__[%d:%d]::[%d:%d:%d:%d]\n",
 				g_conf.cp[g_conf.codecs[i].type-CODEC_BASE].sdp_name,
 				g_conf.codecs[i].bpack,
@@ -1217,31 +1216,24 @@ conf_show( void )
 				));
 	}
 
+// fprintf(stderr,"______ before g_conf.sip_account\n");
+        SU_DEBUG_3(("===== ACCOUNTS =====\n" VA_NONE));
 	if (g_conf.sip_account)
 	for (i=0; i<su_vector_len(g_conf.sip_account); i++) {
 		curr_sip_rec = su_vector_item(g_conf.sip_account, i);  
 		SU_DEBUG_3(("SIP net %d : %s, enabled: %d\n", i, curr_sip_rec->name, curr_sip_rec->enabled));
-		SU_DEBUG_3((	"\tCodecs:\t" VA_NONE));
+		SU_DEBUG_3((	"\tCodecs:\t\n" VA_NONE));
 		for (j=0; curr_sip_rec->codecs[j] != cod_type_NONE; j++){
-		      SU_DEBUG_3(("%s ",
+		      SU_DEBUG_3(("\t%s\n ",
 				g_conf.cp[curr_sip_rec->codecs[j]-CODEC_BASE].sdp_name
 				));
 		}
-		SU_DEBUG_3(("\n" VA_NONE));
-		SU_DEBUG_3((	"\tRegistrar     : '%s'\n"
-				"\tOutbound proxy: '%s'\n"
-				"\tUser agent    : '%s'\n"
-				"\tUser/Pass     : '%s/%s'\n"
-				"\tUser_URI      : '%s'\n"
-				"\tDisplay name  : '%s'\n",
-				curr_sip_rec->registrar,
-				curr_sip_rec->outbound_proxy ? curr_sip_rec->outbound_proxy : "(none)",
-				curr_sip_rec->user_agent ? curr_sip_rec->user_agent : "(default)",
-				curr_sip_rec->user_name,
-				curr_sip_rec->user_pass,
-				curr_sip_rec->user_URI,
-				curr_sip_rec->display ? curr_sip_rec->display : "(none)"));
-				
+		SU_DEBUG_3((	"\tRegistrar     : '%s'\n", curr_sip_rec->registrar));
+		SU_DEBUG_3((	"\tOutbound proxy: '%s'\n", curr_sip_rec->outbound_proxy ? curr_sip_rec->outbound_proxy : "(none)"));
+		SU_DEBUG_3((	"\tUser agent    : '%s'\n", curr_sip_rec->user_agent ? curr_sip_rec->user_agent : "(default)"));
+		SU_DEBUG_3((	"\tUser/Pass     : '%s/%s'\n", 	curr_sip_rec->user_name, curr_sip_rec->user_pass));
+		SU_DEBUG_3((	"\tUser_URI      : '%s'\n", curr_sip_rec->user_URI));
+		SU_DEBUG_3((	"\tDisplay name  : '%s'\n",curr_sip_rec->display ? curr_sip_rec->display : "(none)"));
 		SU_DEBUG_3((	"\tRing incoming:\n" VA_NONE));
 		for (j=0; j<g_conf.channels; j++){
 		      SU_DEBUG_3(("\t\tchannel %d:%d\n",
@@ -1258,6 +1250,7 @@ conf_show( void )
 		}
 		SU_DEBUG_3((	"\tDtmf mode: %s\n", dtmf_name[curr_sip_rec->dtmf]));
 	}	
+ //fprintf(stderr,"______ after g_conf.sip_account\n");
 
 	/* rtp audio and wlec parameters */
 	for (i=0; i<g_conf.channels; i++) {
@@ -1267,6 +1260,7 @@ conf_show( void )
 			    i, g_conf.chan_led[i], c->enc_dB, c->dec_dB, c->VAD_cfg, c->HPF_is_ON,
 			    w->mode, w->nlp, w->ne_nb, w->fe_nb));
 	}
+ //fprintf(stderr,"______ after g_conf.channels\n");
 
 	if(g_conf.dial_plan){
 		SU_DEBUG_3(("Dial plan :\n" VA_NONE));
@@ -1279,6 +1273,7 @@ conf_show( void )
 		}
 	}
 
+// fprintf(stderr,"______ end\n");
 	SU_DEBUG_3(("=========================\n" VA_NONE));
 }/*}}}*/
 
@@ -1331,6 +1326,7 @@ codec_defaults( void )
 	/* Init names and basic parameters */
 	/* G722_64 parameters. */
 	i=cod_type_G722_64-CODEC_BASE;
+	fprintf(stderr,"codec G722 index %d\n",i);
 	g_conf.cp[i].type = cod_type_G722_64;
 	g_conf.cp[i].sdp_name=strdup("G722");
 	g_conf.cp[i].fmtp_str=empty;
@@ -1338,6 +1334,7 @@ codec_defaults( void )
 	
 	/* G711 ALAW parameters. */
 	i=cod_type_ALAW-CODEC_BASE;
+	fprintf(stderr,"codec PCMA index %d\n",i);
 	g_conf.cp[i].type = cod_type_ALAW;
 	g_conf.cp[i].sdp_name=strdup("PCMA");
 	g_conf.cp[i].fmtp_str=empty;
@@ -1345,6 +1342,7 @@ codec_defaults( void )
 
 	/* G729 parameters. */
 	i=cod_type_G729-CODEC_BASE;
+	fprintf(stderr,"codec G729 index %d\n",i);
 	g_conf.cp[i].type = cod_type_G729;
 	g_conf.cp[i].sdp_name=strdup("G729");
 	g_conf.cp[i].fmtp_str=empty;
@@ -1352,6 +1350,7 @@ codec_defaults( void )
 
 	/* G729E parameters. */
 	i=cod_type_G729E-CODEC_BASE;
+	fprintf(stderr,"codec G729E index %d\n",i);
 	g_conf.cp[i].type = cod_type_G729E;
 	g_conf.cp[i].sdp_name=strdup("G729E");
 	g_conf.cp[i].fmtp_str=empty;
@@ -1359,6 +1358,7 @@ codec_defaults( void )
 
 	/* G723 parameters. */
 	i=cod_type_G723-CODEC_BASE;
+	fprintf(stderr,"codec G723 index %d\n",i);
 	g_conf.cp[i].type = cod_type_G723;
 	g_conf.cp[i].sdp_name=strdup("G723");
 	g_conf.cp[i].fmtp_str=empty;
@@ -1366,6 +1366,7 @@ codec_defaults( void )
 
 	/* iLBC_133 parameters. */
 	i=cod_type_ILBC_133-CODEC_BASE;
+	fprintf(stderr,"codec ILBD_133 index %d\n",i);
 	g_conf.cp[i].type = cod_type_ILBC_133;
 	g_conf.cp[i].sdp_name=strdup("iLBC");
 	g_conf.cp[i].fmtp_str=strdup("mode=30");
@@ -1385,6 +1386,7 @@ codec_defaults( void )
 
 	/* G726_16 parameters. */
 	i=cod_type_G726_16-CODEC_BASE;
+	fprintf(stderr,"codec G726_16 index %d\n",i);
 	g_conf.cp[i].type = cod_type_G726_16;
 	g_conf.cp[i].sdp_name=strdup("G726-16");
 	g_conf.cp[i].fmtp_str=empty;
@@ -1392,6 +1394,7 @@ codec_defaults( void )
 
 	/* G726_ parameters. */
 	i=cod_type_G726_24-CODEC_BASE;
+	fprintf(stderr,"codec G726_24 index %d\n",i);
 	g_conf.cp[i].type = cod_type_G726_24;
 	g_conf.cp[i].sdp_name=strdup("G726-24");
 	g_conf.cp[i].fmtp_str=empty;
@@ -1399,6 +1402,7 @@ codec_defaults( void )
 
 	/* G726_ parameters. */
 	i=cod_type_G726_32-CODEC_BASE;
+	fprintf(stderr,"codec G726_32 index %d\n",i);
 	g_conf.cp[i].type = cod_type_G726_32;
 	g_conf.cp[i].sdp_name=strdup("G726-32");
 	g_conf.cp[i].fmtp_str=empty;
@@ -1406,6 +1410,7 @@ codec_defaults( void )
 
 	/* G726_ parameters. */
 	i=cod_type_G726_40-CODEC_BASE;
+	fprintf(stderr,"codec G726_40 index %d\n",i);
 	g_conf.cp[i].type = cod_type_G726_40;
 	g_conf.cp[i].sdp_name=strdup("G726-40");
 	g_conf.cp[i].fmtp_str=empty;
@@ -1413,6 +1418,7 @@ codec_defaults( void )
 	
 	/* telephone event parameters. */
 	i=TELEPHONE_EVENT_CODEC-CODEC_BASE;
+	fprintf(stderr,"codec TELEPHONE_EVENT index %d\n",i);
 	g_conf.cp[i].type = TELEPHONE_EVENT_CODEC;
 	g_conf.cp[i].sdp_name=strdup("telephone-event");
 	g_conf.cp[i].fmtp_str=strdup("0-16");
@@ -1425,6 +1431,7 @@ codec_defaults( void )
 	}
 
 	/* Default values for the codecs */
+	fprintf(stderr,"G722_64 %d\n",cod_type_G722_64);
 	g_conf.codecs[cod_type_G722_64].type=cod_type_G722_64;
 	g_conf.codecs[cod_type_G722_64].pkt_size=cod_pkt_size_20;
 	g_conf.codecs[cod_type_G722_64].bpack=bitpack_RTP;
@@ -1436,6 +1443,7 @@ codec_defaults( void )
 	g_conf.codecs[cod_type_G722_64].jb.jb_min_sz=10*8;
 	g_conf.codecs[cod_type_G722_64].jb.jb_max_sz=200*8;
 	
+	fprintf(stderr,"ALAW %d\n",cod_type_ALAW);
 	g_conf.codecs[cod_type_ALAW].type=cod_type_ALAW;
 	g_conf.codecs[cod_type_ALAW].pkt_size=cod_pkt_size_20;
 	g_conf.codecs[cod_type_ALAW].bpack=bitpack_RTP;
@@ -1447,6 +1455,7 @@ codec_defaults( void )
 	g_conf.codecs[cod_type_ALAW].jb.jb_min_sz=10*8;
 	g_conf.codecs[cod_type_ALAW].jb.jb_max_sz=200*8;
 	
+	fprintf(stderr,"G729 %d\n",cod_type_G729);
 	g_conf.codecs[cod_type_G729].type=cod_type_G729;
 	g_conf.codecs[cod_type_G729].pkt_size=cod_pkt_size_10;
 	g_conf.codecs[cod_type_G729].bpack=bitpack_RTP;
@@ -1458,6 +1467,7 @@ codec_defaults( void )
 	g_conf.codecs[cod_type_G729].jb.jb_min_sz=10*8;
 	g_conf.codecs[cod_type_G729].jb.jb_max_sz=200*8;
 	
+	fprintf(stderr,"G729E %d\n",cod_type_G729E);
 	g_conf.codecs[cod_type_G729E].type=cod_type_G729E;
 	g_conf.codecs[cod_type_G729E].pkt_size=cod_pkt_size_10;
 	g_conf.codecs[cod_type_G729E].bpack=bitpack_RTP;
@@ -1469,6 +1479,7 @@ codec_defaults( void )
 	g_conf.codecs[cod_type_G729E].jb.jb_min_sz=10*8;
 	g_conf.codecs[cod_type_G729E].jb.jb_max_sz=200*8;
 	
+	fprintf(stderr,"ILBC_133 %d\n",cod_type_ILBC_133);
 	g_conf.codecs[cod_type_ILBC_133].type=cod_type_ILBC_133;
 	g_conf.codecs[cod_type_ILBC_133].pkt_size=cod_pkt_size_30;
 	g_conf.codecs[cod_type_ILBC_133].bpack=bitpack_RTP;
@@ -1480,6 +1491,7 @@ codec_defaults( void )
 	g_conf.codecs[cod_type_ILBC_133].jb.jb_min_sz=10*8;
 	g_conf.codecs[cod_type_ILBC_133].jb.jb_max_sz=200*8;
 	
+	fprintf(stderr,"G723 %d\n",cod_type_G723);
 	g_conf.codecs[cod_type_G723].type=cod_type_G723;
 	g_conf.codecs[cod_type_G723].pkt_size=cod_pkt_size_30;
 	g_conf.codecs[cod_type_G723].bpack=bitpack_RTP;
@@ -1491,6 +1503,7 @@ codec_defaults( void )
 	g_conf.codecs[cod_type_G723].jb.jb_min_sz=10*8;
 	g_conf.codecs[cod_type_G723].jb.jb_max_sz=200*8;
 	
+	fprintf(stderr,"G726_16 %d\n",cod_type_G726_16);
 	g_conf.codecs[cod_type_G726_16].type=cod_type_G726_16;
 	g_conf.codecs[cod_type_G726_16].pkt_size=cod_pkt_size_10;
 	g_conf.codecs[cod_type_G726_16].bpack=bitpack_AAL2;
@@ -1502,6 +1515,7 @@ codec_defaults( void )
 	g_conf.codecs[cod_type_G726_16].jb.jb_min_sz=10*8;
 	g_conf.codecs[cod_type_G726_16].jb.jb_max_sz=200*8;
 
+	fprintf(stderr,"G726_24 %d\n",cod_type_G726_24);
 	g_conf.codecs[cod_type_G726_24].type=cod_type_G726_24;
 	g_conf.codecs[cod_type_G726_24].pkt_size=cod_pkt_size_10;
 	g_conf.codecs[cod_type_G726_24].bpack=bitpack_AAL2;
@@ -1513,6 +1527,7 @@ codec_defaults( void )
 	g_conf.codecs[cod_type_G726_24].jb.jb_min_sz=10*8;
 	g_conf.codecs[cod_type_G726_24].jb.jb_max_sz=200*8;
 
+	fprintf(stderr,"G726_32 %d\n",cod_type_G726_24);
 	g_conf.codecs[cod_type_G726_32].type=cod_type_G726_32;
 	g_conf.codecs[cod_type_G726_32].pkt_size=cod_pkt_size_10;
 	g_conf.codecs[cod_type_G726_32].bpack=bitpack_AAL2;
@@ -1524,6 +1539,7 @@ codec_defaults( void )
 	g_conf.codecs[cod_type_G726_32].jb.jb_min_sz=10*8;
 	g_conf.codecs[cod_type_G726_32].jb.jb_max_sz=200*8;
 
+	fprintf(stderr,"G726_40 %d\n",cod_type_G726_40);
 	g_conf.codecs[cod_type_G726_40].type=cod_type_G726_40;
 	g_conf.codecs[cod_type_G726_40].pkt_size=cod_pkt_size_10;
 	g_conf.codecs[cod_type_G726_40].bpack=bitpack_AAL2;
@@ -1535,6 +1551,7 @@ codec_defaults( void )
 	g_conf.codecs[cod_type_G726_40].jb.jb_min_sz=10*8;
 	g_conf.codecs[cod_type_G726_40].jb.jb_max_sz=200*8;
 	
+	fprintf(stderr,"TELEPHONE_EVENT %d\n",TELEPHONE_EVENT_CODEC);
 	g_conf.codecs[TELEPHONE_EVENT_CODEC].type=TELEPHONE_EVENT_CODEC;
 	g_conf.codecs[TELEPHONE_EVENT_CODEC].user_payload=106;
 	

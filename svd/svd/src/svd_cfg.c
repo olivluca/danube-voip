@@ -314,11 +314,11 @@ account_add(struct uci_map *map, void *section)
 	    ){
 		SU_DEBUG_0(("settings for account %s incomplete:\n",a->name));
 		if (!a->user)
-			SU_DEBUG_0(("\t missing user"));
+			SU_DEBUG_0(("\t missing user" VA_NONE));
 		if (!a->domain)
-			SU_DEBUG_0(("\t missing domain"));
+			SU_DEBUG_0(("\t missing domain" VA_NONE));
 		if (!a->password)
-			SU_DEBUG_0(("\t missing password"));
+			SU_DEBUG_0(("\t missing password" VA_NONE));
 		goto __exit_fail;
 	}
 	 
@@ -508,12 +508,12 @@ dialplan_add(struct uci_map *map, void *section)
 	int i;
 	
 	if (!a->prefix || strlen(a->prefix) == 0) { 
-		SU_DEBUG_0(("dialplan: missing prefix\n"));
+		SU_DEBUG_0(("dialplan: missing prefix\n" VA_NONE));
 		goto __exit_fail;
 	}
 	
 	if (!a->account) { 
-		SU_DEBUG_0(("dialplan: missing account\n"));
+		SU_DEBUG_0(("dialplan: missing account\n" VA_NONE));
 		goto __exit_fail;
 	}
 	
@@ -1122,15 +1122,15 @@ svd_conf_init( ab_t const * const ab, su_home_t * home )
 	}
 	
 	if (!g_conf.rtp_port_first)
-		SU_DEBUG_0(("Missing/invalid \"option rtp_port_first\" in \"config main\"\n"));
+		SU_DEBUG_0(("Missing/invalid \"option rtp_port_first\" in \"config main\"\n" VA_NONE));
 	if (!g_conf.rtp_port_last)
-		SU_DEBUG_0(("Missing/invalid \"option rtp_port_last\" in \"config main\"\n"));
+		SU_DEBUG_0(("Missing/invalid \"option rtp_port_last\" in \"config main\"\n" VA_NONE));
 	if (!g_conf.sip_tos)
-		SU_DEBUG_0(("Missing/invalid \"option sip_tos\" in \"config main\"\n"));
+		SU_DEBUG_0(("Missing/invalid \"option sip_tos\" in \"config main\"\n" VA_NONE));
 	if (!g_conf.rtp_tos)
-		SU_DEBUG_0(("Missing/invalid \"option rtp_tos\" in \"config main\"\n"));
+		SU_DEBUG_0(("Missing/invalid \"option rtp_tos\" in \"config main\"\n" VA_NONE));
 	if (!at_least_one_account)
-		SU_DEBUG_0(("No accounts defined/enabled\n"));
+		SU_DEBUG_0(("No accounts defined/enabled\n" VA_NONE));
 
 __exit:
 	conf_show();
@@ -1152,49 +1152,49 @@ conf_show( void )
 	int i;
 	int j;
 
-	SU_DEBUG_3(("=========================\n"));
+	SU_DEBUG_3(("=========================\n" VA_NONE));
 	SU_DEBUG_3(("channels %d : ", g_conf.channels));
-	SU_DEBUG_3(("log["));
+	SU_DEBUG_3(("log[" VA_NONE));
 
 	if( g_conf.log_level == -1 ){
-		SU_DEBUG_3(("no] : "));
+		SU_DEBUG_3(("no] : " VA_NONE));
 	} else {
 		SU_DEBUG_3(("%d] : ", g_conf.log_level));
 	}
-	SU_DEBUG_3(("local_ip["));
+	SU_DEBUG_3(("local_ip[" VA_NONE));
 
 	if( g_conf.local_ip ){
 		SU_DEBUG_3(("%s] : ", g_conf.local_ip));
 	} else {
-		SU_DEBUG_3(("auto] : "));
+		SU_DEBUG_3(("auto] : " VA_NONE));
 	}
 
-	SU_DEBUG_3(("dial_tone["));
+	SU_DEBUG_3(("dial_tone[" VA_NONE));
 	if( g_conf.dial_tone ){
 		SU_DEBUG_3(("%s] : ", g_conf.dial_tone));
 	} else {
-		SU_DEBUG_3(("] : "));
+		SU_DEBUG_3(("] : " VA_NONE));
 	}
 
-	SU_DEBUG_3(("ring_tone["));
+	SU_DEBUG_3(("ring_tone[" VA_NONE));
 	if( g_conf.ring_tone ){
 		SU_DEBUG_3(("%s] : ", g_conf.ring_tone));
 	} else {
-		SU_DEBUG_3(("] : "));
+		SU_DEBUG_3(("] : " VA_NONE));
 	}
 
-	SU_DEBUG_3(("busy_tone["));
+	SU_DEBUG_3(("busy_tone[" VA_NONE));
 	if( g_conf.busy_tone ){
 		SU_DEBUG_3(("%s] : ", g_conf.busy_tone));
 	} else {
-		SU_DEBUG_3(("] : "));
+		SU_DEBUG_3(("] : " VA_NONE));
 	}
 
-	SU_DEBUG_3(("cid_intnl_prefix["));
+	SU_DEBUG_3(("cid_intnl_prefix[" VA_NONE));
 	if( g_conf.cid_intnl_prefix ){
 		SU_DEBUG_3(("%s] : ", g_conf.cid_intnl_prefix));
 	} else {
-		SU_DEBUG_3(("] : "));
+		SU_DEBUG_3(("] : " VA_NONE));
 	}
 
 	SU_DEBUG_3((" led[%s] : ", g_conf.voip_led));
@@ -1221,13 +1221,13 @@ conf_show( void )
 	for (i=0; i<su_vector_len(g_conf.sip_account); i++) {
 		curr_sip_rec = su_vector_item(g_conf.sip_account, i);  
 		SU_DEBUG_3(("SIP net %d : %s, enabled: %d\n", i, curr_sip_rec->name, curr_sip_rec->enabled));
-		SU_DEBUG_3((	"\tCodecs:\t"));
+		SU_DEBUG_3((	"\tCodecs:\t" VA_NONE));
 		for (j=0; curr_sip_rec->codecs[j] != cod_type_NONE; j++){
 		      SU_DEBUG_3(("%s ",
 				g_conf.cp[curr_sip_rec->codecs[j]-CODEC_BASE].sdp_name
 				));
 		}
-		SU_DEBUG_3(("\n"));
+		SU_DEBUG_3(("\n" VA_NONE));
 		SU_DEBUG_3((	"\tRegistrar     : '%s'\n"
 				"\tOutbound proxy: '%s'\n"
 				"\tUser agent    : '%s'\n"
@@ -1242,14 +1242,14 @@ conf_show( void )
 				curr_sip_rec->user_URI,
 				curr_sip_rec->display ? curr_sip_rec->display : "(none)"));
 				
-		SU_DEBUG_3((	"\tRing incoming:\n"));
+		SU_DEBUG_3((	"\tRing incoming:\n" VA_NONE));
 		for (j=0; j<g_conf.channels; j++){
 		      SU_DEBUG_3(("\t\tchannel %d:%d\n",
 				j,  
 				curr_sip_rec->ring_incoming[j]
 				));
 		}
-		SU_DEBUG_3((	"\tOutgoing priority:\n"));
+		SU_DEBUG_3((	"\tOutgoing priority:\n" VA_NONE));
 		for (j=0; j<g_conf.channels; j++){
 		      SU_DEBUG_3(("\t\tchannel %d:%d\n",
 				j,  
@@ -1269,7 +1269,7 @@ conf_show( void )
 	}
 
 	if(g_conf.dial_plan){
-		SU_DEBUG_3(("Dial plan :\n"));
+		SU_DEBUG_3(("Dial plan :\n" VA_NONE));
 	
 		j = su_vector_len(g_conf.dial_plan);
 		for(i = 0; i < j; i++){
@@ -1279,7 +1279,7 @@ conf_show( void )
 		}
 	}
 
-	SU_DEBUG_3(("=========================\n"));
+	SU_DEBUG_3(("=========================\n" VA_NONE));
 }/*}}}*/
 
 /**

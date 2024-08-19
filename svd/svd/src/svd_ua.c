@@ -130,9 +130,9 @@ svd_nua_callback (nua_event_t event, int status, char const * phrase,
 DFS
 	SU_DEBUG_3(("Event : %s\n",nua_event_name(event)));
 	if(sip){
-		SU_DEBUG_3(("---[ SIP ]---\n"));
+		SU_DEBUG_3(("---[ SIP ]---\n" VA_NONE));
 		sl_sip_log(NULL, 3, "", sip, 1);
-		SU_DEBUG_3(("---[ === ]---\n"));
+		SU_DEBUG_3(("---[ === ]---\n" VA_NONE));
 	}
 	switch (event) {
 
@@ -466,11 +466,11 @@ svd_bye (svd_t * const svd, ab_chan_t * const chan)
 {/*{{{*/
 DFS
 	if (!chan) {
-		SU_DEBUG_0(("svd_bye called without chan!\n"));
+		SU_DEBUG_0(("svd_bye called without chan!\n" VA_NONE));
 		goto __exit;
 	}
 	if (!chan->ctx) {
-		SU_DEBUG_0(("svd_bye called without chan->ctx!\n"));
+		SU_DEBUG_0(("svd_bye called without chan->ctx!\n" VA_NONE));
 		goto __exit;
 	}
 
@@ -699,7 +699,7 @@ DFS
 	  cid_display = (char *)rpi->rpid_display;
 	  cid_from = rpi->rpid_url;
 	} else {
-	  SU_DEBUG_9(("Using from for the caller id\n"));
+	  SU_DEBUG_9(("Using from for the caller id\n" VA_NONE));
 	  cid_display = (char *)from->a_display;
 	  cid_from = (url_t *)from->a_url;
 	}
@@ -802,7 +802,7 @@ svd_i_cancel (svd_t * const svd, nua_handle_t const * const nh)
 	svd_chan_t * chan_ctx;
 	
 DFS
-	SU_DEBUG_3 (("CANCEL received\n"));
+	SU_DEBUG_3 (("CANCEL received\n" VA_NONE));
 	/* Stop ringing all channels tied to this account */
 	for (i=0; i<g_conf.channels; i++) {
 		chan = &svd->ab->chans[i];
@@ -861,7 +861,7 @@ DFS
 
 	/* no event handle, ignore */
 	if (!nh) {
-		SU_DEBUG_4(("CALLSTATE without event handle, ignoring\n"));
+		SU_DEBUG_4(("CALLSTATE without event handle, ignoring\n" VA_NONE));
 		goto __exit;
 	}
 
@@ -877,7 +877,7 @@ DFS
 	
 	/* channel not found, ignore */
 	if (chan_ctx->op_handle!=nh) {
-		SU_DEBUG_4(("CALLSTATE: no channel bound to event handle, ignoring\n"));
+		SU_DEBUG_4(("CALLSTATE: no channel bound to event handle, ignoring\n" VA_NONE));
 		goto __exit;
 	}
 	
@@ -1006,7 +1006,7 @@ static void
 svd_i_bye(nua_handle_t const * const nh, sip_account_t const * const account)
 {/*{{{*/
 DFS
-	SU_DEBUG_3 (("BYE received\n"));
+	SU_DEBUG_3 (("BYE received\n" VA_NONE));
 DFE
 }/*}}}*/
 
@@ -1075,7 +1075,7 @@ DFS
 	
 	/* no channel for this handle, ignore */
 	if (chan_ctx->op_handle != nh) {
-		SU_DEBUG_4(("svd_r_get_params: no channel with this handle, ignoring\n"));
+		SU_DEBUG_4(("svd_r_get_params: no channel with this handle, ignoring\n" VA_NONE));
 		goto __exit;
 	}
 	
@@ -1293,7 +1293,7 @@ DFS
 	}
 	
 	if (chan_ctx->op_handle != nh) {
-		SU_DEBUG_0(("svd_r_invite, no channel with this handle, ignoring!\n"));
+		SU_DEBUG_0(("svd_r_invite, no channel with this handle, ignoring!\n" VA_NONE));
 		goto __exit;
 	}
 	  
@@ -1409,7 +1409,7 @@ DFS
 					strcpy(chan_ctx->sdp_cod_name,
 							sdp_sess->sdp_media->m_rtpmaps->rm_encoding);
 				} else {
-					SU_DEBUG_0(("ERROR: SDP CODNAME string size too small\n"));
+					SU_DEBUG_0(("ERROR: SDP CODNAME string size too small\n" VA_NONE));
 					goto __exit;
 				}
 				svd_set_te_codec(sdp_sess, chan_ctx->account, chan_ctx);
@@ -1567,7 +1567,7 @@ DFS
 			SU_DEBUG_9(("Checking media for telephone-event: %s\n", rtpmap->rm_encoding));
 			if (!strcmp("telephone-event",rtpmap->rm_encoding)) {
 				chan_ctx->te_payload=rtpmap->rm_pt;
-				SU_DEBUG_9(("\tfound!\n"));
+				SU_DEBUG_9(("\tfound!\n" VA_NONE));
 				break;
 			}
 		}

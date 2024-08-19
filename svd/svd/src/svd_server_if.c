@@ -521,7 +521,7 @@ svd_addtobuf(char ** const buf, int * const palc, char const * fmt, ...)
 		*palc = 300;
 		*buf = malloc(*palc);
 		if(!(*buf)){
-			SU_DEBUG_2((LOG_NOMEM_A("malloc for resizer")));
+			SU_DEBUG_2((LOG_NOMEM_A("malloc for resizer" VA_NONE)));
 			printf("no mem for malloc\n");
 			goto __exit_fail;
 		}

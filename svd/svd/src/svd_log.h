@@ -39,7 +39,7 @@
 #define DFS												\
 	do {												\
 		for(g_f_cnt=0; g_f_cnt<g_f_offset; g_f_cnt++)	\
-			SU_DEBUG_9(("  "));							\
+			SU_DEBUG_9(("  " VA_NONE));							\
 		SU_DEBUG_9(("vvvv %s() vvvv\n", __func__));		\
 		g_f_offset++; 									\
 	}while(0);
@@ -49,7 +49,7 @@
 	do {												\
 		g_f_offset--; 									\
 		for(g_f_cnt=0; g_f_cnt<g_f_offset; g_f_cnt++)	\
-			SU_DEBUG_9(("  "));							\
+			SU_DEBUG_9(("  " VA_NONE));							\
 		SU_DEBUG_9(("^^^^ %s() ^^^^\n", __func__));		\
 	}while(0);
 

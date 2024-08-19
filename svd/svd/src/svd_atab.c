@@ -352,7 +352,7 @@ DFS
 		}
 	}
 	if (i == j){
-		SU_DEBUG_2(("No free FXS channel available\n"));
+		SU_DEBUG_2(("No free FXS channel available\n" VA_NONE));
 		i = -1;
 	}
 DFE

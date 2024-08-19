@@ -229,7 +229,7 @@ svd_create (ab_t * const ab)
 DFS
 	svd = malloc( sizeof(*svd) );
 	if ( !svd) {
-    		SU_DEBUG_0 (("svd_create() not enough memory\n"));
+    		SU_DEBUG_0 (("svd_create() not enough memory\n" VA_NONE));
 		goto __exit_fail;
 	}
 
@@ -237,7 +237,7 @@ DFS
 
 	/* svd home initialization */
 	if(su_home_init(svd->home) != 0){
-    		SU_DEBUG_0 (("svd_create() su_home_init() failed\n"));
+    		SU_DEBUG_0 (("svd_create() su_home_init() failed\n" VA_NONE));
 		goto __exit_fail;
 	}
 	
@@ -254,14 +254,14 @@ DFS
 
 	/* extended SIP parser */
 	if(sip_update_default_mclass(sip_extend_mclass(NULL)) < 0) {
-		SU_DEBUG_0 (("svd_create() sip_update_default_mclass() failed\n"));
+		SU_DEBUG_0 (("svd_create() sip_update_default_mclass() failed\n" VA_NONE));
 		goto __exit_fail;
 	}
 	
 	/* svd root creation */
 	svd->root = su_root_create (svd);
 	if (svd->root == NULL) {
-    		SU_DEBUG_0 (("svd_create() su_root_create() failed\n"));
+    		SU_DEBUG_0 (("svd_create() su_root_create() failed\n" VA_NONE));
 		goto __exit_fail;
 	}
 
@@ -305,7 +305,7 @@ DFS
 			TAG_IF (g_conf.local_ip, SOATAG_ADDRESS(g_conf.local_ip)),
 			TAG_NULL () );
 	if (!svd->nua) {
-		SU_DEBUG_0 (("Network is not initialized\n"));
+		SU_DEBUG_0 (("Network is not initialized\n" VA_NONE));
 		goto __exit_fail;
 	}
 	

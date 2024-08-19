@@ -520,6 +520,7 @@ ab_FXS_line_feed (ab_chan_t * const chan, enum ab_chan_linefeed_e feed)
 				lf_to_set = IFX_TAPI_LINE_FEED_ACTIVE;
 				break;	
 			}
+			default: return -1; //it shouldn't happen
 		}
 		err = err_set_ioctl (chan, IFX_TAPI_LINE_FEED_SET, lf_to_set, err_msg);
 		if ( !err){
@@ -560,6 +561,7 @@ ab_FXO_line_hook (ab_chan_t * const chan, enum ab_chan_hook_e hook)
 				err_msg = "Try to onhook (ioctl)";
 				break;
 			}
+			default: return -1; //it shouldn't happen
 		}
 		err = err_set_ioctl (chan, IFX_TAPI_FXO_HOOK_SET, h_to_set, err_msg);
 		if( !err){
@@ -673,6 +675,8 @@ ab_FXS_netlo_play (ab_chan_t * const chan, char tone, char local)
 		idx = 22;
 	} else if(tone == 'm'){
 		idx = 0;
+	} else {
+		return -1; //it shouldn't happen
 	} 
 	if(local){
 		err = err_set_ioctl (chan, IFX_TAPI_TONE_LOCAL_PLAY, idx, 

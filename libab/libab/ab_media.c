@@ -18,6 +18,9 @@
 int 
 ab_chan_fax_pass_through_start( ab_chan_t * const chan ) 
 {/*{{{*/
+
+	return -1; //function not implemented
+
 	IFX_TAPI_JB_CFG_t jbCfgData;
 	IFX_TAPI_WLEC_CFG_t lecConf;
 
@@ -242,6 +245,7 @@ ab_chan_media_rtp_tune( ab_chan_t * const chan, codec_t const * const cod,
 	case vad_cfg_SC_only:
 		vad_param = IFX_TAPI_ENC_VAD_SC_ONLY;
 		break;
+	default: return -1; //it shouldn't happen
 	}
 	/*}}}*/
 	/* Configure high-pass filter {{{ */
@@ -479,6 +483,7 @@ jb_stat_avg_count_and_wirte(ab_chan_t * const chan,
 	numer[3] = chan->statistics.jb_stat.nResync;
 	if(n){
 		double coef = pks_avg_n/100;
+		denom = 100; //is this right?
 		numer[0] = coef * chan->statistics.invalid_pc + (double)jb_stat->nInvalid/n;
 		numer[1] = coef * chan->statistics.late_pc + (double)jb_stat->nLate/n;
 		numer[2] = coef * chan->statistics.early_pc + (double)jb_stat->nEarly/n;

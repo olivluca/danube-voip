@@ -1466,7 +1466,7 @@ svd_new_sdp_string (ab_chan_t const * const chan, sip_account_t const * const ac
 
 	ltmp = snprintf (ret_str, limit,
 			"v=0\r\n"
-			"m=audio %d RTP/AVP",media_port);
+			"m=audio %ld RTP/AVP",media_port);
 	if(ltmp > -1 && ltmp < limit){
 		limit -= ltmp;
 	} else {

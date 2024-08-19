@@ -1198,7 +1198,7 @@ conf_show( void )
 	}
 
 	SU_DEBUG_3((" led[%s] : ", g_conf.voip_led));
-	SU_DEBUG_3(("ports[%d:%d]\n",
+	SU_DEBUG_3(("ports[%ld:%ld]\n",
 			g_conf.rtp_port_first,
 			g_conf.rtp_port_last));
 
@@ -1263,7 +1263,7 @@ conf_show( void )
 	for (i=0; i<g_conf.channels; i++) {
 		struct rtp_session_prms_s * c = &g_conf.audio_prms[i];
 		struct wlec_s * w = &g_conf.wlec_prms[i];
-		SU_DEBUG_3(("chan %d led % s enc_dB %d dec_db %d vad %d hpf %d wlec_mode %d wlec_nlp %d wlec_ne_nb %d wlec_fe_nb %d\n",
+		SU_DEBUG_3(("chan %d led %s enc_dB %d dec_db %d vad %d hpf %d wlec_mode %d wlec_nlp %d wlec_ne_nb %d wlec_fe_nb %d\n",
 			    i, g_conf.chan_led[i], c->enc_dB, c->dec_dB, c->VAD_cfg, c->HPF_is_ON,
 			    w->mode, w->nlp, w->ne_nb, w->fe_nb));
 	}

@@ -284,7 +284,7 @@ svd_clear_call (svd_t * const svd, ab_chan_t * const chan)
 DFS
 	
 	if (chan_ctx->call_established) {
-		SU_DEBUG_2(("Channel %d ending %s call to %s account %s duration %d\n", 
+		SU_DEBUG_2(("Channel %d ending %s call to %s account %s duration %Ld\n",
 			   chan_ctx->chan_idx+1,chan_ctx->outgoing_call ? "outgoing" : "incoming",
 	                   chan_ctx->remote_sip,
 			   chan_ctx->account ? chan_ctx->account->name : "?",
@@ -628,11 +628,11 @@ do{
 	}
 
 	if        (evt.id == ab_dev_event_FXS_OFFHOOK){
-		SU_DEBUG_8 (("Got fxs offhook event: 0x%X on [%d/%d]\n",
+		SU_DEBUG_8 (("Got fxs offhook event: 0x%lX on [%d/%d]\n",
 				evt.data, dev_idx,evt.ch ));
 		err = svd_handle_event_FXS_OFFHOOK(svd, chan_idx);
 	} else if(evt.id == ab_dev_event_FXS_ONHOOK){
-		SU_DEBUG_8 (("Got fxs onhook event: 0x%X on [%d/%d]\n",
+		SU_DEBUG_8 (("Got fxs onhook event: 0x%lX on [%d/%d]\n",
 				evt.data, dev_idx,evt.ch ));
 		err = svd_handle_event_FXS_ONHOOK(svd, chan_idx);
 	} else if(evt.id == ab_dev_event_FXS_DIGIT_TONE ||
@@ -640,21 +640,21 @@ do{
 		err = svd_handle_event_FXS_DIGIT_X(svd, chan_idx, evt.data);
 	} else if(evt.id == ab_dev_event_FXO_RINGING){
 		/* shouldn't happen */
-		SU_DEBUG_8 (("Got fxo ringing event: 0x%X on [%d/%d]\n",
+		SU_DEBUG_8 (("Got fxo ringing event: 0x%lX on [%d/%d]\n",
 				evt.data, dev_idx,evt.ch ));
 		err = 0;
 	} else if(evt.id == ab_dev_event_FM_CED){
-		SU_DEBUG_8 (("Got CED event: 0x%X on [%d/%d]\n",
+		SU_DEBUG_8 (("Got CED event: 0x%lX on [%d/%d]\n",
 				evt.data, dev_idx,evt.ch ));
 		err = svd_handle_event_FM_CED (svd, chan_idx, evt.data);
 	} else if(evt.id == ab_dev_event_COD){
-		SU_DEBUG_8 (("Got coder event: 0x%X on [%d/%d]\n",
+		SU_DEBUG_8 (("Got coder event: 0x%lX on [%d/%d]\n",
 				evt.data,dev_idx,evt.ch ));
 	} else if(evt.id == ab_dev_event_TONE){
-		SU_DEBUG_8 (("Got tone event: 0x%X on [%d/%d]\n",
+		SU_DEBUG_8 (("Got tone event: 0x%lX on [%d/%d]\n",
 				evt.data,dev_idx,evt.ch ));
 	} else if(evt.id == ab_dev_event_UNCATCHED){
-		SU_DEBUG_8 (("Got unknown event : 0x%X on [%d/%d]\n",
+		SU_DEBUG_8 (("Got unknown event : 0x%lX on [%d/%d]\n",
 				evt.data, dev_idx,evt.ch ));
 	}
 	if(evt.more){
@@ -808,7 +808,7 @@ svd_handle_event_FXS_DIGIT_X ( svd_t * const svd, int const chan_idx,
 	int err;
 
 DFS
-	SU_DEBUG_8 (("[%02d] DIGIT \'%c\'(l:%d,n:%d)HN:%p\n",
+	SU_DEBUG_8 (("[%02d] DIGIT \'%c\'(l:%ld,n:%ld)HN:%p\n",
 			ab_chan->abs_idx, digit, (data >> 9),(data >> 8) & 1,
 			chan_ctx->op_handle));
 
@@ -1086,7 +1086,7 @@ svd_media_tapi_handle_local_data (su_root_magic_t * root, su_wait_t * w,
 	} else if(rode > 0){
 		// should not block
 		sent = sendto(chan_ctx->rtp_sfd, buf, rode, 0,
-				&target_sock_addr, sizeof(target_sock_addr));
+				(struct sockaddr *)&target_sock_addr, sizeof(target_sock_addr));
 		if (sent == -1){
 			SU_DEBUG_2 (("HLD() ERROR : sent() : %d(%s)\n",
 					errno, strerror(errno)));
@@ -1212,7 +1212,7 @@ DFS
 		my_addr.sin_family = AF_INET;
 		my_addr.sin_port = htons(g_conf.rtp_port_first + i);
 		my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-		if ((bind(sock_fd, &my_addr, sizeof(my_addr))) != -1) {
+		if ((bind(sock_fd, (struct sockaddr *)&my_addr, sizeof(my_addr))) != -1) {
 			chan_ctx->rtp_port = g_conf.rtp_port_first + i;
 			rtp_binded = 1;
 			break;
@@ -1220,7 +1220,7 @@ DFS
 	}
 	if( !rtp_binded ){
 		SU_DEBUG_1(("svd_media_tapi_open_rtp(): could not find free "
-				"port for RTP in range [%d,%d]\n",
+				"port for RTP in range [%ld,%ld]\n",
 				g_conf.rtp_port_first, g_conf.rtp_port_last));
 		goto __sock_opened;
 	}

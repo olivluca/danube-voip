@@ -40,7 +40,7 @@ COMMAND LINE KEYS:
 */
 
 /** Startup keys set. */
-typedef struct _startup_options {
+typedef struct {
 	unsigned char help; /**< Show help and exit. */
 	unsigned char version; /**< Show version and exit. */
 	char debug_level; /**< Logging level in debug mode. */
@@ -150,9 +150,8 @@ typedef struct {/*{{{*/
 	char * ring_tone; /* Custom ringing tone (asterisk style string). */
 	char * busy_tone; /* Custom busy tone (asterisk style string). */
 	char * cid_intnl_prefix; /* Replace + with this string in caller id */
-}  svd_conf_s;
+} svd_conf_s;
 extern svd_conf_s g_conf;/*}}}*/
-
 
 /** @} */
 

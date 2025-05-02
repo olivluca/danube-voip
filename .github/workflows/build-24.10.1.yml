@@ -34,11 +34,9 @@ jobs:
           make -j1 V=s package/luci-app-svd/compile
       - name: build custom image
         run: |
-          # copy the packages just built to be used by the imagebuilder
-          cp openwrt-sdk*/bin/packages/mips_24kc/custom/*.ipk openwrt-imagebuilder-*/packages/
-          cd openwrt-imagebuilder-*
-          # remove a lot of things so that svd and its dependencies fit
-          make image PROFILE=arcadyan_arv7518pw PACKAGES="luci-app-svd -kmod-ppp -kmod-atm -kmod-pppoa -kmod-pppox -kmod-pppoe -ppp -ppp-mod-pppoa -ppp-mod-pppoe -kmod-ltq-adsl-danube -kmod-ltq-adsl-danube-mei -ltq-dsl-base -ltq-adsl-app -kmod-ltq-adsl-danube-fw-a -kmod-ltq-atm-danube -kmod-atm -linux-atm -kmod-ath9k  -kmod-ath9k-common -wireless-regdb -kmod-mac80211 -wpad-basic-mbedtls -hostapd-common -wpad -odhcpd-ipv6only -odhcp6c uhttpd -dnsmasq luci-theme-openwrt"          
+          # stripped out image ready for extroot
+          # remove a lot of things so that packages for extroot fit
+          make image PROFILE=arcadyan_arv7518pw PACKAGES="-kmod-ppp -kmod-atm -kmod-pppoa -kmod-pppox -kmod-pppoe -ppp -ppp-mod-pppoa -ppp-mod-pppoe -kmod-ltq-adsl-danube -kmod-ltq-adsl-danube-mei -ltq-dsl-base -ltq-adsl-app -kmod-ltq-adsl-danube-fw-a -kmod-ltq-atm-danube -kmod-atm -linux-atm -kmod-ath9k  -kmod-ath9k-common -wireless-regdb -kmod-mac80211 -wpad-basic-mbedtls -hostapd-common -wpad -odhcpd-ipv6only -odhcp6c uhttpd -dnsmasq luci-theme-openwrt block-mount kmod-fs-ext4 e2fsprogs parted kmod-usb-storage"          
       
       - uses: actions/Upload-artifact@v4
         with:

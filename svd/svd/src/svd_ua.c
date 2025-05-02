@@ -585,7 +585,8 @@ DFS
 			nua_register(account->op_reg, 
 			    NUTAG_REGISTRAR(account->registrar),
 			    NUTAG_M_USERNAME(account->name),
-			    TAG_IF (account->user_agent, SIPTAG_USER_AGENT_STR(account->user_agent)),		      
+			    TAG_IF (account->user_agent, SIPTAG_USER_AGENT_STR(account->user_agent)),
+			    TAG_IF (account->outbound_proxy, NUTAG_PROXY(account->outbound_proxy)),	
 			    TAG_NULL());
 		}
 	}

@@ -117,6 +117,7 @@ struct sip_account_s {
 	unsigned char ring_incoming[CHANS_MAX]; /**< which channels to ring for incoming calls */
 	unsigned char registered; /**< Account correctly registered.*/
 	char * registration_reply; /**<Last registration reply received from registrar-> */
+	char * sip_contact; /**< Sip contact received from registrar to be used in invite> */
 	nua_handle_t * op_reg; /**< Pointer to NUA Handle for registration.*/
 	su_timer_t * reg_tmr; /**< Registration retry timer. */
 	dtmf_type_e dtmf; /**<How to send dtmf */

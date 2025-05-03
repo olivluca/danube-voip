@@ -367,7 +367,8 @@ DFS
 	chan_ctx->account = account;
 	nua_invite( nh,
 			TAG_IF (account->outbound_proxy, NUTAG_PROXY(account->outbound_proxy)),		    
-			TAG_IF (account->user_agent, SIPTAG_USER_AGENT_STR(account->user_agent)),		      
+			TAG_IF (account->user_agent, SIPTAG_USER_AGENT_STR(account->user_agent)),
+			TAG_IF (account->sip_contact, SIPTAG_CONTACT_STR(account->sip_contact)),
 			SOATAG_AUDIO_AUX("telephone-event"),
 			SOATAG_USER_SDP_STR(l_sdp_str),
 			SOATAG_RTP_SORT (SOA_RTP_SORT_LOCAL),
@@ -1222,8 +1223,17 @@ DFS
 	asprintf(&account->registration_reply, "%03d %s", status, phrase);
 	
 	account->registered = 0;
+
+	if (account->sip_contact) {
+		su_free( svd->nua, account->sip_contact);
+		account->sip_contact = NULL;
+	}
 	if (status == 200) {
 		sip_contact_t *m = sip ? sip->sip_contact : NULL;
+		if (m) {
+			/* store the contact needed for the INVITE with sofia-sip >= 1.13 */
+			account->sip_contact = sip_header_as_string( svd->nua, m);
+		}
 		for (; m; m = m->m_next){
 			sl_header_log(SU_LOG, 3, "\tContact: %s\n",
 					(sip_header_t*)m);

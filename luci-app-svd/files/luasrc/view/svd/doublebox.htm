@@ -1,6 +1,7 @@
 <% local v = self:valuelist(section) or {} -%>
 <%+cbi/valueheader%>
-<script xmlns="http://www.w3.org/1999/xhtml" src="<%=resource%>/svd.js" />
+<script xmlns="http://www.w3.org/1999/xhtml" src="<%=resource%>/svd.js">
+</script>
 <div>
 <table>
 <tr>
@@ -20,8 +21,8 @@
 </td>
 
 <td>
-  <input type="button" value=" &gt;&gt; " <%= attr("onclick","DbMove('" .. cbid .. ".available','" .. cbid .. ".selected','" .. cbid .. "')") %>/><br />
-  <input type="button" value=" &lt;&lt; " <%= attr("onclick","DbMove('" .. cbid .. ".selected','" .. cbid .. ".available','" .. cbid .. "')") %>/>
+  <input type="button" class="cbi-button" value=" 🞂 " <%= attr("onclick","DbMove('" .. cbid .. ".available','" .. cbid .. ".selected','" .. cbid .. "')") %>/><br />
+  <input type="button" class="cbi-button" value=" 🞀 " <%= attr("onclick","DbMove('" .. cbid .. ".selected','" .. cbid .. ".available','" .. cbid .. "')") %>/>
 </td>
 
 <td>
@@ -34,8 +35,8 @@
 </td>
 
 <td>
-  <input type="button" class="cbi-button cbi-button-up"    <%= attr("onclick","DbMoveUpDown(-1,'" .. cbid .. ".selected','" .. cbid .. "')") .. attr("alt",translate("Move Up")) .. attr("title",translate("Move Up")) %>/><br />
-  <input type="button" class="cbi_button cbi-button-down"  <%= attr("onclick","DbMoveUpDown(1,'" .. cbid .. ".selected','" .. cbid .. "')") .. attr("alt",translate("Move Down"))  .. attr("title",translate("Move Down"))%>/>
+  <input type="button" class="cbi-button" value=" 🞁 " <%= attr("onclick","DbMoveUpDown(-1,'" .. cbid .. ".selected','" .. cbid .. "')") .. attr("alt",translate("Move Up")) .. attr("title",translate("Move Up")) %>/><br />
+  <input type="button" class="cbi-button" value=" 🞃 " <%= attr("onclick","DbMoveUpDown(1,'" .. cbid .. ".selected','" .. cbid .. "')") .. attr("alt",translate("Move Down"))  .. attr("title",translate("Move Down"))%>/>
 </td>
 
 </tr>

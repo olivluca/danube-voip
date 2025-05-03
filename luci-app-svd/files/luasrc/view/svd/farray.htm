@@ -1,6 +1,7 @@
 <% local v = self:valuelist(section) or {} -%>
 <%+cbi/valueheader%>
-<script xmlns="http://www.w3.org/1999/xhtml" src="<%=resource%>/svd.js" />
+<script xmlns="http://www.w3.org/1999/xhtml" src="<%=resource%>/svd.js">
+</script>
 	<input type="hidden"
 	<%=attr("name", cbid) .. attr("id", cbid) .. attr("value", self:cfgvalue(section))%>
 	/>

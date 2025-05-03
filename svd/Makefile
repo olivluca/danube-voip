@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=svd
-PKG_VERSION:=1.20
+PKG_VERSION:=1.21
 PKG_RELEASE:=1
 PKG_BUILD_DEPENDS:=libab
 

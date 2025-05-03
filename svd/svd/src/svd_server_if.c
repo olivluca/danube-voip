@@ -459,6 +459,7 @@ static int
 svd_exec_channels(svd_t * svd, char ** const buff, int * const buff_sz)
 {/*{{{*/
 	int i;
+	int duration;
 	time_t now=time(NULL);
 	
 	if(svd_addtobuf(buff, buff_sz,"[\n")){
@@ -477,8 +478,14 @@ svd_exec_channels(svd_t * svd, char ** const buff, int * const buff_sz)
 		if(svd_addtobuf(buff, buff_sz, "\"account\":\"%s\", \"address\":\"%s\",",
 		  chan_ctx->op_handle && chan_ctx->account ? chan_ctx->account->name : "", chan_ctx->op_handle ? (chan_ctx->remote_sip ? chan_ctx->remote_sip : "") : ""))
 			goto __exit_fail;
-		
-		if(svd_addtobuf(buff, buff_sz, "\"duration\":\"%d\"}", chan_ctx->call_established ? now-chan_ctx->call_start : -1))
+		if (chan_ctx->call_established) {
+			duration = now-chan_ctx->call_start;
+ 			//SU_DEBUG_2(("---------- call establised %d\n",duration));
+		} else {
+			duration = -1;
+ 			//SU_DEBUG_2(("---------- call NOT establised %d\n",duration));
+		}
+		if(svd_addtobuf(buff, buff_sz, "\"duration\":\"%d\"}", duration))
 			goto __exit_fail;
 		
 		if (i<g_conf.channels-1) {
@@ -490,6 +497,7 @@ svd_exec_channels(svd_t * svd, char ** const buff, int * const buff_sz)
 	if(svd_addtobuf(buff, buff_sz,"\n]\n")){
 		goto __exit_fail;
 	}
+	//SU_DEBUG_2(("buff ->>>>>>> %s\r\n",buff[0]));
 	return 0;
 __exit_fail:
 	return -1;

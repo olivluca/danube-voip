@@ -22,5 +22,6 @@ start()
 
 stop()
 {
-	 killall svd > /dev/null 2> /dev/null
+	echo "shutdown" | svd_if > /dev/null 2> /dev/null && sleep 5
+	killall svd > /dev/null 2> /dev/null
 }

@@ -17,4 +17,7 @@ workflow for details).
 Also, with openwrt 23.05.4 make sure to use the sofia-sip package provided
 here, the one from the telephony feed has been compiled with stun disabled.
 
+**With openwrt 24.10** I couldn't find a way to build an image including sofia-sip/svd/luci-app-svd, the only option is extroot, and even then it's impossible 
+to install the packages required for extroot on the stock image, hence in the workflow I create a stripped down image with the packages for extroot included.
+
 

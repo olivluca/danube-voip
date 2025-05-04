@@ -20,7 +20,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-svd
-PKG_VERSION:=1.12
+PKG_VERSION:=1.13
 PKG_RELEASE:=1
 
 PKG_BUILD_DIR := $(BUILD_DIR)/$(PKG_NAME)
@@ -57,6 +57,8 @@ define Package/luci-app-svd/install
 	${INSTALL_DIR} ${1}/www
 	$(CP) ./files/htdocs/* ${1}/www/
 	./files/i18n-po2lua.pl po2lmo ./files/po ${1}/usr/lib/lua/luci/i18n
+	${INSTALL_DIR} ${1}/usr/share/rpcd/acl.d/
+	$(CP) ./root/usr/share/rpcd/acl.d/luci-app-svd.json ${1}/usr/share/rpcd/acl.d/
 endef
 
 define Host/Prepare

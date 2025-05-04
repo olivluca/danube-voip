@@ -5,6 +5,7 @@ function index()
    page.target = firstchild()
    page.title  = translate("Voip")
    page.order  = 90
+   page.acl_depends = { "luci-app-svd" }
                                   
    entry({"admin","svd","state"}, template("svd/status"),translate("Status"),20) 
    entry({"admin","svd","main"}, cbi("svd/main"),translate("Main"), 30)

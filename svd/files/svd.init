@@ -2,26 +2,39 @@
 # (C) 2008 openwrt.org
 
 START=96
+USE_PROCD=1
 
-[ ! -c /dev/vmmc10 ] && {
-	mknod /dev/vmmc11 c 122 11
-	mknod /dev/vmmc12 c 122 12
-	mknod /dev/vmmc13 c 122 13
-	mknod /dev/vmmc14 c 122 14
-	mknod /dev/vmmc15 c 122 15
-	mknod /dev/vmmc16 c 122 16
-	mknod /dev/vmmc17 c 122 17
-	mknod /dev/vmmc18 c 122 18
-	mknod /dev/vmmc10 c 122 10
+service_triggers() {
+	procd_add_reload_trigger svd
 }
 
-start()
-{
-	/usr/sbin/svd
+boot() {
+
+	[ ! -c /dev/vmmc10 ] && {
+		mknod /dev/vmmc11 c 122 11
+		mknod /dev/vmmc12 c 122 12
+		mknod /dev/vmmc13 c 122 13
+		mknod /dev/vmmc14 c 122 14
+		mknod /dev/vmmc15 c 122 15
+		mknod /dev/vmmc16 c 122 16
+		mknod /dev/vmmc17 c 122 17
+		mknod /dev/vmmc18 c 122 18
+		mknod /dev/vmmc10 c 122 10
+	}
+	ubus -t 120 wait_for_network.interface.lan 2>/dev/null
+	rc_procd start_service
 }
 
-stop()
+start_service()
 {
-	echo "shutdown" | svd_if > /dev/null 2> /dev/null && sleep 5
-	killall svd > /dev/null 2> /dev/null
+	procd_open_instance
+	procd_set_param command /usr/sbin/svd -f
+	procd_close_instance
+}
+
+
+reload_service()
+{
+	stop
+	start
 }

@@ -101,10 +101,6 @@ end
 
 
 m=Map("svd",translate("Accounts"), translate("Here you can configure the sip accounts. At least one must be defined."))
-function m.on_commit(self)
-  luci.sys.call("/etc/init.d/svd stop")
-  luci.sys.call("/etc/init.d/svd start")
-end
 s=m:section(TypedSection,"account", translate("Accounts"))
 s.addremove = true
 

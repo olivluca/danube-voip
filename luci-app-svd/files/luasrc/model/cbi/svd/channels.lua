@@ -10,12 +10,6 @@ if fs.access(sysfs_path) then
   leds = util.consume((fs.dir(sysfs_path)))
 end
 
-
-function m.on_commit(self)
-  luci.sys.call("/etc/init.d/svd stop")
-  luci.sys.call("/etc/init.d/svd start")
-end
-
 for chan=1,2 do
   s=m:section(NamedSection,tostring(chan), "channel", translatef("channel %d",chan))
   s.addremove = true

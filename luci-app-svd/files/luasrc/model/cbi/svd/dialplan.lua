@@ -2,10 +2,6 @@ local uci = require "luci.model.uci"
 local cursor = uci.cursor()
 
 m=Map("svd",translate("Dialplan"), translate("Here you can configure how to route outgoing calls"))
-function m.on_commit(self)
-  luci.sys.call("/etc/init.d/svd stop")
-  luci.sys.call("/etc/init.d/svd start")
-end
 s=m:section(TypedSection,"dialplan")
 s.addremove = true
 s.template="cbi/tblsection"

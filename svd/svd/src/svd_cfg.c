@@ -993,10 +993,11 @@ startup_init( int argc, char ** argv )
 {/*{{{*/
 	int option_IDX;
 	int option_rez;
-	char * short_options = "hVd:";
+	char * short_options = "hVfd:";
 	struct option long_options[ ] = {
 		{ "help", no_argument, NULL, 'h' },
 		{ "version", no_argument, NULL, 'V' },
+		{ "foreground", no_argument, NULL, 'f' },
 		{ "debug", required_argument, NULL, 'd' },
 		{ NULL, 0, NULL, 0 }
 		};
@@ -1007,6 +1008,7 @@ startup_init( int argc, char ** argv )
 	g_so.help = 0;
 	g_so.version = 0;
 	g_so.debug_level = -1;
+	g_so.foreground = 0;
 
 	/* INIT FROM SYSTEM CONFIG FILE "/etc/routine" */
 	/* INIT FROM SYSTEM ENVIRONMENT */
@@ -1034,7 +1036,11 @@ startup_init( int argc, char ** argv )
 				} else if(g_so.debug_level < 0){
 					g_so.debug_level = 0;
 				}
-				return 0;
+				break;
+			}
+			case 'f': {
+				g_so.foreground = 1;
+				break;
 			}
 			case '?' :{
 				/* unknown option found */
@@ -1661,6 +1667,7 @@ Mandatory arguments to long options are mandatory for short options too.\n\
   -h, --help         display this help and exit\n\
   -V, --version      displey current version and license info\n\
   -d, --debug        set the debug level (form 0 to 9)\n\
+  -f, --foreground   run in foreground (don't daemonize)\n\
 \n\
 	Execution example :\n\
 	%s -d9\n\

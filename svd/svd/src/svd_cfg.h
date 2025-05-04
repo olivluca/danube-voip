@@ -43,6 +43,7 @@ COMMAND LINE KEYS:
 typedef struct {
 	unsigned char help; /**< Show help and exit. */
 	unsigned char version; /**< Show version and exit. */
+	unsigned char foreground; /**< do not daemonize */
 	char debug_level; /**< Logging level in debug mode. */
 } _startup_options;
 extern _startup_options g_so;

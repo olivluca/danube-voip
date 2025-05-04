@@ -50,6 +50,7 @@ static svd_t * main_svd;
 /* termination handler */
 static void term_handler(int signum)
 {
+  printf("term_handler\n");
   svd_shutdown(main_svd);
 }
 
@@ -77,12 +78,14 @@ main (int argc, char ** argv)
 		goto __startup;
 	}
 
-	/* daemonization */
-	err = svd_daemonize ();
-	if(err){
-		goto __startup;
+	if (g_so.foreground == 0) {
+		/* daemonization */
+		err = svd_daemonize ();
+		if(err){
+			goto __startup;
+		}
+		/* the daemon from now */
 	}
-	/* the daemon from now */
 
 	su_init();
 
@@ -120,6 +123,7 @@ main (int argc, char ** argv)
 	/* set termination handler to shutdown svd */
 	main_svd = svd;
 	signal(SIGTERM, term_handler);
+	signal(SIGINT, term_handler);
 	
 	/* run main cycle */
 	su_root_run (svd->root);

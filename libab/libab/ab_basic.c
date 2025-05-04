@@ -209,7 +209,7 @@ static int tapi_dev_start(ab_t *ab)
    for (c = 0; c < TAPI_AUDIO_DEV_NUM; c++) {
       /* Perform mapping*/
       memset(&datamap, 0x0, sizeof(IFX_TAPI_MAP_DATA_t));
-      datamap.nDstCh  = c & 0x1 ? 0 : 1; /*f->dev_ctx.data2phone_map[c];*/
+      datamap.nDstCh  = c ;
       datamap.nChType = IFX_TAPI_MAP_TYPE_PHONE;
 
       status = ioctl(ab->chans[c].rtp_fd, IFX_TAPI_MAP_DATA_ADD, &datamap);
@@ -358,8 +358,8 @@ ab_create( void )
 	dprms->type = dev_type_FXS;
 	dprms->nBaseAddress = 0;
 	dprms->AccessMode = 0;
-	dprms->chans_idx[0] = 1;
-	dprms->chans_idx[1] = 0;
+	dprms->chans_idx[0] = 0;
+	dprms->chans_idx[1] = 1;
 #endif	
 	ab = malloc(sizeof(*ab));
 	if( !ab){
@@ -417,8 +417,7 @@ ab_create( void )
 		ab_chan_t * curr_chan = &ab->chans[ i ];
 		int fd_chan;
 		char dev_node[ 50 ];
-		/* it should be 0 if i is odd(!/2) and 1 if i is even(/2) */
-		int chan_idx_in_dev = CHANS_PER_DEV - (1 + i%CHANS_PER_DEV);
+		int chan_idx_in_dev = i%CHANS_PER_DEV;
 		int pdev_idx = i / CHANS_PER_DEV;
 
 		curr_chan->idx = chan_idx_in_dev + 1;

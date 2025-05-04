@@ -45,7 +45,7 @@ ab_dev_event_get(ab_dev_t * const dev, ab_dev_event_t * const evt,
 	}
 
 	/* ioctl_evt.ch = [0;1] ?- swap channels */
-	evt->ch = (ioctl_evt.ch + 1) % 2;
+	evt->ch = ioctl_evt.ch;
 	evt->more = ioctl_evt.more;
 
 	evt_type = (ioctl_evt.id & 0xFF000000);
@@ -94,6 +94,7 @@ ab_dev_event_get(ab_dev_t * const dev, ab_dev_event_t * const evt,
 
 	if (ioctl_evt.ch == IFX_TAPI_EVENT_ALL_CHANNELS){
 		*chan_available = 0;
+		evt->ch = 0;
 	} else {
 		*chan_available = 1;
 	}

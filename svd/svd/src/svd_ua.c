@@ -674,8 +674,10 @@ DFS
 	sip_account = NULL;
 	/* sofia-sip could add a = plus some random string to the contact, remove it */
 	contact = strdup(sip->sip_request->rq_url->url_user);
+	SU_DEBUG_9(("RECEIVED CONTACT %s\n", contact));
 	if (equal = strrchr(contact, '='))
 		*equal=0;
+	SU_DEBUG_9(("AFTER REMOVING = %s\n", contact));
 	for (i=0; i<su_vector_len(g_conf.sip_account); i++) {
 		sip_account_t * temp_account = su_vector_item(g_conf.sip_account, i);
 		if( !temp_account->enabled)
@@ -684,6 +686,15 @@ DFS
 		if ( !strcmp(temp_account->name, contact)){
 			/* found the account the call is coming from */
 			sip_account = temp_account;
+			SU_DEBUG_9(("Matched account %s by account name\n",temp_account->name));
+			break;
+		}
+
+		/* digi spain ims doesn't send the registered contact in INVITE but the raw user */
+		if ( !strcmp(temp_account->user, contact)){
+			/* found the account the call is coming from */
+			sip_account = temp_account;
+			SU_DEBUG_9(("Matched account %s by account user\n",temp_account->name));
 			break;
 		}
 	}

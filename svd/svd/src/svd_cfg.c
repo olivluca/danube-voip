@@ -323,6 +323,7 @@ account_add(struct uci_map *map, void *section)
 	}
 	 
 	s->name = strdup(a->name);
+	s->user = strdup(a->user);
 	free(a->name);
 	asprintf(&s->user_URI, "sip:%s@%s", a->user, a->domain);
 	if (a->auth_name)

@@ -103,6 +103,7 @@ struct sip_account_s {
 	unsigned char enabled; /**< Should we use this account?*/
 	int codecs[COD_MAS_SIZE];/**< Codecs sorted by priority.*/
 	char *name; /**<account name.*/
+	char *user; /**< user verbatim from the config file.*/
 	char *registrar; /**< SIP registrar address.*/
 	char *user_name; /**< SIP user name.*/
 	char *user_pass; /**< SIP user password.*/
